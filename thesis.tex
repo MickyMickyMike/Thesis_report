@@ -6,7 +6,7 @@
 % english thesis in English language
 % hidelinks remove colour boxes around hyperlinks
 
-\documentclass[thesis=M,czech,hidelinks]{FITthesis}[2012/06/26]
+\documentclass[thesis=M,czech,hidelinks]{FITthesis}[2013/05/06]
 
 \usepackage[utf8]{inputenc} % LaTeX source encoded as UTF-8
 
@@ -88,8 +88,23 @@
 } 
 %\setlength{\parskip}{10pt}
 
-\chapter{Úvod a motivace}
-Má bakalářská práce byla vedena jako součást projektu Slotcar platooning, který má za cíl vytvořil testovací kolonu autodráhových vozidel, na které by bylo možné zkoušet různé typy a metody distribuovaného řízení. Projekt vznikl na katedře řídicí techniky ČVUT v Praze pod vedením pana doc. Ing. Zdeňka Huráka Ph.D. 
+\chapter{Úvod}
+Dnešní doba je plná rizik, která představují hrozbu pro každodenního uživatele internetu. Ať už se jedná o phishing (zisk citlivých údajů pomocí podvodné internetové komunikace) či různé druhy malwaru (nežádoucí programy mající za úkol poškodit uživatele). V boji s těmito riziky je důležité chránit sebe a svoje data pomocí antivirových programů. Jedním z nejrozšířenějších je Avast, který má přes 435 milionů aktivních uživatelů a měsíčně zabrání okolo 2 miliardám útoků\cite{avast_flier}.
+
+\section{Motivace}
+Avast, stejně jako většina antivirových programů, uchovává informace o všech známých škodlivých entitách. Tato databáze se denně rozšiřuje o spousty nových záznamů, které obsahují nejen informace o celých souborech, ale i kusy kódu webového obsahu (tzv. string detekce), které jsou považovány za příznak podvodných úmyslů. Může se však stát, že je tento kus kódu moc obecný a dochází tak i k blokování čistého obsahu (tzv. fals-positive detekcím). Aby se těmto situacím předcházelo, je zapotřebí udržovat i databázi s čistými záznamy (tzv. cleanset). 
+
+Dříve, než se nová string detekce začlení do jádra antiviru, je její obsah porovnán se všemi záznamy na cleansetu a pokud dojde ke shodě, je tato detekce považována za nevalidní. Tímto dochází k zabránění fals-positive detekcím. 
+
+Ideálním stavem je tedy mít záznam o veškerém čistém obsahu internetu, což je samozřejmě nemožné. Avšak čím více záznamů cleanset obsahuje, tím kvalitnější je běh antivirového programu. V současné době dochází k doplňování cleansetu pouze občasně a to převážně manuálně za pomoci jednoduchých scriptů.
+
+\section{Cíle práce} 
+ Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit projekt, který by modernizoval doplňování cleansetu, avšak současně je možné systém zobecnit k využití i v jiných aplikacích. Celý proces bude řádně otestovaný bude zhodnocen jeho přínos systému.
+
+\section{Slovníček pojmů:work in progress}
+\subsection{Avast}
+\subsection{Malware}
+\subsection{Phishing}
 
 \section{Popis systému}
 Platforma se skládá z autodráhových vozidel typu Carrera Ford Capri (Obr.\ref{fig:kolona}).
@@ -100,7 +115,6 @@ Platforma se skládá z autodráhových vozidel typu Carrera Ford Capri (Obr.\re
         \label{fig:kolona}
 \end{figure}
 
-Auta jezdí po autodráze vsazené v liště, která jim umožňuje pouze pohyb vpřed nebo vzad, a pomocí této lišty jsou i napájena (v současné době používáme napětí 11V). O pohon se stará stejnosměrný elektromotor, který ovládá zadní nápravu kol. Vnitřek aut byl pro potřeby projektu upraven (Obr.\ref{fig:cars}). Každé autíčko obsahuje dva výpočetní moduly – ARM Cortex M4 STM32 mikroprocesor a Raspberry Pi Compute Module. 
  \begin{figure}[h]
          \centering
 
@@ -117,58 +131,37 @@ Auta jezdí po autodráze vsazené v liště, která jim umožňuje pouze pohyb 
  	\caption{Vnitřek vozidel}
  	\label{fig:cars}
  \end{figure}
- 
-První zmiňovaný (STM) má na starost zpracovávání dat ze senzorů a ovládání DC motoru pomocí PWM (puls-width modulation) signálu. Výpočetní modul Raspberry Pi, na kterém běží operační systém Linux, má za úkol komunikaci s počítačem a ostatními auty v koloně. Komunikace vozidla s okolím je zajišťována pomocí WI-FI  modulu (standard IEEE 802.11g), který je připojen k Raspberry Pi pomocí USB. Každé auto obsahuje senzory, které zajišťují sběr informací z okolí. Mezi měřené veličiny patří rychlost vozu, aktuální zrychlení a vzdálenost od sousedních účastníků kolony (před a za vozidlem). Na Obr.\ref{fig:ee} je schématicky znázorněna vnitřní struktura upraveného vozu platformy. 
-\begin{figure}[h]
-        \centering
-     %   \includegraphics[width=8cm]{pictures/eeschema.png}
-        \caption{Vnitřní struktur upraveného vozu\cite{slotcar}}
-        \label{fig:ee}
-\end{figure}
 
-Kolona se ovládá přes hlavní program, který běží na počítači a je psán v jazyce Java. Pomocí tohoto programu lze mimo jiné nastavovat požadované parametry řízení nebo spouštět a zastavovat kolonu. \cite{slotcar}\cite{jan}\cite{martin}
 
  
 \section{Tým pracující na projektu}
-Práce na projektu probíhají již delší dobu, takže se na jeho tvorbě už podílelo více studentů nebo zaměstnanců školy. Platforma, tak jak jsem jí výše popsal, již tedy byla při mém začlenění do týmu vytvořena. V současnosti na projektu spolu se mnou pracují dva studenti – Šimon Wernish a Bc. Martin Lád. Šimon pracuje na projektu stejně jako já v rámci své bakalářské práce. Zabývá se zlepšením bezdrátové komunikace. Martin na projektu pracuje již delší dobu. Navrhnul například řídící systém vozidel a podílel se na psaní hlavního programu, který stále vylepšuje. 
+ 
   
 \section{Motivace}
-Když se s projektem začínalo, rozhodli se zakládající členové o implementaci hlavního programu v Javě. V současné době je budoucí vize taková, že bychom mohli platformu poskytovat pro výukové účely školám, popřípadě firmám, které by projevily zájem. Pokud by měl projekt takto fungovat, bylo by dobré poskytnout uživatelům více možností při návrhu regulátorů. Psaní regulátorů v Javě vyžaduje znalost základů programování a vzhledem ke struktuře projektu i zdlouhavé procházení dokumentací. Mým úkolem tedy bylo umožnit návrh regulátorů v Simulinku a začlenit tyto regulátory do hlavního programu. 
+
   
 \section{Řešení problému}
-Jako první krok řešení jsem musel převést simulinkové schéma regulátoru do jazyka C. K tomu jsem použil plugin Embedded Coder\cite{coder}, který je obsažen v  matlabovské licenci katedry řídící techniky. Takto připravené soubory bylo nutné propojit s hlavním programem, který očekává regulátory napsané v Javě. Implementování C kódu do Javy lze dosáhnout pomocí JNI rozhraní (Java Native Interface)\cite{jni}. Vytvořil jsem tedy pomocné soubory tohoto rozhraní, které jsem spolu s vygenerovaným regulátorem zabalil do knihovny. Dále jsem vytvořil Java wrapper, který knihovnu načítá a volá metody generovaného regulátoru. Tento wrapper se sám tváří jako regulátor a je snadné ho načíst v grafickém rozhraní. Přenesení souborů do řízených aut jsem vyřešil pomocí skriptu. Vytvořené wrappery jsem otestoval na třech základních regulátorech. Nakonec jsem do projektu přidal možnost řízení vozidel pomocí stavového regulátoru, který jsem také otestoval. 
 
+\chapter{Analýza a řešení problému}
 
-\chapter{Návrh a implementace wrapperů}
-Tuto kapitolu jsem rozdělil do čtyř hlavních bodů – propojení simulinkového schéma s hlavním programem v Javě, vytvoření skriptu pro přenos souborů, implementace stavových regulátorů a nastavování parametrů regulátoru přes XML soubor.
+\chapter{Použité technologie}
 
-\section{Propojení Simulinku s Javou}
-Pro propojení simulinkových regulátorů s Javou jsem použil Embedded Coder a Java Native Interface. Embedded Coder je matlabovský plugin, který dokáže zkompilovat simulinkové schéma do jazyka C. Takto generované soubory jsem spolu s pomocnými soubory rozhraní JNI zabalil do sdílené knihovny a tu načetl do obalovací třídy napsané v Javě. Wrappery jsem připravil tři. Pro jednovstupový regulátor, dvouvstupový regulátor a pro regulátor s proměnným počtem vstupů. 
-\subsection{Jednovstupový regulátor}
-\subsubsection*{Generování kódu ze Simulinku}
-V Simulinku jsem vytvořil nové schéma, v kterém jsem nakreslil 
-velmi jednoduchý PI regulátor (Obr.\ref{fig:1reg}) s jedním vstupem (In1) a jedním výstupem (Out1).
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=10cm]{pictures/simulink.PNG}
-        \caption{Jednovstupový PI regulátor}
-        \label{fig:1reg}
-\end{figure}
+\section{Python}
 
-Konstanty jsem nastavil podle již dříve vytvořeného PI regulátoru,
+\section{Fiddler}
+
+\section{Selenium}
+
+\section{Jenkins}
+
+\section{Kafka}
+
 \begin{eqnarray}
 \label{konstanty}
 k_p &=& 3 \\ \nonumber
 k_i &=& 0.8
 \end{eqnarray}
-kde $k_p$ značí proporcionální konstantu a $k_i$ konstantu integrační. Dále jsem regulátoru přidal saturační limit ($\pm1.5$m/s) a jako anti-windup metodu jsem zvolil clamping. %(Obr.\ref{fig:sat}). 
-% \begin{figure}[h]
-%         \centering
-%         \includegraphics[width=11cm]{pictures/saturace.PNG}
-%         \caption{Jednovstupový PI regulátor}
-%         \label{fig:sat}
-% \end{figure}
- Schéma jsem uložil jako \texttt{SISOcontroller}  a pomocí pluginu Embedded Coder jsem ho převedl na C kód. Plugin ve složce se schématem vytvoří plně spustitelný projekt, který obsahuje soubory implementující simulinkové bloky do jazyka C, hlavní smyčku programu a jiné pomocné soubory. Na Obr. \ref{fig:ctrl.c} je vidět, jak vypadá vygenerovaná metoda z takového simulinkového bloku.
+
 \begin{figure}[h]               
   \begin{minted}{c}
 void SISOcontroller_step(void) {
@@ -184,15 +177,6 @@ void SISOcontroller_step(void) {
   \label{fig:ctrl.c}
 \end{figure}
 
-Metoda \texttt{SISOcontroller\_step()} počítá výstup regulátoru za jednu vzorkovací periodu. Pro moje účely jsou potřeba pouze definující soubory, protože hlavní smyčka programu je již vytvořena v Javě. Jedná se o jeden soubor, který implementuje simulinkové bloky a další pomocné soubory (Obr.\ref{fig:sisogen}).
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=10cm]{pictures/SISOgenfiles.PNG}
-        \caption{Generované soubory potřebné pro wrapper}
-        \label{fig:sisogen}
-\end{figure}
-\subsubsection*{Obalovací kód v Javě}
-Součástí Javy je rozhraní JNI (Java Native Interface), pomocí kterého lze do projektu implementovat metody napsané v jazyce C. V našem projektu jsem vytvořil obalovací třídu, kterou jsem nazval \texttt{SimulinkControllerSISO}. Tato třída, stejně  jako jakýkoliv jiný již napsaný regulátor, rozšiřuje abstraktní třídu Controller, která v našem projektu zaštiťuje všechny napsané regulátory. Navíc obsahuje deklaraci nativní metody \texttt{generatedStep()} a načtení sdílené knihovny \texttt{libSISOController.so} (Obr.\ref{fig:SISO.java}).
 \begin{figure}[h]               
   \begin{minted}{Java}
 private native float generatedStep(float e); 
@@ -209,464 +193,28 @@ static {
   \label{fig:SISO.java}
 \end{figure}
 
-Metoda očekává na vstupu regulační odchylku $e$. Specifikátor \texttt{native} říká, že metoda není implementována zde, nýbrž v nahrávané knihovně, která je uložena ve složce \texttt{/slotcar/lib} v řízeném autíčku. Tato knihovna obsahuje kromě již vygenerovaných souborů ze Simulinku jeden hlavičkový a jeden .c soubor, které tvoří tzv. propojovací můstek mezi programem v jazyce C a Javou. Soubor s implementovanou nativní metodou \texttt{generatedStep()} lze vidět na Obr. \ref{fig:SISO.c}. 
-\begin{figure}[h]           
-  \begin{minted}{c}
- #include <jni.h>   
- #include "SimulinkControllerSISO.h"  
- #include "SISOcontroller.h"
-
- JNIEXPORT float JNICALL Java_slotcar_pi_controller_
- SimulinkControllerSISO_generatedStep
-   (JNIEnv *env, jobject obj, jfloat e) {
-      SISOcontroller_U.In1 = e;
-      SISOcontroller_step();
-      return SISOcontroller_Y.Out1;} 
-  \end{minted}      
-  \caption{Implementace metody generatedStep() v propojovacím souboru}
-  \label{fig:SISO.c}
-\end{figure} 
-
-Hlavička implementované metody podléhá pevně dané sytnaxi nativního rozhraní. JNIEXPORT a JNICALL jsou makra, která říkají, že metoda je generována a volána pomocí Java Native Interface a jméno metody odkazuje na deklarovanou nativní metodu uloženou ve volající Java třídě, nacházející se v určitém balíku. První argument metody je pointer na JNI rozhraní a druhý odkazuje na objekt volající třídy, v podstatě sám na sebe.\cite{jnitut} Třetí vstupní argument $e$ je regulační odchylka. Metoda tedy předá regulační odchylku proměnné \texttt{SISOcontroller\_U.In1}, což je vstupní blok simulinkového schématu (Obr.\ref{fig:1reg}), zavolá generovanou metodu, kterou jsem popsal v předchozí sekci (Obr.\ref{fig:ctrl.c}) a vrací
-výstup regulátoru. Takto vytvořené propojovací soubory jsem spolu se soubory simulinkového regulátoru přeložil v autíčku do sdílené knihovny, kterou jsem nazval \texttt{libSISOController.so}. Kompletní výčet souborů, které obsahuje sdílená knihovna je tedy vidět na relačním diagramu (Obr.\ref{fig:siso}).
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/SISOrelace.PNG}
-        \caption{Relační schéma vytvořených souborů}
-        \label{fig:siso}
-\end{figure} 
-
-\subsection{Dvouvstupový regulátor}
-\subsubsection*{Generování kódu ze Simulinku}
-V Simulinku jsem podobně jako u jednovstupového regulátoru vytvořil nové schéma pro regulátor dvouvstupový  se vstupy In1 a In2 a výstupem Out1 (Obr.\ref{fig:2reg}). 
-\begin{figure}[h]
-        \centering
-    %   \includegraphics[width=10cm]{pictures/simulinkTISO.PNG}
-        \caption{Dvouvstupový PI regulátor}
-        \label{fig:2reg}
-\end{figure}
-
-Pro implementaci jsem použil simulinkové schéma pro diskrétní dvouvstupový PID regulátor. Saturaci i konstanty (proporcionální a integrační) jsem nastavil stejně, jako u předchozího případu (Saturace $\pm1.5$m/s a konstanty podle rovnice \ref{konstanty}). Schéma jsem uložil jako \texttt{TISOController} (TISO zkráceně pro two-input single-output) a pomocí pluginu Embedded Coder jsem schéma převedl do projektu v jazyce C.Implementace metody, která ze vstupů počítá výstup za jednu vzorkovací periodu je velmi podobná jednovstupovému regulátoru (Obr.\ref{fig:ctrl.c}) a lze si jí prohlédnout na Obr.\ref{fig:ctrl2.c}. 
-\begin{figure}[h]
-              
-  \begin{minted}{c}
-  void TISOcontroller_step(void) {
- 
-    TISOcontroller_Y.Out1 = (TISOcontroller_U.In1 
-       - TISOcontroller_U.In2) * 3.0 
-       + TISOcontroller_DW.Integrator_DSTATE;
-    
-    TISOcontroller_DW.Integrator_DSTATE += 
-        0.8 * TISOcontroller_U.In1;
-    }
-  \end{minted}      
-  \caption{Implementace bloku PI regulátor v jazyce C}
-  \label{fig:ctrl2.c}
-\end{figure}
-
-Název metody je dán názvem schématu. V metodě je do proměnné Out1 uložen rozdíl vstupů In1 a In2 přenásobený proporcionální konstantou regulátoru ($k_p$) a je k němu připočten stav integrátoru. V dalším kroku je tento stav přepočítán pomocí integrační konstanty ($k_i$) a uložen do proměnné. Tato názorná implementace je bez nelinearit, abych se vyhnul vkládání dlouhých pasáží kódu. Kód s ošetřenou saturací je obohacený o sérii podmínek (příkazy if), které kontrolují překročení povolených mezí. Spolu se souborem, ve kterém jsou implementovány simulinkové bloky, potřebuji k propojení s Javou ještě vytvořené pomocné soubory (Obr.\ref{fig:tisogen}).
- \begin{figure}[h]
-         \centering
-   %      \includegraphics[width=11cm]{pictures/TISOgenfiles.PNG}
-         \caption{Relační schéma vytvořených souborů}
-         \label{fig:tisogen}
- \end{figure}
- 
-\subsubsection*{Obalovací kód v Javě}
-Pro generované soubory zbývá v našem projektu vytvořit obalovací třídu a dále propojovací soubory nativního rozhraní (JNI). V projektu jsem vytvořil wrapper \texttt{SimulinkControllerTISO}, který rozšiřuje abstraktní třídu \texttt{Controller}. Oproti třídě reprezentující regulátor psaný kompletně v Javě obsahuje navíc kód pro načtení sdílené knihovny \texttt{libTISOController.so}, ve které jsou generované soubory ze Simulinku pro dvouvstupový regulátor, a deklaraci nativní metody \texttt{generatedStep()}, která očekává na vstupu dvě proměnné (Obr.\ref{fig:TISO.java}). 
-\begin{figure}[h]               
-  \begin{minted}{Java}
-private native float generatedStep(float e, float f);
-  
-static {
-  try{
-    System.load("/slotcar/lib/libTISOController.so");
-  }
-  catch(UnsatisfiedLinkError e){
-     System.out.println("Cannot load
-        libTISOController.so, file does not exist.");
-  }
-} 
-  \end{minted}      
-  \caption{Deklarace nativní metody a načtení sdílené knihovny}
-  \label{fig:TISO.java}
-\end{figure}
-
-Metoda není implementována zde, ale v načítané knihovně, o čemž nás informuje specifikátor \texttt{native}. V této knihovně se kromě vygenerovaných souborů ze Simulinku nachází i propojovací soubory nativního rozhraní. Implementační soubor .c, v kterém je tělo metody \texttt{generatedStep()} zachycuje Obr.\ref{fig:TISO.c}. 
- \begin{figure}[h]           
-   \begin{minted}{c}
- #include <jni.h>   
- #include "SimulinkControllerTISO.h"  
- #include "TISOcontroller.h"
- 
- JNIEXPORT float JNICALL Java_src_slotcar_pi_controller_
-   SimulinkControllerTISO_generatedStep
-   (JNIEnv *env, jobject obj, jfloat e, jfloat f) {
-      TISOcontroller_U.In1 = e;
-      TISOcontroller_U.In2 = f;
-      TISOcontroller_step();
-      return TISOcontroller_Y.Out1;} 
-   \end{minted}      
-   \caption{Implementace metody generatedStep() v propojovacím souboru}
-   \label{fig:TISO.c}
- \end{figure}
- 
-Soubor obsahuje přidání hlavičkových souborů a samotnou metodu. Hlavičku metody jsem již popisoval u jednovstupového wrapperu (text k Obr.\ref{fig:SISO.c}). Zde je navíc vstupní parametr $f$, který reprezentuje druhý vstup regulátoru. Metoda přiřazuje oba vstupy proměnným, které reprezentují vstupní bloky simulinkového schématu (Obr.\ref{fig:2reg}), volá metodu \texttt{TISOcontroller\_step()}  (Obr. \ref{fig:ctrl2.c}) a vrací výstup regulátoru. Všechny soubory jazyka C, pomocné JNI i generované ze Simulinku, jsem nahrál do autíčka a přeložil je zde do sdílené knihovny \texttt{libTISOController.so}, kterou jsem uložil do složky s knihovnami \texttt{/slotcar/lib}. Kompletní výčet souborů v této knihovně je vidět na Obr.\ref{fig:tiso}.
- \begin{figure}[h]
-         \centering
-    %     \includegraphics[width=8cm]{pictures/TISOrelace.PNG}
-         \caption{Relační schéma vytvořených souborů}
-         \label{fig:tiso}
- \end{figure}
-  
-\subsection{Regulátor s proměnným počtem vstupů}
-V rámci mého zadání jsem se měl také zamyslet nad možností implementovat wrapper pro regulátor s proměnným počtem vstupů. Takový wrapper se mi vytvořit povedlo, byl jsem ale limitován možnostmi použitého programovacího jazyku. Má původní představa byla taková, že by obalovací třída v Javě obsahovala deklaraci více nativních metod, které by byly přetížené a volaly by se na základě počtu vstupních parametrů. Propojovací .c soubor nativního rozhraní by rovněž obsahoval implementaci všech přetížených metod, a uvnitř každé z nich by se přiřadil příslušný počet vstupů metody externímu vstupu simulinkového regulátoru. Můj předpoklad počítal s tím, že bych byl schopný na začátku implementované metody dynamicky zjistit, kolik externích vstupů očekává generovaný regulátor. Avšak při pročítání dokumentace k Embedded Coderu a procházení generovaných souborů jsem zjistil, že plugin při vytváření kódu v jazyce C převádí všechny externí vstupy do jedné proměnné typu \texttt{struct}. Na obrázku \ref{fig:2struct} je vidět struktura vygenerovaná pro dvouvstupový regulátor. 
- \begin{figure}[h]           
-   \begin{minted}{c}
-   typedef struct {
-     real_T In1;       
-     real_T In2;        
-   } ExtU_TISOcontroller_T; 
-   \end{minted}      
-   \caption{Vygenerovaná struktura externích vstupů}
-   \label{fig:2struct}
- \end{figure}
-
-Pokud by plugin pracoval s proměnnými typu \texttt{array}, předpokladu bych dosáhl. Vždy bych zjistil počet prvků v poli a poté každému z nich přiřadil jeden vstupní parametr. Počet prvků ve struktuře jsem teoreticky taky schopný určit. Pokud platí, že struktura obsahuje všechny prvky o stejné velikosti, mohl bych výpočet provést pomocí:
-\begin{lstlisting}[backgroundcolor=\color{white}, framerule=0pt]
-     struct_length = sizeof(struct)/sizeof(element)
-\end{lstlisting}
-Takto počítaná délka struktury v jazyce C ale není robustní, protože celková velikost struktury se nemusí rovnat součtu velikostí prvků uvnitř. V závislosti na kompilátoru mohou být v paměti na konci každého elementu uloženy další redundantní byty a výsledek tedy nemusí být vždy shodný s reálným počtem prvků ve struktuře. Ani kdybych tento fakt opomenul, nedokázal bych strukturu dynamicky naplnit, protože se k prvkům nedá přistupovat ani pomocí indexace ani pomocí pointerové aritmetiky. 
-Řešení jsem tedy navrhnul tak, že simulinkové schéma regulátoru musí za každých podmínek obsahovat všechny externí vstupy, ikdyž se s nimi zrovna nepracuje. Takto docílím vždy vygenerování struktury se stejným počtem prvků. Nemožnost přistupovat ke generovaným prvkům struktury externích vstupů pomocí indexace má také za následek to, že názvy externích vstupů ve schématu nesmějí být přejmenovány. Plugin při tvorbě C kódu pojmenovává prvky struktury podle názvů ve schématu, na což by moje propojovací soubory nedokázaly dynamicky reagovat. Ze stejného důvodu se nesmí pojmenovat ani signál, který ze vstupu vychází. V konečném řešení jsem počítal s wrapperem pro regulátor s maximálně pěti možnými vstupními parametry.
-
-\subsubsection*{Generování kódu ze Simulinku}
-Jak jsem přednesl dříve, aby wrapper mohl správně fungovat, musí být v simulinkovém schématu vždy všech pět externích vstupů. Vstup (In1) jsem spojil s blokem \texttt{PID} \texttt{Controller} a přivedl na výstup (Out1), čímž mi vznikl stejný jednovstupový regulátor jako na Obr.\ref{fig:1reg}. Vytvořené schéma (Obr.\ref{fig:Mreg}) jsem uložil jako \texttt{MISOcontroller} (Multiple-input single-output) a vygeneroval z něj pomocí pluginu Embedded Coder projekt v jazyce C. 
-\begin{figure}[h]
-        \centering
-    %    \includegraphics[width=9cm]{pictures/simulinkMISO.PNG}
-        \caption{Vícevstupový regulátor}
-        \label{fig:Mreg}
-\end{figure}
-
-Díky přítomným nezapojeným vstupům obsahuje vygenerovaná struktura \texttt{MISOcontroller\_U} pět prvků, se kterými mohou zacházet propojovací soubory nativního rozhraní. Relaci generovaných souborů zachycuje Obr.\ref{fig:misogen}.
- \begin{figure}[h]
-         \centering
-    %     \includegraphics[width=10cm]{pictures/MISOgenfiles.PNG}
-         \caption{Relační schéma vytvořených souborů}
-         \label{fig:misogen}
- \end{figure}
- 
-\subsubsection*{Obalovací kód v Javě}
-Do hlavního projektu jsem stejně jako v předchozích případech přidal obalovací třídu, kterou jsem nazval \texttt{SimulinkControllerMISO} (Obr.\ref{fig:MISO.java}). 
-\begin{figure}[h]               
-  \begin{minted}{Java}
- private native float generatedStep(float e);
-    
- private native float generatedStep
-  (float e1, float e2);
-       
- private native float generatedStep
-  (float e1, float e2, float e3);
-       
- private native float generatedStep
-  (float e1, float e2, float e3, float e4);
-       
- private native float generatedStep
-  (float e1, float e2, float e3, float e4, float e5);
-  
- static {
-  try{
-    System.load("/slotcar/lib/libMISOController.so");
-    }
-  catch(UnsatisfiedLinkError e){
-    System.out.println("Cannot load 
-       libMISOController.so, file does not exist.");
-    }
-  } 
-  \end{minted}      
-  \caption{Deklarace nativních metod a načtení sdílené knihovny}
-  \label{fig:MISO.java}
-\end{figure}
-
-Při inicializaci třídy se načítá sdílená knihovna \texttt{libMISOController.so}, která obsahuje pomocné soubory nativního rozhraní a generované soubory vícevstupového regulátoru. Obalovací třída dále obsahuje deklaraci pěti nativních metod \texttt{generatedStep()}, které jsou přetížené a mají různý počet vstupních argumentů. Implementace těchto metod je v samostatném souboru, který je rozhraním JNI vyžadován ke správnému připojení souborů s kódem v jazyce C do projektu v Javě. Soubor je stejný, jako dříve zmíněné propojovací soubory (Obr. \ref{fig:SISO.c} a \ref{fig:TISO.c}). Namísto jedné metody ovšem obsahuje implementaci všech pěti přetížených. Na Obr.\ref{fig:MISO.c} uvádím pouze metodu s pěti vstupy.
- \begin{figure}[h]           
-   \begin{minted}{c}
- JNIEXPORT float JNICALL Java_slotcar_pi_controller_
- SimulinkControllerMISO_generatedStep__FFFFF
- (JNIEnv *env, jobject obj, jfloat e1, jfloat e2,
-    jfloat e3, jfloat e4, jfloat e5) {
-       MISOcontroller_U.In1 = e1;
-       MISOcontroller_U.In2 = e2;
-       MISOcontroller_U.In3 = e3;
-       MISOcontroller_U.In4 = e4;
-       MISOcontroller_U.In5 = e5;
-       MISOcontroller_step();
-       return MISOcontroller_Y.Out1;} 
-   \end{minted}      
-   \caption{Implementace metody generatedStep() s pěti vstupy}
-   \label{fig:MISO.c}
- \end{figure}
- \setlength{\parskip}{10pt}
- 
-Jazyk C v principu nepodporuje přetěžování metod tak jako Java, takže v kódu nemůže být deklarováno více metod se stejným názvem. Avšak rozhraní JNI tuto funkcialitu přidává. Na konec názvu metody, jehož syntaxe je striktně daná, se musí přidat specifikátory, které souvisejí s počtem vstupních argumentů a odlišují od sebe názvy přetížených metod, takže pro kompilátor jazyka C se metody jeví jako nepřetížené. V tomto případě přetížené metody, která má pět vstupních parametrů typu \texttt{float}, je vyžadována koncovka $\_\_FFFFF$. Celý název přetížené metody je tedy dán následovně:
-\setlength{\parskip}{1pt}
-\begin{lstlisting}[backgroundcolor=\color{white}, framerule=0pt]
-      Java_package_ClassName_methodName__numOfArgs
-   \end{lstlisting}
-Takto vytvořený implementační soubor jsem spolu s hlavičkovým přidal ke zbytku vygenerovaného kódu ze Simulinku a zkompiloval do již zmíněné knihovny \texttt{libMISOController.so} (Obr.\ref{fig:miso}).
- \begin{figure}[h]
-         \centering
-   %      \includegraphics[width=9cm]{pictures/MISOrelace.PNG}
-         \caption{Relační schéma vytvořených souborů}
-         \label{fig:miso}
- \end{figure}
- 
-\section{Přenos generovaných souborů do autíčka}
-\subsection{Rozbor problematiky}
-Problémem přenosu souborů do autodráhového vozidla jsem se zabýval delší dobu. Z počátku jsem si myslel, že nejlepší řešení by bylo vytvořit nový, nebo použít již existující target, což je nástroj, který je součástí pluginu Embedded Coder. Target slouží k nahrávání zkompilovaného kódu ze Simulinku nebo Matlabu do externích zařízení.\cite{target} Hlavní výhodou targetu by byla možnost přenosu souborů přímo ze Simulinku. Při řešení jsem ale narazil na problém, který jsem nedokázal překonat, a tak jsem se uchýlil k variantě vytvoření skriptu. Vzhledem k tomu, že ve vozidlech je operační systém Linux a na pracovním PC Windows, musí dojít k překladu generovaných souborů do knihovny až na cílovém autíčku. Kompilátor vytváří knihovnu, která je závislá na platformě. V případě Windows se jedná o knihovnu s koncovkou .dll, s kterou operační systém Linux nedokáže pracovat (pro něj jsou typické koncovky .so). Další výhoda skriptu může spočívat v tom, že dokáže soubory přenést na více aut zároveň.
-
-\subsection{Tvorba skriptu}
-Dávkový soubor jsem psal ve skriptovacím jayzce Batch, který je vyvinut pro operační systémy od Microsoftu. Mé řešení má tedy nevýhodu v tom, že je závislé na platformě Windows, na které se náš projekt vyvíjí. Tuto variantu jsem zvolil hlavně kvůli tomu, že jsem se již s tímto jazykem setkal, takže pro mě nebyl úplně cizí. Do budoucna bych možná skript předělal, aby byl nezávislý na platformě, nebo bych se více zabýval problematikou vytvoření targetu, který by do projektu přinesl pro uživatele snazší zacházení s generovanými soubory a skript by zcela nahrazoval. V současnosti je tedy přenos souborů navrhnut jako na Obr.\ref{fig:skript}.   
- \begin{figure}[h]
-         \centering
-   %      \includegraphics[width=10cm]{pictures/relaceskript.PNG}
-         \caption{Relační schéma přenosu souborů}
-         \label{fig:skript}
- \end{figure}
- 
-Vytvořený dávkový soubor pracuje s programy $plink$ a $pscp$, které jsou součástí open source SSH klientu $PuTTY$\cite{putty}. Utilita $pscp$ (PuTTY secure copy client) slouží k přenosu souborů mezi dvěma počítači pomocí protokolu SSH (\cite{putty},Chapter 5). Nástroj $plink$ tento protokol používá ke vzdálenému připojení a k automatickému vykonání zadaných příkazů na připojeném zařízení (\cite{putty},Chapter 7). V mém případě jsem nástroj použil ke kompilaci přenesených souborů do sdílené knihovny na autíčku. Jak jsem předestřel dříve, je to z důvodu, že projekt je vyvíjen na operačním systému Windows, ale v autíčkách je systém Linux. Funkce skriptu je tedy přenést všechny potřebné soubory a v autíčku je přeložit do knihovny. Na začátku skriptu je deklarován list aut, do kterých se kód nahrává, takže pokud uživatel chce list cílových IP adres měnit, musí to opravit zde (Obr.\ref{fig:tutvar}). 
-\begin{figure}[h]
-        \centering
-    %    \includegraphics[width=10cm]{pictures/tutvar.PNG}
-        \caption{Úprava skriptu pro přenos souborů}
-        \label{fig:tutvar}
-\end{figure}
-
-Skript může být spuštěn se třemi možnými přepínači – $siso$, $tiso$ a $miso$ pro cílené přeložení pouze jednoho vygenerovaného regulátoru. Pokud se program pustí bez přepínačů, dojde k překladu všech tří. Dávkový soubor jsem se snažil napsat co nejrobustnější, aby dokázal reagovat na chyby uživatele, které vzniknou nevědomostí nebo nepozorností. Skript tedy upozorňuje uživatele na špatně zadaný argument a před začátkem přenosu kontroluje, zda jsou cílové složky vytvořeny a zda existují všechny potřebné soubory. Pro vyvolání nápovědy lze použít přepínač $help$.
-
-\section{Stavové regulátory}
-Pro implementování stavových regulátorů do našeho projektu jsem se snažil napsat regulátor v Javě, který by fungoval na stejném principu jako simulinkové schéma (Obr.\ref{fig:statesim}). 
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=9cm]{pictures/StateSpaceSim.png}
-        \caption{Schéma stavového regulátoru\cite{state}}
-        \label{fig:statesim}
-\end{figure}
-
-Schéma je stavový popis systému, který dostává na vstupu regulační odchylku $r$, obohacený o zpětnovazební regulátor $K$. Pro diskrétní systém s jedním vstupem a jedním výstupem můžu takto vytvořený model přepsat do diferenčních rovnic
-\begin{eqnarray}
-\textbf{x}[k+1]&=& (\textbf{A}-\textbf{BK})\textbf{x}[k]+\textbf{B}r[k] \\ \nonumber
-y[k] &=& \textbf{Cx}[k]+\textbf{D}u[k],
-\end{eqnarray}
-kde matice $A,B,C$ a $D$ jsou matice, které definují systém a matice $K$ určuje regulátor. V projektu jsem vytvořil třídu \texttt{StateSpaceController}, která tyto rovnice implementuje. Obsahuje parametry, které reprezentují výše zmíněné matice, a které se dají měnit pro testování různých vlastností stavových regulátorů. Třída rozšiřuje abstraktní třídu \texttt{Controller}, takže obsahuje metodu \texttt{step()}, která v každém kroku vrací výstup regulátoru, a dá se tak použít pro řízení autíček.
-
-\section{Konfigurace regulátorů přes XML soubor}
-V rámci zadání jsem se měl také zamyslet nad možností nastavování parametrů generovaných regulátorů pomocí konfiguračního XML souboru přímo z Matlabu. Pro uživatele by bylo jednodušší, kdyby mohl schéma s regulátorem přeložit, nahrát do řízeného autíčka, a potom pouze měnit konstanty regulátoru v Simulinku bez nutnosti nové kompilace. V průběhu semestru jsem ale došel k závěru, že toho nepůjde dosáhnout. Embedded Coder konstanty regulátoru překládá do C kódu přímo jako čísla, nikoliv jako proměnné, s kterými by se dalo zacházet a měnit je. Při zkompilování vzniká tedy kód, který je velmi těžko editovatelný. Při změně konstant regulátoru se tedy musí schéma znovu přeložit a v autíčku vytvořit nová knihovna.
 
 \chapter{Testování a experimentální ověření}
 
-Pro odzkoušení funkčnosti napsaných wrapperů jsem v Simulinku navrh tři regulátory - vzdálenostní regulátor, dvousměrný vzdálenostní regulátor a regulátor vzdálenosti s informacemi o rychlosti vedoucího vozu kolony. Pro první zmíněný jsem použil dvouvstupový wrapper, pro zbylé dva wrapper s proměnným počtem vstupů. Všechny tři pokusy jsem prováděl na koloně obsahující tři vozidla, jedno řízené počítačem a zbylé dvě autonomně.
-
-
-\section{Vzdálenostní regulátor}
-Simulinkové schéma (Obr. \ref{fig:pred}) prvního testovaného regulátoru má dva externí vstupy – měřená vzdálenost před autem (In1) a referenční vzdálenost (In2). Jedná se o koncept ACC (Adaptive Cruise Control), kdy auto reguluje svou rychlost podle měřené vzdálenosti před vozidlem.
-\begin{figure}[h]
-        \centering
-  %      \includegraphics[width=9cm]{pictures/Grafy/TISOpredecessor.PNG}
-        \caption{Schéma vzdálenostního regulátoru}
-        \label{fig:pred}
-\end{figure}
-
-Konstanty PI bloku jsem nastavil na hodnoty, které jsem již zmiňoval dříve, ale pro lepší přehlednost je zde uvedu znovu.
-\begin{eqnarray}
-\label{konstanty2}
-k_p &=& 3 \\ \nonumber
-k_i &=& 0.8
-\end{eqnarray}
-Při tvorbě regulátoru jsem uvažoval i nelinearity. Saturaci jsem nastavil na $\pm1.5$m/s a pásmo necitlivosti na $\pm0.1$m/s. V obou případech vycházím z již navržených regulátorů. 
-\begin{figure}[h]
-        \centering
-  %      \includegraphics[width=12cm]{pictures/Grafy/TISOpredecessorV.eps}
-        \caption{Průběh rychlostí vzdálenostního regulátoru}
-        \label{fig:predV}
-\end{figure}
-
-Na grafech \ref{fig:predV} a \ref{fig:predD} je vidět časový průběh rychlostí, respektive vzdáleností před vozidlem. Pro pokus jsem použil řídící signál, který zprvu udržuje čelní vozidlo kolony v klidu, přibližně po dvou sekundách změní referenční rychlost na $0.4$m/s a na dvanácti sekundách na $0.6$m/s.
-\begin{figure}[h]
-        \centering
-  %      \includegraphics[width=12cm]{pictures/Grafy/TISOpredecessorD.eps}
-        \caption{Porovnání měřené a referenční vzdálenosti}
-        \label{fig:predD}
-\end{figure}
-
-Z obou grafů lze pozorovat, že obě řízená vozidla (car 2, car 3) reagují s určitým zpožděním. Z grafu rychlostí je patrné, že by mohl být regulátor rychlejší, protože při rozjezdu byla měřená vzdálenost více než dvojnásobkem referenční. Odzkoušení dvouvstupového wrapperu ale proběhlo úspěšně.
-
-\section{Dvousměrný regulátor}
-V druhém testovaném regulátoru jsem uvažoval měření vzdálenosti před i za vozidlem. Pro implementaci jsem použil vícevstupový wrapper (Obr.\ref{fig:bidir}) se třemi externími vstupy – referenční vzdálenost (In1), měřená vzdálenost před vozidlem (In2) a měřená vzdálenost za vozidlem (In3).
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/Grafy/MISObidir.PNG}
-        \caption{Schéma dvousměrného regulátoru}
-        \label{fig:bidir}
-\end{figure}
-
-Konstanty PI bloku jsem nastavil na stejné hodnoty jako v předchozím případě (\ref{konstanty2}), a stejně tak i saturaci ($\pm1.5$m/s) a pásmo necitlivosti ($\pm0.1$m/s). Řídící signál jsem také použil stejný a i zde si lze povšimnout reakčního zpoždění u obou řízených vozidel.
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/Grafy/MISObidirV.eps}
-        \caption{Průběh rychlostí dvousměrného regulátoru}
-        \label{fig:bidirV}
-\end{figure}
-
-Z grafu rychlostí (Obr.\ref{fig:bidirV}) jde vidět, že regulátor jsem navrhl špatně, protože obě řízená autíčka mají velké kmitání v průběhu rychlostí. Špatné vlastnosti regulátoru lze pozorovat i v průběhu prvního řízeného autíčka (car~2) okolo čtvrté vteřiny, kdy vozidlo kvůli měření zadní vzdálenosti čeká na rozjezd třetího vozu.
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/Grafy/MISObidirD.eps}
-        \caption{Porovnání měřené a referenční vzdálenosti}
-        \label{fig:bidirD}
-\end{figure}
-
-Této chyby si lze všimnout i v grafu měřených vzdáleností před vozidly (\ref{fig:bidirD}). První řízené vozidlo nabralo kvůli čekání velké ztráty a měřená vzdálenost před vozidlem byla velmi vysoká.
-\section{Regulátor s informacemi o rychlosti leadera}
-Třetí regulátor využívá k řízení informace o rychlosti vedoucího vozu. Jedná se o obdobou konceptu CACC (Cooperative Adaptive Cruise Control), kdy auto při regulaci rychlosti komunikuje s ostatními účastníky provozu. Testovaný regulátor jsem opět implementoval pomocí vícevstupového wrapperu (Obr.\ref{fig:lead}). 
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=9cm]{pictures/Grafy/MISOleader.PNG}
-        \caption{Schéma regulátoru s informacemi o rychlosti vedoucího vozu}
-        \label{fig:lead}
-\end{figure}
-
-Konstanty regulátoru jsou totožné s předchozími případy (\ref{konstanty2}), stejně tak i nelinearity – saturační limit jsem nastavil na $\pm1.5$m/s a pásmo necitlivoti na $\pm0.1$m/s. Totožný je i řídící signál. 
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/Grafy/MISOleaderV.eps}
-        \caption{Průběh rychlostí regulovaných vozů}
-        \label{fig:leadV}
-\end{figure}
-
-Na grafu zaznamenávajícím rychlosti vozů v průběhu času (\ref{fig:leadV}) lze pozorovat velmi dobré výsledky při rozjezdu vozidel, kdy je reakční zpoždění oproti prvním dvěma regulátorům téměř minimální.
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/Grafy/MISOleaderD.eps}
-        \caption{Porovnání měřené a referenční vzdálenosti}
-        \label{fig:leadD}
-\end{figure}
-
-Avšak při pohledu na graf porovnávající referenční a měřené vzdálenosti je vidět, že regulátor má s udržováním vzdálenosti větší problémy než předchozí dva typy a pro lepší výsledky bych ho musel odladit. Mou snahou zde ale bylo ukázat funkčnost navržených wrapperů, kterou jsem díky tomuto testování dokázal.  
-
-%\section{Testování stavového regulátoru}
-
 \chapter{Instrukce k zacházení}
-Pro snadné zacházení s wrappery bych nakonec uvedl stručný návod. Na konci kapitoly uvádím i odkaz na instruktážní video, ve kterém ukazuji jeden modelový příklad zacházení s wrappery.
-\section{Návod}
-\subsection{Výběr wrapperu}
-Ve složce \texttt{SimulinkControllers}, která je umístěna v kořenovém adresáři projektu, se nachází všechny tři vytvořené wrappery – jednovstupový (\texttt{SISO}), dvouvstupový (\texttt{Two}-\texttt{Input} \texttt{Single}-\texttt{Output}) a wrapper s proměnným počtem vstupů (\texttt{MISO}). Uživatel si zvolí, se kterým wrapperem chce zacházet a otevře si příslušné simulinkové schéma.
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=11cm]{pictures/folder.PNG}
-        \caption{Složka s wrappery}
-        \label{fig:folder}
-\end{figure}
-\subsection{Úprava schématu a generování C kódu}
-Schéma si upraví podle potřeby a pomocí pluginu Embedded Coder z něj vygeneruje C kód.
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/tutSim.PNG}
-        \caption{Simulinkové schéma vybraného regulátoru}
-        \label{fig:tutsim}
-\end{figure}
 
-Je nutné dát si pozor na podporované funkce a bloky, protože Embedded Coder neumí překládat úplně vše (seznam podporovaných funkcí je uveden v dokumentaci pluginu\cite{doc}). Po vygenerování kódu uživatel spustí \texttt{transferscript} (viz. Obr.\ref{fig:folder}), který vygenerovaný kód pošle do vozidla a zkompiluje jej do knihovny. Pokud se zachází s novými vozidly, musí se jejich IP adresy přidat do \texttt{carListu} uvnitř skriptu.
-\begin{figure}[h]
-        \centering
-    %    \includegraphics[width=7cm]{pictures/tutvar.PNG}
-        \caption{Úprava skriptu pro přenos souborů}
-        \label{fig:tutsim}
-\end{figure}
-
-Samotný skript lze pustit se třemi přepínači v závislosti na tom, zda chce uživatel přeložit jen jeden konkrétní regulátor. Bez přepínače přeloží skript všechny tři. Podporované přepínače jsou $siso$ $tiso$ $miso$.
-
-\subsection{Úprava Java wrapperu}
-Vytvořené Java wrappery se nacházejí v balíku \texttt{slotcar.pi.controller} uvnitř projektu \texttt{slotcar}-\texttt{sw}. Uživatel si vybere příslušný wrapper napsaný pro simulinkové schéma, které použil, a v metodě \texttt{step()} předá požadované vstupní signály generovanému kódu (nativní metoda \texttt{generatedStep()}).
-\begin{figure}[h]
-        \centering
-    %    \includegraphics[width=11cm]{pictures/tutecl.PNG}
-        \caption{Kód Java wrapperu}
-        \label{fig:tutecl}
-\end{figure}
-
-Nakonec musí uživatel spustit skript \texttt{MakeJAR.launch}, který zabalí třídy projektu do .jar souboru, a následně skript \texttt{jar2car.xml}, který odešle novou verzi programu do řízených vozidel. Oba zmíněné skripty byly v projektu vytvořeny kolegou Martinem Ládem a nacházejí se uvnitř projektu \texttt{slotcar}-\texttt{sw} (viz Package Explorer na Obr. \ref{fig:tutecl}).
-
-\subsection{Komunikace s vozidly pomocí grafického rozhraní}
-Po skončení posledního skriptu lze spustit grafické rozhraní (hlavní třída projektu). Grafické rozhraní jsem také nenavrhoval já, ale z drtivé většiny patří zásluhy již zmiňovanému kolegovi Martinu Ládovi.
-\begin{figure}[h]
-        \centering
-    %    \includegraphics[width=9cm]{pictures/tutwifi.PNG}
-        \caption{Výběr sítě}
-        \label{fig:tutwifi}
-\end{figure}
-
-Po zapnutí nabídne program uživateli vybrat z dostupných síťových rozhraní (Obr.\ref{fig:tutwifi}) a posléze naběhne okno s hlavními funkcemi (Obr.\ref{fig:tutgui}).
-\begin{figure}[h]
-        \centering
-   %     \includegraphics[width=12cm]{pictures/tutgui.PNG}
-        \caption{Grafické uživatelské rozhraní komunikačního programu}
-        \label{fig:tutgui}
-\end{figure}
-
-Zde si lze pro jednotlivá auta volit typ regulátoru a nastavovat mu různé parametry. Příkaz pro zahájení řízení se vyšle po zmáčknutí tlačítka \texttt{Ctrl} a tlačítkem stop (označeném tečkou) se řízení ukončí. Pokud navržený regulátor počítá s komunikací mezi vozidly (např. informace o rychlosti čelního vozu), je nutné před začátkem řízení zapnout i komunikaci (tlačítko \texttt{Com}), jinak regulátor nebude fungovat podle navrženého modelu.
-\section{Insktruktážní video}
-Ve videu ukazuji, jak zacházet s wrappery od návrhu simulinkového schéma až po řízení vozidel na autodráze. Video jsem uložil na portál YouTube (odkaz na video \url{https://youtu.be/MsdfnZxJcNo}) a lze jej nalézt i na přiloženém CD.
 
  \setlength{\parskip}{10pt}
+
 \begin{conclusion}
-Bakalářská práce spočívala v napsání funkčních wrapperů, které by obalily kód v jazyce C generovaný ze Simulinku a začlenily ho tak do projektu realizovaného v jazyce Java jakožto palubní regululátory autodráhových autíček.
 
-Prvním úkolem bylo vytvořit zmiňovaný Java wrapper pro C kód, který jsem ze Simulinku generoval díky pluginu Embedded Coder. Kód jsem do Java projektu začlenil pomocí Java nativního rozhraní ve formě sdílené knihovny. K tomu jsem musel vytvořit pomocné propojovací soubory v jazyce C, které jsem také přidal do zkompilované knihovny. Pro přenos generovaných souborů jsem vytvořil skript. Tento skript je závislý na platformě Microsoft Windows, což bych chtěl v budoucnu opravit, nebo skript nahradit napsáním targetu.
-
-Druhým bodem zadání bylo vytvořit více typů wrapperů pro různé druhy regulátorů. Vytvořil jsem tedy wrappery pro jednovstupový a dvouvstupový regulátor. V rámci tohoto bodu zadání jsem se měl také zamyslet nad možností vytvořit wrapper pro regulátor s proměnným počtem vstupů. Takový wrapper se mi nakonec vytvořit povedlo, avšak práce s ním není tak intuitivní, jak se na začátku očekávalo. Obalovací kód jsem vytvořil pro  maximálně pětivstupový regulátor a kvůli struktuře generovaného kódu musí být v simulinkovém schéma tohoto wrapperu vždy přítomny všechny externí vstupy, ikdyž nejsou využívány. 
-
-Dalším bodem bylo začlenit do projektu stavové regulátory. Vytvořil jsem tedy regulátor, který svůj výstup počítá pomocí stavového popisu s tím, že jednotlivé stavové matice $A,B,C,D$ a matice regulátoru $K$ jsou implementovány jako atributy třídy stavového regulátoru a musejí se měnit v kódu.
-
-Předposledním úkolem bylo zamyslet se nad možností implementace nastavování parametrů generovaných regulátorů přímo z Matlabu přes konfigurační XML soubor, aby se nemuselo vžy při každé změně parametrů překládat celé schéma. V průběhu mé práce jsem ale došel k závěru, že tato realizace nebude možná. Java wrappery pro řízení vozidel využívají generované funkce, které jsou zabalené v knihovně a není možné nijak měnit jejich strukturu. Problém vidím ve způsobu, jakým Embedded Coder generuje C kód z navrženého schématu.
-
-Posledním úkolem zadání bylo demonstrovat funkčnost navržených wrapperů na několika typech regulátorů. Úspěšné navržení jsem předvedl na třech regulátorech. Dvouvstupový wrapper jsem testoval na vzdálenostním regulátoru, který porovnával měřenou vzdálenost před vozidlem s referenční hodnotou. Wrapper pro regulátor s proměnným počtem vstupů jsem odzkoušel na dvousměrném regulátoru a regulátoru s informací o rychlosti vedoucího vozu kolony. Stavový regulátor jsem odzkoušel na velmi jednoduchém sledovači, který se zpožděním přenášel zesílený vstup na výstup.
 \end{conclusion}
 
 \bibliographystyle{csn690}
 \bibliography{mybibliographyfile}
 \begin{thebibliography}{9}
 
-    \bibitem{slotcar}
-       	Lád, Herman, Hurák. \textit{Vehicular platooning experiments	using autonomous slot cars}. \textcopyright2017, Dostupné z: \\    \url{http://aa4cc.dce.fel.cvut.cz/sites/default/files/downloads/publications/ifac2017.pdf} \\
+    \bibitem{avast_flier}
+    \textit{Avast corporate factsheet}, Dostupné z: \\       \url{https://cdn2.hubspot.net/hubfs/2706737/media-materials/corporate-factsheet/Avast_corporate_factsheet_A4_en.pdf} \\
        	
     \bibitem{jan}
        	Moravec Jan. \textit{Distribuované řízení kolon vozidel na autodráze}. \textcopyright2014, České vysoké učení technické v Praze, vedoucí práce Ing. Ivo Herman, Dostupné z: \\    \url{https://dspace.cvut.cz/bitstream/handle/10467/24299/F3-BP-2014-Moravec-Jan-prace.pdf} \\
-   
-   \bibitem{martin}
-      	Lád Martin. \textit{Návrh a implementace řídicího systému pro	autodráhové vozidlo}. \textcopyright2014, České vysoké učení technické v Praze, vedoucí práce Ing. Dan Martinec, Dostupné z: \\    \url{https://support.dce.felk.cvut.cz/mediawiki/images/a/a4/Bp_2014_lad_martin.pdf} \\
-      	
-   \bibitem{coder}   	
-     	MathWorks. \textit{Embedded Coder}. \textcopyright1994-2017, Dostupné z: \\    \url{https://se.mathworks.com/products/embedded-coder.html} \\
-     	
-   \bibitem{jni}   	
-        	Oracle. \textit{Java Native Interface}. \textcopyright1993,2016, Dostupné z: \\    \url{https://docs.oracle.com/javase/8/docs/technotes/guides/jni/} \\  	
-        	
-   \bibitem{target}   	
-           	MathWorks. \textit{What is a target}. \textcopyright1994-2017, Dostupné z: \\    \url{https://se.mathworks.com/help/supportpkg/armcortexa/ug/what-is-a-target.html} \\
-           	
-   \bibitem{jnitut}
-       	Chua Hock-Chuan. \textit{Java Programming Tutorial}. \textcopyright2014, Dostupné z: \\    \url{https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaNativeInterface.html} \\
-              	
-   \bibitem{putty}
-       	Simon Tatham. \textit{PuTTY User Manual}. \textcopyright1997-2017, Dostupné z: \\    \url{https://the.earth.li/~sgtatham/putty/0.69/htmldoc/} \\       	
-              	
-   \bibitem{state}
-       	Control Tutorials for Matlab and Simulink. \textit{State-Space Methods for Controller Design}.  CC Attribution-ShareAlike, Dostupné z: \\    \url{http://ctms.engin.umich.edu/CTMS/Content/Introduction/Control/StateSpace/figures/StateSpaceTutorial_ControlDesign_BlockDiagram.png} \\
-   
-   \bibitem{doc}   	
-        	MathWorks. \textit{Embedded Coder Functions}. \textcopyright1994-2017, Dostupné z: \\    \url{https://se.mathworks.com/help/ecoder/functionlist.html} \\   	
-     	
+
 \end{thebibliography}
 
 \appendix
