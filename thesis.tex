@@ -92,19 +92,15 @@
 Dnešní doba je plná rizik, která představují hrozbu pro každodenního uživatele internetu. Ať už se jedná o phishing (zisk citlivých údajů pomocí podvodné internetové komunikace) či různé druhy malwaru (nežádoucí programy mající za úkol poškodit uživatele). V boji s těmito riziky je důležité chránit sebe a svoje data pomocí antivirových programů. Jedním z nejrozšířenějších je Avast, který má přes 435 milionů aktivních uživatelů a měsíčně zabrání okolo 2 miliardám útoků\cite{avast_flier}.
 
 \section{Motivace}
-Avast, stejně jako většina antivirových programů, uchovává informace o všech známých škodlivých entitách. Tato databáze se denně rozšiřuje o spousty nových záznamů, které obsahují nejen informace o celých souborech, ale i kusy kódu webového obsahu (tzv. string detekce), které jsou považovány za příznak podvodných úmyslů. Může se však stát, že je tento kus kódu moc obecný a dochází tak i k blokování čistého obsahu (tzv. fals-positive detekcím). Aby se těmto situacím předcházelo, je zapotřebí udržovat i databázi s čistými záznamy (tzv. cleanset). 
+Avast, stejně jako většina antivirových programů, uchovává informace o všech známých škodlivých entitách. Tato databáze se denně rozšiřuje o spousty nových záznamů, které obsahují nejen informace o celých souborech, ale i kusy kódu webového obsahu (tzv. string detekce), které jsou považovány za příznak podvodných úmyslů. Může se však stát, že je tento kus kódu moc obecný a dochází tak i k blokování čistého obsahu (tzv. fals-positive detekcím). Aby se těmto situacím předcházelo, je zapotřebí udržovat i databázi s čistými záznamy (tzv. cleanset). Tyto záznamy jsou převážně HTML a js soubory.
 
-Dříve, než se nová string detekce začlení do jádra antiviru, je její obsah porovnán se všemi záznamy na cleansetu a pokud dojde ke shodě, je tato detekce považována za nevalidní. Tímto dochází k zabránění fals-positive detekcím. 
+Dříve, než se nová string detekce začlení do jádra antiviru, je její obsah porovnán se všemi záznamy na cleansetu a pokud dojde ke shodě (tj. detekční string je součástí nějakého souboru na cleansetu), je tato detekce považována za nevalidní. Tímto dochází k zabránění fals-positive detekcím. 
 
 Ideálním stavem je tedy mít záznam o veškerém čistém obsahu internetu, což je samozřejmě nemožné. Avšak čím více záznamů cleanset obsahuje, tím kvalitnější je běh antivirového programu. V současné době dochází k doplňování cleansetu pouze občasně a to převážně manuálně za pomoci jednoduchých scriptů.
 
 \section{Cíle práce} 
- Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit projekt, který by modernizoval doplňování cleansetu, avšak současně je možné systém zobecnit k využití i v jiných aplikacích. Celý proces bude řádně otestovaný bude zhodnocen jeho přínos systému.
+ Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit projekt, který by modernizoval doplňování cleansetu, avšak současně je možné systém zobecnit k využití i v jiných aplikacích. Celý proces bude řádně otestovaný a bude zhodnocen jeho přínos systému.
 
-\section{Slovníček pojmů:work in progress}
-\subsection{Avast}
-\subsection{Malware}
-\subsection{Phishing}
 
 \section{Popis systému}
 Platforma se skládá z autodráhových vozidel typu Carrera Ford Capri (Obr.\ref{fig:kolona}).
@@ -132,29 +128,40 @@ Platforma se skládá z autodráhových vozidel typu Carrera Ford Capri (Obr.\re
  	\label{fig:cars}
  \end{figure}
 
-
- 
-\section{Tým pracující na projektu}
- 
-  
-\section{Motivace}
-
-  
-\section{Řešení problému}
-
-\chapter{Analýza a řešení problému}
-
 \chapter{Použité technologie}
 
-\section{Python}
+\section{Python 3.7}
+Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C) v tom, že nepoužívá středníky ani složené závorky. Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Kvůli těmto vlastnostem byl vybrán pro tuto diplomovou práci.
 
 \section{Fiddler}
+Fiddler je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný. Jeho automatizace lze docílit inicializačním souborem, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je fiddler schopný zachytávat i šifrovanou komunikaci, kvůli čemuž byl použit v této práci.
 
 \section{Selenium}
+Selenium je opensource nástroj používaný k automatizovanému přístupu k webovým aplikacím. Těchto vlastností se často využívá při testování, avšak v této práci je použit pouze k obsluze webového prohlížeče. Selenium obsahuje vlastní vývojové prostředí, které lze využít bez velké znalosti programování, existují však i jeho implementace do většiny populárních programovacích jazyků.
+
 
 \section{Jenkins}
 
 \section{Kafka}
+
+\chapter{Analýza a řešení problému}
+Problém, kterým se tato práce zabývá, se skládá z vícero dílčích podproblémů. Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces stahování webového obsahu spuštěn na virtuálním stroji. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není moc bezpečné řešení. V situaci, kdy by došlo ke stažení nakaženého souboru, lze virtuální stroj jednoduše ukončit a vrátit do původního stavu. Daleko snáz než jiný, reálný systém.
+
+Samotné stahování souborů je další samostatný podproblém. Zde by měla být implementována logika selekce potřebných souborů, protože cleanset obsahuje pouze HTML a js soubory.
+
+Posledním krokem bude přesun získaného obsahu do samotné databáze cleansetu. Jednotlivé podproblémy jsou tedy následující:
+\begin{itemize}
+	\item Spouštění a obsluha virtuálního stroje
+	\item Zisk čistých souborů z webových stránek
+	\item Nahrání získaného obsahu do databáze
+\end{itemize}
+
+\section{Souštění a obsluha virtuálního stroje}
+
+\section{Zisk čistých souborů z webových stránek}
+
+\section{Nahrání získaného obsahu do databáze}
+
 
 \begin{eqnarray}
 \label{konstanty}
