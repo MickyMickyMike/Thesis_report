@@ -50,7 +50,7 @@
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 \department{Katedra řídicí techniky}
-\title{Neco jako doplnovani cleansetu blabla a tak}
+\title{Automatizovaný systém stahování webového obsahu potřebného k doplňování cleansetu}
 \authorGN{Michal} %(křestní) jméno (jména) autora
 \authorFN{Staněk} %příjmení autora
 \authorWithDegrees{Michal Staněk} %jméno autora včetně současných akademických titulů
@@ -99,111 +99,85 @@ Dříve, než se nová string detekce začlení do jádra antiviru, je její obs
 Ideálním stavem je tedy mít záznam o veškerém čistém obsahu internetu, což je samozřejmě nemožné. Avšak čím více záznamů cleanset obsahuje, tím kvalitnější je běh antivirového programu. V současné době dochází k doplňování cleansetu pouze občasně a to převážně manuálně za pomoci jednoduchých scriptů.
 
 \section{Cíle práce} 
- Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit projekt, který by modernizoval doplňování cleansetu, avšak současně je možné systém zobecnit k využití i v jiných aplikacích. Celý proces bude řádně otestovaný a bude zhodnocen jeho přínos systému.
+ Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit projekt, který by modernizoval doplňování cleansetu, avšak současně je možné systém zobecnit k využití i v jiných aplikacích. Systému bylo dáno kódové označení \textit{Magpie} (česky Straka), protože systém, stejně jako straky, bude shromažďovat data z různých míst a ukládat je na jedno místo. Celý proces bude řádně otestovaný a bude zhodnocen jeho přínos.
 
-
-\section{Popis systému}
-Platforma se skládá z autodráhových vozidel typu Carrera Ford Capri (Obr.\ref{fig:kolona}).
-\begin{figure}[h]
-        \centering
-      %  \includegraphics[width=9cm]{pictures/autodraha.JPG}
-        \caption{Kolona vozidel}
-        \label{fig:kolona}
-\end{figure}
-
- \begin{figure}[h]
-         \centering
-
-         \begin{minipage}[b]{0.49\textwidth}
-     %            \includegraphics[width=6cm]{pictures/car2.JPG}
-                 \caption*{(a) Pohled po odmontování kapoty}
-                 \label{fig:car2}
- 		\end{minipage}
-         \begin{minipage}[b]{0.49\textwidth}
-     %            \includegraphics[width=6cm]{pictures/car3.JPG}
-                 \caption*{(b) Spodní STM modul a DC motor}
-                 \label{fig:car1}
-         \end{minipage}
- 	\caption{Vnitřek vozidel}
- 	\label{fig:cars}
- \end{figure}
 
 \chapter{Použité technologie}
-
+V této kapitole jsou stručně popsány všechny technologie využité při zpracovávání této práce.
 \section{Python 3.7}
 Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C) v tom, že nepoužívá středníky ani složené závorky. Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Kvůli těmto vlastnostem byl vybrán pro tuto diplomovou práci.
 
 \section{Fiddler}
-Fiddler je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný. Jeho automatizace lze docílit inicializačním souborem, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je fiddler schopný zachytávat i šifrovanou komunikaci, kvůli čemuž byl použit v této práci.
+Fiddler je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný (Obr.\ref{fig:mitm}).
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=9cm]{pictures/mitm.png}
+	\caption{MitM útok \cite{mitm}}
+	\label{fig:mitm}
+\end{figure}
+Jeho automatizace lze docílit inicializačním souborem, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je fiddler schopný zachytávat i šifrovanou komunikaci, kvůli čemuž byl použit v této práci.
 
 \section{Selenium}
 Selenium je opensource nástroj používaný k automatizovanému přístupu k webovým aplikacím. Těchto vlastností se často využívá při testování, avšak v této práci je použit pouze k obsluze webového prohlížeče. Selenium obsahuje vlastní vývojové prostředí, které lze využít bez velké znalosti programování, existují však i jeho implementace do většiny populárních programovacích jazyků.
 
 
 \section{Jenkins}
+Jenkins je opensource CI/CD systém (continuous integration and delivery) umožňující vykonávání automatických či periodických operací (tzv. jobů). Používá se převážně k spouštění buildů a udržování testů. Joby lze spoustět automaticky po vzniku nové verze vyvíjeného programu, lze je ale i spouštět pravidelně v předem určený čas, čehož bylo v této práci využito.
 
 \section{Kafka}
+ Kafka by se dala zařadit mezi frontové systémy. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na procesing velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu třeba u RabbitMQ (tj. jiný frontový systém), avšak do tzv. topiců. Jeden Topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (Obr.\ref{fig:kafka}). 
+  \begin{figure}[h]
+ 	\centering
+ 	\includegraphics[width=9cm]{pictures/kafka.png}
+ 	\caption{Znázornění Kafka systému \cite{kafka}}
+ 	\label{fig:kafka}
+ \end{figure}
+ Zprávy do topicu posílá proces, který se nazývá Producer. Obdobně proces, který data čte, je nazýván Consumer. Ten dostává zprávy z topicu v závislosti na indexaci a časové známky. K jednomu topicu může být přihlášeno více nezávislých konzumerů, kteří jsou rozděleni do rozdílných skupin a každá skupina dostává identické zprávy, čím se zabrání vzájemnému čtení stejných zpráv.
+ 
+ Zprávy zůstávají v topicu po určitou dobu, což určuje hodnota retence. Po tuto dobu jsou zprávy přístupny pro každou skupinu konzumerů. Síla kafku je v politice přečtených zpráv. Na rozdíl od zmiňovaného RabbitMQ, který přečtením zprávy zprávu odstraní ze své fronty, funguje v kafce tzv. potvrzovací systém. Konzumer dostane zprávu, a po jejím zpracování vyšle tzv. commit, kterým oznámí úspěšné zpracování. Pokud by v průběhu nastala chyba, tento commit se nepošle a zpráva se vrátí zpátky, kde může být přečtena jiným konzumerem ve skupině.
+
+\section{Virtualbox}
+Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. 
 
 \chapter{Analýza a řešení problému}
-Problém, kterým se tato práce zabývá, se skládá z vícero dílčích podproblémů. Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces stahování webového obsahu spuštěn na virtuálním stroji. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není moc bezpečné řešení. V situaci, kdy by došlo ke stažení nakaženého souboru, lze virtuální stroj jednoduše ukončit a vrátit do původního stavu. Daleko snáz než jiný, reálný systém.
+Jednotlivé body práce by se daly rozdělit na vícero dílčích podproblémů:
 
-Samotné stahování souborů je další samostatný podproblém. Zde by měla být implementována logika selekce potřebných souborů, protože cleanset obsahuje pouze HTML a js soubory.
-
-Posledním krokem bude přesun získaného obsahu do samotné databáze cleansetu. Jednotlivé podproblémy jsou tedy následující:
 \begin{itemize}
-	\item Spouštění a obsluha virtuálního stroje
+	\item Výběr programovacícho jazyka
+	\item Předzpracování zadaných adres webových stránek
+	\item Zabezpečení stahovacího procesu
 	\item Zisk čistých souborů z webových stránek
 	\item Nahrání získaného obsahu do databáze
+	\item Začlenění do stávající infrastruktury
 \end{itemize}
 
-\section{Souštění a obsluha virtuálního stroje}
+\section{Výběr programovacího jazyka}
+Podle prvních odhadů a požadavků bude práce obsahovat více odlišných částí, které by měly být jednoduše ovladatelné a propojitelné. K tomu by šlo využít programovacího jazyka Python, který obsahuje velké množství dostupných knihoven. Tato volba je i v soulady s firemními trendy.
+
+
+\section{Předzpracování zadaných adres}
+
+
+\section{Zabezpečení stahovacího procesu}
+Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces stahování webového obsahu zabezpečen. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není moc bezpečné řešení. Jedním z možných způsobů jak docílit základní bezpečnosti je vytvoření a obsluha virtuálního stroje, na kterém by docházelo ke stahování souborů. V situaci, kdy by došlo ke stažení nakaženého souboru, lze virtuální stroj jednoduše ukončit a vrátit do původního stavu. Daleko snáz než jiný, reálný systém. 
+
+Pokud se jedná o nástroje umožňující virtualizaci systému, lze použít VMware workstation od firmy VMware nebo Virtualbox vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývající se vSphere. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka Python \cite{vmware}, avšak celé toto řešení se nenabízí s freeware licencí. Z tohoto důvodu by bylo lepší použít virtualizační nástroj Virtualbox, který je zdarma. TODO: pyvbox, poustet virtual pro kazdou url nebo pro vsechny a zabijet ho vzdycky po case/po x urls
 
 \section{Zisk čistých souborů z webových stránek}
+Samotné stahování souborů je další samostatný podproblém. Zde by měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. Je tedy možné tuto selekci provádět přímo při stahování souborů a stahovat pouze potřebné, nebo vždy pro zdanou adresu stáhnout všechny soubory a výběr provézt následně.
+
+\subsection{Parsování webových stránek}
+\subsection{Fiddler}
 
 \section{Nahrání získaného obsahu do databáze}
+Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. 
+
+\section{Začlenění do stávající infrastruktury}
 
 
-\begin{eqnarray}
-\label{konstanty}
-k_p &=& 3 \\ \nonumber
-k_i &=& 0.8
-\end{eqnarray}
+\chapter{Implementace}
 
-\begin{figure}[h]               
-  \begin{minted}{c}
-void SISOcontroller_step(void) {
-  
-  SISOcontroller_Y.Out1 = 3.0 * SISOcontroller_U.In1 
-     + SISOcontroller_DW.Integrator_DSTATE;
-    
-  SISOcontroller_DW.Integrator_DSTATE += 
-     0.8 * SISOcontroller_U.In1;
-  }
-  \end{minted}      
-  \caption{Implementace bloku PI regulátor v jazyce C}
-  \label{fig:ctrl.c}
-\end{figure}
-
-\begin{figure}[h]               
-  \begin{minted}{Java}
-private native float generatedStep(float e); 
-static {
-  try{
-    System.load("/slotcar/lib/libSISOController.so");
-  }
-  catch(UnsatisfiedLinkError e){
-    System.out.println("Cannot load library.");
-  }
-} 
-  \end{minted}      
-  \caption{Deklarace nativní metody a načtení sdílené knihovny}
-  \label{fig:SISO.java}
-\end{figure}
-
-
-\chapter{Testování a experimentální ověření}
-
-\chapter{Instrukce k zacházení}
+\chapter{Otestování a zhodnocení přínosu}
 
 
  \setlength{\parskip}{10pt}
@@ -221,10 +195,51 @@ static {
        	
     \bibitem{jan}
        	Moravec Jan. \textit{Distribuované řízení kolon vozidel na autodráze}. \textcopyright2014, České vysoké učení technické v Praze, vedoucí práce Ing. Ivo Herman, Dostupné z: \\    \url{https://dspace.cvut.cz/bitstream/handle/10467/24299/F3-BP-2014-Moravec-Jan-prace.pdf} \\
+       	
+    \bibitem{mitm}
+    \url{https://www.imperva.com/learn/application-security/man-in-the-middle-attack-mitm/}
 
+
+	\bibitem{kafka}
+	\url{https://en.wikipedia.org/wiki/Apache_Kafka#/media/File:Overview_of_Apache_Kafka.svg}
+	
+	\bibitem{vmware}
+	\url{[https://code.vmware.com/web/sdk/6.7/vsphere-automation-python]}
 \end{thebibliography}
 
 \appendix
+
+%\begin{figure}[h]               
+%	\begin{minted}{c}
+%	code
+%	\end{minted}      
+%	\caption{Implementace bloku PI regulátor v jazyce C}
+%	\label{fig:ctrl.c}
+%\end{figure}
+
+%\begin{figure}[h]               
+%	\begin{minted}{Java}
+%	code
+%	\end{minted}      
+%	\caption{Deklarace nativní metody a načtení sdílené knihovny}
+%	\label{fig:SISO.java}
+%\end{figure}
+
+% \begin{figure}[h]
+%         \centering
+%         \begin{minipage}[b]{0.49\textwidth}
+%                 \includegraphics[width=6cm]{pictures/car2.JPG}
+%                 \caption*{(a) Pohled po odmontování kapoty}
+%                 \label{fig:car2}
+% 		\end{minipage}
+%         \begin{minipage}[b]{0.49\textwidth}
+%                 \includegraphics[width=6cm]{pictures/car3.JPG}
+%                 \caption*{(b) Spodní STM modul a DC motor}
+%                 \label{fig:car1}
+%         \end{minipage}
+% 	\caption{Vnitřek vozidel}
+% 	\label{fig:cars}
+% \end{figure}
 
 %\chapter{Seznam použitých zkratek}
 % \printglossaries
