@@ -164,16 +164,19 @@ Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces sta
 Pokud se jedná o nástroje umožňující virtualizaci systému, lze použít VMware workstation od firmy VMware nebo Virtualbox vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývající se vSphere. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka Python \cite{vmware}, avšak celé toto řešení se nenabízí s freeware licencí. Z tohoto důvodu by bylo lepší použít virtualizační nástroj Virtualbox, který je zdarma. TODO: pyvbox, poustet virtual pro kazdou url nebo pro vsechny a zabijet ho vzdycky po case/po x urls
 
 \section{Zisk čistých souborů z webových stránek}
-Samotné stahování souborů je další samostatný podproblém. Zde by měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. Je tedy možné tuto selekci provádět přímo při stahování souborů a stahovat pouze potřebné, nebo vždy pro zdanou adresu stáhnout všechny soubory a výběr provézt následně.
+Zisk souborů je další samostatný podproblém. Zde by měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. Je tedy možné tento výběr provádět přímo při stahování souborů a stahovat pouze potřebné, nebo vždy pro zdanou adresu stáhnout všechny soubory a selekci provézt následně.
 
+TODO: chceme jen potahat stranku nebo i redirecty
 \subsection{Parsování webových stránek}
+TODO: rychlejsi, soucasti pythonu, asi narocnejsi implementace logiky parsovani, vubec nevim jak udelat ty redirecty, bez sance
 \subsection{Fiddler}
+TODO: mozna trochu overkill, fiddler taha veskerou komunikaci, nutno selektit, neco jako customRules
 
 \section{Nahrání získaného obsahu do databáze}
-Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. 
+Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. TODO: scavenger "hdp" dřív samba python client 
 
 \section{Začlenění do stávající infrastruktury}
-
+TODO: Docker nebo Jenkins, docker by asi nemusel mit virtualbox, mohl by běžet nonstop? Jenkins jobisky
 
 \chapter{Implementace}
 
