@@ -102,83 +102,157 @@ Ideálním stavem je tedy mít záznam o veškerém čistém obsahu internetu, c
  Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit projekt, který by modernizoval doplňování cleansetu, avšak současně je možné systém zobecnit k využití i v jiných aplikacích. Systému bylo dáno kódové označení \textit{Magpie} (česky Straka), protože systém, stejně jako straky, bude shromažďovat data z různých míst a ukládat je na jedno místo. Celý proces bude řádně otestovaný a bude zhodnocen jeho přínos.
 
 
-\chapter{Použité technologie}
-V této kapitole jsou stručně popsány všechny technologie využité při zpracovávání této práce.
-\section{Python 3.7}
-Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C) v tom, že nepoužívá středníky ani složené závorky. Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Kvůli těmto vlastnostem byl vybrán pro tuto diplomovou práci.
-
-\section{Fiddler}
-Fiddler je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný (Obr.\ref{fig:mitm}).
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=9cm]{pictures/mitm.png}
-	\caption{MitM útok \cite{mitm}}
-	\label{fig:mitm}
-\end{figure}
-Jeho automatizace lze docílit inicializačním souborem, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je fiddler schopný zachytávat i šifrovanou komunikaci, kvůli čemuž byl použit v této práci.
-
-\section{Selenium}
-Selenium je opensource nástroj používaný k automatizovanému přístupu k webovým aplikacím. Těchto vlastností se často využívá při testování, avšak v této práci je použit pouze k obsluze webového prohlížeče. Selenium obsahuje vlastní vývojové prostředí, které lze využít bez velké znalosti programování, existují však i jeho implementace do většiny populárních programovacích jazyků.
-
-
-\section{Jenkins}
-Jenkins je opensource CI/CD systém (continuous integration and delivery) umožňující vykonávání automatických či periodických operací (tzv. jobů). Používá se převážně k spouštění buildů a udržování testů. Joby lze spoustět automaticky po vzniku nové verze vyvíjeného programu, lze je ale i spouštět pravidelně v předem určený čas, čehož bylo v této práci využito.
-
-\section{Kafka}
- Kafka by se dala zařadit mezi frontové systémy. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na procesing velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu třeba u RabbitMQ (tj. jiný frontový systém), avšak do tzv. topiců. Jeden Topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (Obr.\ref{fig:kafka}). 
-  \begin{figure}[h]
- 	\centering
- 	\includegraphics[width=9cm]{pictures/kafka.png}
- 	\caption{Znázornění Kafka systému \cite{kafka}}
- 	\label{fig:kafka}
- \end{figure}
- Zprávy do topicu posílá proces, který se nazývá Producer. Obdobně proces, který data čte, je nazýván Consumer. Ten dostává zprávy z topicu v závislosti na indexaci a časové známky. K jednomu topicu může být přihlášeno více nezávislých konzumerů, kteří jsou rozděleni do rozdílných skupin a každá skupina dostává identické zprávy, čím se zabrání vzájemnému čtení stejných zpráv.
- 
- Zprávy zůstávají v topicu po určitou dobu, což určuje hodnota retence. Po tuto dobu jsou zprávy přístupny pro každou skupinu konzumerů. Síla kafku je v politice přečtených zpráv. Na rozdíl od zmiňovaného RabbitMQ, který přečtením zprávy zprávu odstraní ze své fronty, funguje v kafce tzv. potvrzovací systém. Konzumer dostane zprávu, a po jejím zpracování vyšle tzv. commit, kterým oznámí úspěšné zpracování. Pokud by v průběhu nastala chyba, tento commit se nepošle a zpráva se vrátí zpátky, kde může být přečtena jiným konzumerem ve skupině.
-
-\section{Virtualbox}
-Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. 
-
 \chapter{Analýza a řešení problému}
 Jednotlivé body práce by se daly rozdělit na vícero dílčích podproblémů:
 
 \begin{itemize}
 	\item Výběr programovacícho jazyka
 	\item Předzpracování zadaných adres webových stránek
-	\item Zabezpečení stahovacího procesu
 	\item Zisk čistých souborů z webových stránek
+	\item Zabezpečení stahovacího procesu
 	\item Nahrání získaného obsahu do databáze
 	\item Začlenění do stávající infrastruktury
 \end{itemize}
 
 \section{Výběr programovacího jazyka}
-Podle prvních odhadů a požadavků bude práce obsahovat více odlišných částí, které by měly být jednoduše ovladatelné a propojitelné. K tomu by šlo využít programovacího jazyka Python, který obsahuje velké množství dostupných knihoven. Tato volba je i v soulady s firemními trendy.
+Podle prvních odhadů a požadavků bude práce obsahovat více odlišných částí, které by měly být jednoduše ovladatelné a propojitelné. K tomu by šlo využít programovacího jazyka \textit{Python}(\ref{sec:python}), který obsahuje velké množství dostupných knihoven. Tato volba je i v soulady s firemní politikou.
+
+
+
 
 
 \section{Předzpracování zadaných adres}
+TODO: doplnit info o kafce
+
+
+
+
+\section{Zisk čistých souborů z webových stránek}
+Jak bylo zmíněno v předchozí kapitole, lze k zisku čistých souborů přistoupit dvěma způsoby. Jednou z možností je otevírat stránky ve webovém prohlížeči a k zisku souborů použít nástroj \textit{Fiddler}, druhým způsobem je emulace webového prohlížeče v \textit{Pythonu} a stahování zdrojových kódů stránek. 
+
+Další problematikou je ošetření přesměrovávání (tzv. redirecty), které se na spoustě webových stránek používá. Jedna z možností je redirecty neřešit a zabývat se pouze obsahem dané url. To by proces zisku zdrojových souborů usnadnilo. Není to ale příliš robustní řešení. Bylo by tedy rozumné s přesměrováváním webových stránek počítat. 
+
+Také by zde měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. To je možné provádět přímo při stahování souborů, nebo vždy pro zdanou adresu stáhnout všechny soubory a selekci provézt následně.
+
+Jednotlivé rozebírané metody zisku čistých souborů z webových stránek jsou tedy následující:
+\begin{itemize}
+	\item Emulace webového prohlížeče a následné parsování webových stránek 
+	\item Spoustění stránek v prohlížeči a zachytávání komunikace Fiddlerem
+\end{itemize}
+
+\subsection{Emulace webového prohlížeče} \label{sec:parsing}
+Oproti druhé metodě s využitím nástroje \textit{Fiddler} by byla emulace webového prohlížeče bezesporu rychlejší. Pro práci s webovými stránkami v \textit{Pythonu} existuje více knihoven, avšak nejčastěji se používá knihovna \textit{Requests}. Její interface je daleko snazší na použití než u knihovny \textit{Urllib}, jejíž výhodou je pouze fakt, že je již obsažena v základní instalaci \textit{Pythonu} a není nutno ji doinstalovávat. 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=9cm]{pictures/scrapper.png}
+	\caption{Diagram zachytávání komunikace pomocí web scrapperu}
+	\label{fig:web_scrapper}
+\end{figure}
+Nevýhoda knihovny \textit{Requests} je v horší práci se stránkami s přesměrováváním pomocí javascriptu nebo obecně s načítáním obsahu pomocí javascriptu. Vytvořit komplexní web scrapper (tj. nástroj, který prochází obsah webových stránek), který by dokázal reagovat i na javascriptem řízený obsah, je netriviální úkol (Obr.\ref{fig:web_scrapper}). 
+
+
+TODO: mozna trochu popsat netriv ukol requests libky, parsovani html a hledani js scriptu, zminit ze by nebylo nutne pouzivat virtual
+
+\subsection{Zachytávání komunikace Fiddlerem}
+Z tohoto důvodu by bylo snazší použít nástroj \textit{Selenium}(\ref{sec:selenium}), čímž už dojde k určitému zpomalení z nutnosti spouštění internetového prohlížeče, avšak odpadne nutnost implementace sledování redirectů a postupného načítání stránek pomocí javascriptu. Stále je ovšem potřeba načtené stránky nějak zpracovat, což by bylo možné pomocí \textit{Fiddleru}(\ref{sec:fiddler}). Tím sice opět vzniká další zpomalení kvůli spouštění dalšího programu, řešení ale přináší téměř kompletní implementaci rozebíraného problému s možnou variací úprav pomocí konfiguračního souboru.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=7cm]{pictures/fiddler_diagram.png}
+	\caption{Diagram zachytávání komunikace Fiddlerem}
+	\label{fig:fiddler}
+\end{figure}
+Protože je \textit{Fiddler} původně vyvíjen pro testovací účely a sledování internetové komunikace (tzv. traffic), zachytává veškerý traffic, který skrze nástroj proudí (Obr.\ref{fig:fiddler}). Bylo by tedy potřeba implementovat logiku pro třídení a následnou selekci HTML a js souborů.
+
+\subsubsection{Selekce HTML a js souborů}
+TODO: narocne na pamet pokud vsechno, rovnou hledat jen to co chci?
+
+
+
 
 
 \section{Zabezpečení stahovacího procesu}
-Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces stahování webového obsahu zabezpečen. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není moc bezpečné řešení. Jedním z možných způsobů jak docílit základní bezpečnosti je vytvoření a obsluha virtuálního stroje, na kterém by docházelo ke stahování souborů. V situaci, kdy by došlo ke stažení nakaženého souboru, lze virtuální stroj jednoduše ukončit a vrátit do původního stavu. Daleko snáz než jiný, reálný systém. 
+Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces stahování webového obsahu zabezpečen. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není moc bezpečné řešení. Jedním z možných způsobů jak docílit základní bezpečnosti je vytvoření a obsluha virtuálního stroje, na kterém by docházelo ke stahování souborů. 
 
-Pokud se jedná o nástroje umožňující virtualizaci systému, lze použít VMware workstation od firmy VMware nebo Virtualbox vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývající se vSphere. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka Python \cite{vmware}, avšak celé toto řešení se nenabízí s freeware licencí. Z tohoto důvodu by bylo lepší použít virtualizační nástroj Virtualbox, který je zdarma. TODO: pyvbox, poustet virtual pro kazdou url nebo pro vsechny a zabijet ho vzdycky po case/po x urls
+Celý koncept zabezpečení stahování pomocí virtuálního systému je ovlivněn použitím nástroje \textit{Fiddler}(\ref{sec:fiddler}) pro stahování souborů z webových stránek. Tato metoda by využívala \textit{Fiddler}, který by běžel na pozadí, spolu s prohlížečem, v kterém by byly stránky otevírány a pomocí \textit{Fiddleru} zachytávána komunikace (Obr.\ref{fig:virtualbox}). 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=9cm]{pictures/virtualbox.png}
+	\caption{Zaobalení stahovacího procesu virtuálním strojem}
+	\label{fig:virtualbox}
+\end{figure}
+Právě otevírání stránek v prohlížeči, během čehož dochází ke spouštění javascriptových souborů, je z pohledu bezpečnosti potenciálně nebezpečné. Toho by se dalo vyvarovat emulací prohlížeče přímo v \textit{Pythonu}, čímž by se stahovaly rovnou zdrojové kódy webových stránek bez nutnosti jejich spouštění. Tato metoda však přináší problémy, které již byly popsané v subsekci \ref{sec:parsing}.
 
-\section{Zisk čistých souborů z webových stránek}
-Zisk souborů je další samostatný podproblém. Zde by měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. Je tedy možné tento výběr provádět přímo při stahování souborů a stahovat pouze potřebné, nebo vždy pro zdanou adresu stáhnout všechny soubory a selekci provézt následně.
+Pokud se jedná o nástroje umožňující virtualizaci systému, lze použít \textit{VMware workstation} od firmy VMware nebo \textit{Virtualbox} vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývající se \textit{vSphere}. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka \textit{Python}\cite{vmware}, avšak celé toto řešení se nenabízí s freeware licencí. Z tohoto důvodu by bylo lepší použít virtualizační nástroj \textit{Virtualbox}(\ref{sec:virtualbox}), který je zdarma. Nevýhoda \textit{Virtualboxu} spočívá v horší podpoře \textit{Pythonu}. Existuje ale knihovna \textit{pyvbox}\cite{pyvbox}, která základní funkčnost podporuje. 
 
-TODO: chceme jen potahat stranku nebo i redirecty
-\subsection{Parsování webových stránek}
-TODO: rychlejsi, soucasti pythonu, asi narocnejsi implementace logiky parsovani, vubec nevim jak udelat ty redirecty, bez sance
-\subsection{Fiddler}
-TODO: mozna trochu overkill, fiddler taha veskerou komunikaci, nutno selektit, neco jako customRules
+Z hlediska bezpečnosti by bylo rozumné spouštět virtuální stroj (neboli VM) pro každou webovou stránku zvlášť, to by ale celý proces výrazně zpomalovalo. Předpokládá se, že nejdelší dobu zabere právě startování VM.  Jiné řešení by nabízelo restartovat virtuální stroj vždy po určitém čase nebo po daném množství zpracovaných url adres. Tím by se běh systému výrazně zrychlil.
+
+
+
+
 
 \section{Nahrání získaného obsahu do databáze}
 Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. TODO: scavenger "hdp" dřív samba python client 
 
+
+
+
+
 \section{Začlenění do stávající infrastruktury}
 TODO: Docker nebo Jenkins, docker by asi nemusel mit virtualbox, mohl by běžet nonstop? Jenkins jobisky
 
+
+
+
+
+
+\chapter{Použité technologie}
+V této kapitole jsou stručně popsány všechny technologie využité při zpracovávání této práce.
+\section{Python 3.7}\label{sec:python}
+Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C) v tom, že nepoužívá středníky ani složené závorky. Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Kvůli těmto vlastnostem byl vybrán pro tuto diplomovou práci.
+
+\section{Fiddler}\label{sec:fiddler}
+Fiddler je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný (Obr.\ref{fig:mitm}).
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=7cm]{pictures/mitm.png}
+	\caption{MitM útok \cite{mitm}}
+	\label{fig:mitm}
+\end{figure}
+Jeho automatizace lze docílit inicializačním souborem, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je fiddler schopný zachytávat i šifrovanou komunikaci, kvůli čemuž byl použit v této práci.
+
+\section{Selenium} \label{sec:selenium}
+Selenium je opensource nástroj používaný k automatizovanému přístupu k webovým aplikacím. Těchto vlastností se často využívá při testování, avšak v této práci je použit pouze k obsluze webového prohlížeče. Selenium obsahuje vlastní vývojové prostředí, které lze využít bez velké znalosti programování, existují však i jeho implementace do většiny populárních programovacích jazyků.
+
+
+\section{Jenkins}
+Jenkins je opensource CI/CD systém (continuous integration and delivery) umožňující vykonávání automatických či periodických operací (tzv. jobů). Používá se převážně k spouštění buildů a udržování testů. Joby lze spoustět automaticky po vzniku nové verze vyvíjeného programu, lze je ale i spouštět pravidelně v předem určený čas, čehož bylo v této práci využito.
+
+\section{Kafka}\label{sec:kafka}
+Kafka by se dala zařadit mezi frontové systémy. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na procesing velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu třeba u RabbitMQ (tj. jiný frontový systém), avšak do tzv. topiců. Jeden Topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (Obr.\ref{fig:kafka}). 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=7cm]{pictures/kafka.png}
+	\caption{Znázornění Kafka systému \cite{kafka}}
+	\label{fig:kafka}
+\end{figure}
+Zprávy do topicu posílá proces, který se nazývá Producer. Obdobně proces, který data čte, je nazýván Consumer. Ten dostává zprávy z topicu v závislosti na indexaci a časové známky. K jednomu topicu může být přihlášeno více nezávislých konzumerů, kteří jsou rozděleni do rozdílných skupin a každá skupina dostává identické zprávy, čím se zabrání vzájemnému čtení stejných zpráv.
+
+Zprávy zůstávají v topicu po určitou dobu, což určuje hodnota retence. Po tuto dobu jsou zprávy přístupny pro každou skupinu konzumerů. Síla kafku je v politice přečtených zpráv. Na rozdíl od zmiňovaného RabbitMQ, který přečtením zprávy zprávu odstraní ze své fronty, funguje v kafce tzv. potvrzovací systém. Konzumer dostane zprávu, a po jejím zpracování vyšle tzv. commit, kterým oznámí úspěšné zpracování. Pokud by v průběhu nastala chyba, tento commit se nepošle a zpráva se vrátí zpátky, kde může být přečtena jiným konzumerem ve skupině.
+
+\section{Virtualbox}\label{sec:virtualbox}
+Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. 
+
+
+
+
+
+
 \chapter{Implementace}
+
+
+
+
+
 
 \chapter{Otestování a zhodnocení přínosu}
 
@@ -208,6 +282,11 @@ TODO: Docker nebo Jenkins, docker by asi nemusel mit virtualbox, mohl by běžet
 	
 	\bibitem{vmware}
 	\url{[https://code.vmware.com/web/sdk/6.7/vsphere-automation-python]}
+	
+	\bibitem{pyvbox}
+	Dorman Michael. \textit{pyvbox Documentation}. \textcopyright2017 Dostupné z: \\
+	\url{https://buildmedia.readthedocs.org/media/pdf/pyvbox/latest/pyvbox.pdf}
+	
 \end{thebibliography}
 
 \appendix
