@@ -164,7 +164,9 @@ Z tohoto důvodu by bylo snazší použít nástroj \textit{Selenium}(\ref{sec:s
 Protože je \textit{Fiddler} původně vyvíjen pro testovací účely a sledování internetové komunikace (tzv. traffic), zachytává veškerý traffic, který skrze nástroj proudí (Obr.\ref{fig:fiddler}). Bylo by tedy potřeba implementovat logiku pro třídení a následnou selekci HTML a js souborů.
 
 \subsubsection{Selekce HTML a js souborů}
-TODO: narocne na pamet pokud vsechno, rovnou hledat jen to co chci?
+První přístup, emulace webového prohlížeče, přináší výhodu v tom, že se rovnou při parsování HTML stránek přistupuje pouze k js a HTML souborům, čímž odpadá nutnost následně nějakou selekci provádět. Metoda s použitím \textit{Fiddleru} je v tomto složitější. \textit{Fiddler} je komplexní nástroj a automaticky zachytává veškerou komunikaci - nejen soubory potřebné k vykrelení webové stránky, ale i režijní komunikaci mezi prohlížečem a serverem. Tento přístup je možné změnit pomocí již zmíněného inicializačního scriptu. 
+
+Avšak problémy této metody přináší i webový prohlížeč, kterého se zde využívá. Téměř vždy při spuštění prohlížeče probíhá nevyžádaná komunikace prohlížeče se servery, která je potřeba vytřídit. I zde je možné využít inicializačního scriptu \textit{Fiddleru}, implementovat třídění již při zachytávání komunikace a zachytávat pouze HTML a js soubory ze serverů, které odpovídají zpracovávané url. To ovšem přináší problémy s přesměrováním, které může seznam chtěných serverů libovolně navyšovat, což už by pro inicializační script představovalo nelehký úkol a takové řešení patrně nebude optimální. Druhý způsob je zachytávat HTML a js komunikaci ze všech serverů a selekci řešit až později při zpracování dat v \textit{Pythonu}. Nedostatkem této možnosti je zvýšená náročnost na paměť, kterou představuje zpracovávání více souborů. Předpokládá se ale, že tato nevyžádaná komunikace bude v poměru s chtěnými soubory minimální, tudíž by k výrazné zvýšení náročnosti na paměť dojít nemělo.
 
 
 
