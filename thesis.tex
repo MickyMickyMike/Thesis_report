@@ -124,7 +124,9 @@ Podle prvních odhadů a požadavků bude práce obsahovat více odlišných č�
 \section{Předzpracování zadaných adres}
 Předzpracování zadaných adres  se bude řešit pomocí frontového systému \textit{Kafka}(\ref{sec:kafka}).
 
-kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka kafkaaaa kafka kaaaafkaaaa kafka kafka kaffffkaaa kafka kafkaakafka
+Systém by měl reagovat na dva typy vstupů. Prvním vstupem budou adresy s vysokou prevalencí (případem takové adresy může být třeba internetový obchod \url{www.amazon.com}), které budou systému periodicky dodávány z externích modulů. Vstupem ale může být i ručně zadaná adresa či seznam adres v případě, kdy by operátor systému potřeboval na cleanset dodat soubory z webových stránek s menší prevalencí, či, ve více obecném řešení, by potřeboval stáhnout zdrojové soubory cílených webových stránek pro odlišné účely.
+
+V obouch případech se vložené adresy nahrají do frontového systému, odkud se budou postupně odebírat (Obr.\ref{fig:kafka_schema}). Využití \textit{Kafky} má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit \textit{Kafky}, které by zde šlo využít, je potvrzování zpracované zprávy po přijetí. Tím dojde k zaručení, že se vždy zpracují všechny zprávy ve frontě. 
 
 \begin{figure}[h]
 	\centering
