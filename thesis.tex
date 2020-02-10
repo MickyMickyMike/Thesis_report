@@ -204,7 +204,9 @@ Z hlediska bezpečnosti by bylo rozumné spouštět virtuální stroj (neboli VM
 
 
 \section{Nahrání získaného obsahu do databáze cleansetu}
-Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. TODO: scavenger "hdp" dřív samba python client 
+Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. Ta je součástí většího systému aplikací, který nese interní označení Scavenger. Zjednodušeně lze říci, že tento systém obsahuje záznamy o všech antiviru známých souborech a url adresách (nakažených i čistých). Soubory se v systému Scavenger ukládají v podobě hashe vzniklé pomocí hashovacího algoritmu sha-256. Tímto lze docílit jednoduché kontroly duplicity (stejné soubory mohou mít rozdílné názvy, ale hash souboru je pro identické soubory stejná). K hashi souboru se přikládají metadata mimojiné s informací o původu souboru, času výskytu a prevalencí. 
+
+K nahrání souborů do Scavengeru lze využít síťový souborový systém Sambu, který implementuje přenos souborů po síti pomocí síťového protokolu SMB a to převážně v systémech Windows. Tato metoda je však z hlediska firemní infrastruktury zastaralá. Novější způsob představuje využití datové platformy HDP (Hortonworks data platform), která je založená na techlonogiích od společnosti Apache - Hadoop, Hive a Spark. Tato platforma se specializuje na přesun a zpracování velkého množství dat z různých zdrojů. Ke komunikaci se zmíněným systémem HDP lze využít interně vyvinutý python klient, který přesun souborů usnadní.
 
 
 
