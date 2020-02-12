@@ -259,7 +259,15 @@ Zprávy do topicu posílá proces, který se nazývá Producer. Obdobně proces,
 Zprávy zůstávají v topicu po určitou dobu, což určuje hodnota retence. Po tuto dobu jsou zprávy přístupny pro každou skupinu konzumerů. Síla kafku je v politice přečtených zpráv. Na rozdíl od zmiňovaného RabbitMQ, který přečtením zprávy zprávu odstraní ze své fronty, funguje v kafce tzv. potvrzovací systém. Konzumer dostane zprávu, a po jejím zpracování vyšle tzv. commit, kterým oznámí úspěšné zpracování. Pokud by v průběhu nastala chyba, tento commit se nepošle a zpráva se vrátí zpátky, kde může být přečtena jiným konzumerem ve skupině.
 
 \section{Virtualbox}\label{sec:virtualbox}
-Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. 
+Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. Slouží k instalaci virtuálních operačních systémů na jednom fyzickém stroji. Jeho výhodou je multiplatformnost, což znamená, že je možné ho nainstalovat na MS Windows i operační systémy s unixovým jádrem (Linux, Mac OS). Tímto lze docílit například spuštění linuxového systému pod operačním systémem Windows.\cite{virutalbox}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=5cm]{pictures/vbox.png}
+	\caption{PC s virtuálními stroji \cite{vbox_pic}}
+	\label{fig:kafka}
+\end{figure}
+
+Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zachycuje virtuální stroj a veškeré jeho nastavení v daném čase, v kterém je vytvořen. Tímto lze jednoduše vracet provedené změny zpět do bodu vytvoření snapshotu. Toho je možné využít při testování aplikací, využití je avšak možné i v oblasti bezpečnosti. Pokud je vytvořen snapshot čistého systému, lze se do něj vraátit v případě potenciálního nakažení virtuálního stroje. Této funkcionality se využívá i v této práci.
 
 
 
@@ -298,6 +306,12 @@ Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle.
 
 	\bibitem{kafka}
 	\url{https://en.wikipedia.org/wiki/Apache_Kafka#/media/File:Overview_of_Apache_Kafka.svg}
+	
+	\bibitem{virutalbox}
+	\url{https://www.virtualbox.org/manual/ch01.html}
+	
+	\bibitem{vbox_pic}
+	\url{https://www.virtualnipc.cz/wp-content/gallery/140701-1-uvod-do-virtualizace-na-desktopu/cache/140701-uvod-do-virtualizace-na-desktopu-img-1.png-nggid013-ngg0dyn-640x480x100-00f0w010c010r110f110r010t010.png}
 	
 	\bibitem{vmware}
 	\url{[https://code.vmware.com/web/sdk/6.7/vsphere-automation-python]}
