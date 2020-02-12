@@ -148,7 +148,7 @@ Také by zde měla být implementována logika selekce pouze HTML a js souborů,
 Jednotlivé rozebírané metody zisku čistých souborů z webových stránek jsou tedy následující:
 \begin{itemize}
 	\item Emulace webového prohlížeče a následné parsování webových stránek 
-	\item Spoustění stránek v prohlížeči a zachytávání komunikace Fiddlerem
+	\item Spouštění stránek v prohlížeči a zachytávání komunikace Fiddlerem
 \end{itemize}
 
 \subsection{Emulace webového prohlížeče} \label{sec:parsing}
@@ -161,8 +161,11 @@ Oproti druhé metodě s využitím nástroje \textit{Fiddler} by byla emulace we
 \end{figure}
 Nevýhoda knihovny \textit{Requests} je v horší práci se stránkami s přesměrováváním pomocí javascriptu nebo obecně s načítáním obsahu pomocí javascriptu. Vytvořit komplexní web scrapper (tj. nástroj, který prochází obsah webových stránek), který by dokázal reagovat i na javascriptem řízený obsah, je netriviální úkol (Obr.\ref{fig:web_scrapper}). 
 
+K samotnému parsování již stažené webové stránky je možné využít knihovnu BeautifulSoup\cite{beautifulsoup}, která implementuje HTML a XML parsery v jazyku Python. Pomocí ní je snadné procházet HTML kód a iterovat přes tagy komponentů stránky. Bylo by tedy potřeba vyhledat všechny části, které obsahují spouštění javascriptového souboru nebo přesměrování na jinou adresu, tyto soubory, respektive adresy, uložit do fronty a následně provézt stejný proces pro všechny ještě nezpracované položky fronty s postupným ukládáním již zpracovaných souborů. 
 
-TODO: mozna trochu popsat netriv ukol requests libky, parsovani html a hledani js scriptu, zminit ze by nebylo nutne pouzivat virtual
+Přesměrování lze ošetřit pomocí hlídání response kódů (kód, který vrací server při komunikaci s webovým prohlížečem). Při přesměrování jsou běžné kódy 301, respektive 302. Pokud tedy vrátí server kód pro přesměrování, je nutné ve zdrojovém kódu stránky najít adresu pro přesměrování, stáhnout její obsah a tento soubor přidat do fronty k zpracování.
+
+Velkou výhodou tohoto řešení je absence nutnosti používat virtuální stroj, protože samotné stahování zdrojového kódu stránek by probíhalo bez nustnosti stažené soubory spouštět, čímž by nehrozilo nebezpeční infikace pracovního počítače škodlivým obsahem (o této problematice více v sekci \ref{sec:zabezpeceni}). Výraznou nevýhodou je ovšem neschopnost získání obsahu webových stránek, který se načítá se zpožděním za pomoci javascriptu (tzv. lazy loading).
 
 \subsection{Zachytávání komunikace Fiddlerem}
 Z tohoto důvodu by bylo snazší použít nástroj \textit{Selenium}(\ref{sec:selenium}), čímž už dojde k určitému zpomalení z nutnosti spouštění internetového prohlížeče, avšak odpadne nutnost implementace sledování redirectů a postupného načítání stránek pomocí javascriptu. Stále je ovšem potřeba načtené stránky nějak zpracovat, což by bylo možné pomocí \textit{Fiddleru}(\ref{sec:fiddler}). Tím sice opět vzniká další zpomalení kvůli spouštění dalšího programu, řešení ale přináší téměř kompletní implementaci rozebíraného problému s možnou variací úprav pomocí konfiguračního souboru.
@@ -183,7 +186,7 @@ Avšak problémy této metody přináší i webový prohlížeč, kterého se zd
 
 
 
-\section{Zabezpečení stahovacího procesu}
+\section{Zabezpečení stahovacího procesu}\label{sec:zabezpeceni}
 Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces stahování webového obsahu zabezpečen. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není moc bezpečné řešení. Jedním z možných způsobů jak docílit základní bezpečnosti je vytvoření a obsluha virtuálního stroje, na kterém by docházelo ke stahování souborů. 
 
 Celý koncept zabezpečení stahování pomocí virtuálního systému je ovlivněn použitím nástroje \textit{Fiddler}(\ref{sec:fiddler}) pro stahování souborů z webových stránek. Tato metoda by využívala \textit{Fiddler}, který by běžel na pozadí, spolu s prohlížečem, v kterém by byly stránky otevírány a pomocí \textit{Fiddleru} zachytávána komunikace (Obr.\ref{fig:virtualbox}). 
@@ -195,7 +198,7 @@ Celý koncept zabezpečení stahování pomocí virtuálního systému je ovlivn
 \end{figure}
 Právě otevírání stránek v prohlížeči, během čehož dochází ke spouštění javascriptových souborů, je z pohledu bezpečnosti potenciálně nebezpečné. Toho by se dalo vyvarovat emulací prohlížeče přímo v \textit{Pythonu}, čímž by se stahovaly rovnou zdrojové kódy webových stránek bez nutnosti jejich spouštění. Tato metoda však přináší problémy, které již byly popsané v subsekci \ref{sec:parsing}.
 
-Pokud se jedná o nástroje umožňující virtualizaci systému, lze použít \textit{VMware workstation} od firmy VMware nebo \textit{Virtualbox} vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývající se \textit{vSphere}. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka \textit{Python}\cite{vmware}, avšak celé toto řešení se nenabízí s freeware licencí. Z tohoto důvodu by bylo lepší použít virtualizační nástroj \textit{Virtualbox}(\ref{sec:virtualbox}), který je zdarma. Nevýhoda \textit{Virtualboxu} spočívá v horší podpoře \textit{Pythonu}. Existuje ale knihovna \textit{pyvbox}\cite{pyvbox}, která základní funkčnost podporuje. 
+Pokud se jedná o nástroje umožňující virtualizaci systému, lze použít \textit{VMware workstation} od firmy VMware nebo \textit{Virtualbox} vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývající se \textit{vSphere}. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka \textit{Python}\cite{vmware}, avšak celé toto řešení se nenabízí s freeware licencí. Z tohoto důvodu by bylo lepší použít virtualizační nástroj \textit{Virtualbox}(\ref{sec:virtualbox}), který je zdarma. \textit{Virtualbox} od firmy Oracle také obsahuje vlastní SDK pro podporu \textit{Pythonu}, pro které je už napsaná knihovna \textit{pyvbox}\cite{pyvbox}. Tato knihova obaluje většinu metod, které SDK \textit{Virtualboxu} obsahuje. 
 
 Z hlediska bezpečnosti by bylo rozumné spouštět virtuální stroj (neboli VM) pro každou webovou stránku zvlášť, to by ale celý proces výrazně zpomalovalo. Předpokládá se, že nejdelší dobu zabere právě startování VM.  Jiné řešení by nabízelo restartovat virtuální stroj vždy po určitém čase nebo po daném množství zpracovaných url adres. Tím by se běh systému výrazně zrychlil.
 
@@ -215,7 +218,7 @@ K nahrání souborů do Scavengeru lze využít síťový souborový systém Sam
 \section{Začlenění do stávající infrastruktury}
 Systém bude spouštěn periodicky, ale měl by být také spustitelný na vyžádání uživatelem. Pro takové požadavky lze použít systém Jenkins(\ref{sec:jenkins}), který je firmou Avast používaný k periodickému spouštění procesů. Jednotlivé části systému Magpie je možné oddělit do samostatných procesů (v terminologii systému Jenkins tzv. jobů), které se dají sekvenčně pouštět v závislosti na úspěšném ukončení předcházejícího jobu. Tento přístup přináší přehledné rozhraní, v kterém je možné jednotlivé části samostatně monitorovat, spolu s jednoduchým přístupem k výstupům jobů. Tímto způsobem by bylo možné přistoupit k získaným datům přímo, bez nutnosti data nahrávat do databáze v systému Scavenger, v případě, kdy by byl systém spuštěný manuálně.
 
-Jiným přístupem je využít firemní mutaci nástroje Kubernetes interně nazývanou Luft, která by umožňovala mít systém sputněný bez přestávky. Velkou výhodou Kubernetes je jednoduché škálování, kdy lze při velkém vytížení jednoduše navýšit výpočetní prostředky danému procesu a tím urychlit jeho běh.
+Jiným přístupem je využít firemní mutaci nástroje Kubernetes interně nazývanou Luft, která by umožňovala mít systém spuštěný bez přestávky. Velkou výhodou Kubernetes je jednoduché škálování, kdy lze při velkém vytížení jednoduše navýšit výpočetní prostředky danému procesu a tím urychlit jeho běh.
 
 Je také možné pro jednotlivé části systému Magpie využít rozdílné technologie, a to kombinaci obou výše zmíněných.
 
@@ -299,7 +302,11 @@ Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zac
        	
     \bibitem{jan}
        	Moravec Jan. \textit{Distribuované řízení kolon vozidel na autodráze}. \textcopyright2014, České vysoké učení technické v Praze, vedoucí práce Ing. Ivo Herman, Dostupné z: \\    \url{https://dspace.cvut.cz/bitstream/handle/10467/24299/F3-BP-2014-Moravec-Jan-prace.pdf} \\
-       	
+    
+    \bibitem{beautifulsoup}
+    \url{https://www.crummy.com/software/BeautifulSoup/} 	
+
+    
     \bibitem{mitm}
     \url{https://www.imperva.com/learn/application-security/man-in-the-middle-attack-mitm/}
 
