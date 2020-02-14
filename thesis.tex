@@ -92,14 +92,14 @@
 Dnešní doba je plná rizik, která představují hrozbu pro každodenního uživatele internetu. Ať už se jedná o phishing (zisk citlivých údajů pomocí podvodné internetové komunikace) či různé druhy malwaru (nežádoucí programy mající za úkol poškodit uživatele). V boji s těmito riziky je důležité chránit sebe a svoje data pomocí antivirových programů. Jedním z nejrozšířenějších je Avast, který má přes 435 milionů aktivních uživatelů a měsíčně zabrání okolo 2 miliardám útoků\cite{avast_flier}.
 
 \section{Motivace}
-Avast, stejně jako většina antivirových programů, uchovává informace o všech známých škodlivých entitách. Tato databáze se denně rozšiřuje o spousty nových záznamů, které obsahují nejen informace o celých souborech, ale i kusy kódu webového obsahu (tzv. string detekce), které jsou považovány za příznak podvodných úmyslů. Může se však stát, že je tento kus kódu moc obecný a dochází tak i k blokování čistého obsahu (tzv. fals-positive detekcím). Aby se těmto situacím předcházelo, je zapotřebí udržovat i databázi s čistými záznamy (tzv. cleanset). Tyto záznamy jsou převážně HTML a js soubory.
+Avast, stejně jako většina antivirových programů, uchovává informace o všech známých škodlivých entitách. Tato databáze se denně rozšiřuje o spousty nových záznamů, které obsahují nejen informace o celých souborech, ale i kusy kódu webového obsahu (tzv. string detekce), které jsou považovány za příznak podvodných úmyslů. Může se však stát, že je tento kus kódu moc obecný a dochází tak i k blokování čistého obsahu (tzv. false-positive detekcím). Aby se těmto situacím předcházelo, je zapotřebí udržovat i databázi s čistými záznamy (tzv. cleanset). Tyto záznamy jsou převážně HTML a js soubory.
 
 Dříve, než se nová string detekce začlení do jádra antiviru, je její obsah porovnán se všemi záznamy na cleansetu a pokud dojde ke shodě (tj. detekční string je součástí nějakého souboru na cleansetu), je tato detekce považována za nevalidní. Tímto dochází k zabránění fals-positive detekcím. 
 
 Ideálním stavem je tedy mít záznam o veškerém čistém obsahu internetu, což je samozřejmě nemožné. Avšak čím více záznamů cleanset obsahuje, tím kvalitnější je běh antivirového programu. V současné době dochází k doplňování cleansetu pouze občasně a to převážně manuálně za pomoci jednoduchých scriptů.
 
 \section{Cíle práce} 
- Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit projekt, který by modernizoval doplňování cleansetu, avšak současně je možné systém zobecnit k využití i v jiných aplikacích. Systému bylo dáno kódové označení \textit{Magpie} (česky Straka), protože systém, stejně jako straky, bude shromažďovat data z různých míst a ukládat je na jedno místo. Celý proces bude řádně otestovaný a bude zhodnocen jeho přínos.
+ Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit systém, který by modernizoval doplňování cleansetu, avšak současně je možné jej zobecnit k využití i v jiných aplikacích. Systému bylo dáno kódové označení \textit{Magpie} (česky Straka), protože aplikace, stejně jako straky, bude shromažďovat data z různých míst a ukládat je na jedno místo. Výsledná aplikace bude řádně otestována a bude zhodnocen její přínos.
 
 
 \chapter{Analýza a řešení problému}
@@ -108,7 +108,7 @@ Jednotlivé body práce by se daly rozdělit na vícero dílčích podproblémů
 \begin{itemize}
 	\item Výběr programovacícho jazyka
 	\item Předzpracování zadaných adres webových stránek
-	\item Zisk čistých souborů z webových stránek
+	\item Získání čistých souborů z webových stránek
 	\item Zabezpečení stahovacího procesu
 	\item Nahrání získaného obsahu do databáze cleansetu
 	\item Začlenění do stávající infrastruktury
@@ -126,7 +126,7 @@ Předzpracování zadaných adres  se bude řešit pomocí frontového systému 
 
 Systém by měl reagovat na dva typy vstupů. Prvním vstupem budou adresy s vysokou prevalencí (případem takové adresy může být třeba internetový obchod \url{www.amazon.com}), které budou systému periodicky dodávány z externích modulů. Vstupem ale může být i ručně zadaná adresa či seznam adres v případě, kdy by operátor systému potřeboval na cleanset dodat soubory z webových stránek s menší prevalencí, či, ve více obecném řešení, by potřeboval stáhnout zdrojové soubory cílených webových stránek pro odlišné účely.
 
-V obouch případech se vložené adresy nahrají do frontového systému, odkud se budou postupně odebírat (Obr.\ref{fig:kafka_schema}). Využití \textit{Kafky} má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit \textit{Kafky}, které by zde šlo využít, je potvrzování zpracované zprávy po přijetí. Tím dojde k zaručení, že se vždy zpracují všechny zprávy ve frontě. 
+V obou případech se vložené adresy nahrají do frontového systému, odkud se budou postupně odebírat (Obr.\ref{fig:kafka_schema}). Využití \textit{Kafky} má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit \textit{Kafky}, které by zde šlo využít, je potvrzování zpracované zprávy po přijetí. Tím dojde vždy ke zpracování všech zpráv ve frontě. 
 
 \begin{figure}[h]
 	\centering
@@ -138,14 +138,14 @@ V obouch případech se vložené adresy nahrají do frontového systému, odkud
 
 
 
-\section{Zisk čistých souborů z webových stránek}
-Jak bylo zmíněno v předchozí kapitole, lze k zisku čistých souborů přistoupit dvěma způsoby. Jednou z možností je otevírat stránky ve webovém prohlížeči a k zisku souborů použít nástroj \textit{Fiddler}, druhým způsobem je emulace webového prohlížeče v \textit{Pythonu} a stahování zdrojových kódů stránek. 
+\section{Získání čistých souborů z webových stránek}
+K získání čistých souborů je možné přistoupit dvěma způsoby. Jednou z možností je otevírat stránky ve webovém prohlížeči a k získání souborů použít nástroj \textit{Fiddler}(\ref{sec:fiddler}), druhým způsobem je emulace webového prohlížeče v \textit{Pythonu} a stahování zdrojových kódů stránek. 
 
-Další problematikou je ošetření přesměrovávání (tzv. redirecty), které se na spoustě webových stránek používá. Jedna z možností je redirecty neřešit a zabývat se pouze obsahem dané url. To by proces zisku zdrojových souborů usnadnilo. Není to ale příliš robustní řešení. Bylo by tedy rozumné s přesměrováváním webových stránek počítat. 
+Další problematikou je ošetření přesměrovávání (tzv. redirecty), které se na spoustě webových stránek používá. Jedna z možností je redirecty neřešit a zabývat se pouze obsahem dané url. To by proces získání zdrojových souborů usnadnilo. Není to ale příliš robustní řešení. Bylo by tedy rozumné s přesměrováváním webových stránek počítat. 
 
-Také by zde měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. To je možné provádět přímo při stahování souborů, nebo vždy pro zdanou adresu stáhnout všechny soubory a selekci provézt následně.
+Také by zde měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. To je možné provádět přímo při stahování souborů, nebo vždy pro zadanou adresu stáhnout všechny soubory a selekci provést následně.
 
-Jednotlivé rozebírané metody zisku čistých souborů z webových stránek jsou tedy následující:
+Jednotlivé rozebírané metody získání čistých souborů z webových stránek jsou tedy následující:
 \begin{itemize}
 	\item Emulace webového prohlížeče a následné parsování webových stránek 
 	\item Spouštění stránek v prohlížeči a zachytávání komunikace Fiddlerem
@@ -178,7 +178,7 @@ Z tohoto důvodu by bylo snazší použít nástroj \textit{Selenium}(\ref{sec:s
 Protože je \textit{Fiddler} původně vyvíjen pro testovací účely a sledování internetové komunikace (tzv. traffic), zachytává veškerý traffic, který skrze nástroj proudí (Obr.\ref{fig:fiddler}). Bylo by tedy potřeba implementovat logiku pro třídení a následnou selekci HTML a js souborů.
 
 \subsubsection{Selekce HTML a js souborů}
-První přístup, emulace webového prohlížeče, přináší výhodu v tom, že se rovnou při parsování HTML stránek přistupuje pouze k js a HTML souborům, čímž odpadá nutnost následně nějakou selekci provádět. Metoda s použitím \textit{Fiddleru} je v tomto složitější. \textit{Fiddler} je komplexní nástroj a automaticky zachytává veškerou komunikaci - nejen soubory potřebné k vykrelení webové stránky, ale i režijní komunikaci mezi prohlížečem a serverem. Tento přístup je možné změnit pomocí již zmíněného inicializačního scriptu. 
+Prvním přístupem je emulace webového prohlížeče. Přináší výhodu v tom, že se při parsování HTML stránek rovnou přistupuje pouze k js a HTML souborům a tím odpadá nutnost následně nějakou selekci provádět. Metoda s použitím \textit{Fiddleru} je v tomto složitější. \textit{Fiddler} je komplexní nástroj a automaticky zachytává veškerou komunikaci - nejen soubory potřebné k vykrelení webové stránky, ale i režijní komunikaci mezi prohlížečem a serverem. Tento přístup je možné změnit pomocí již zmíněného inicializačního scriptu. 
 
 Avšak problémy této metody přináší i webový prohlížeč, kterého se zde využívá. Téměř vždy při spuštění prohlížeče probíhá nevyžádaná komunikace prohlížeče se servery, která je potřeba vytřídit. I zde je možné využít inicializačního scriptu \textit{Fiddleru}, implementovat třídění již při zachytávání komunikace a zachytávat pouze HTML a js soubory ze serverů, které odpovídají zpracovávané url. To ovšem přináší problémy s přesměrováním, které může seznam chtěných serverů libovolně navyšovat, což už by pro inicializační script představovalo nelehký úkol a takové řešení patrně nebude optimální. Druhý způsob je zachytávat HTML a js komunikaci ze všech serverů a selekci řešit až později při zpracování dat v \textit{Pythonu}. Nedostatkem této možnosti je zvýšená náročnost na paměť, kterou představuje zpracovávání více souborů. Předpokládá se ale, že tato nevyžádaná komunikace bude v poměru s chtěnými soubory minimální, tudíž by k výrazné zvýšení náročnosti na paměť dojít nemělo.
 
@@ -233,7 +233,7 @@ V této kapitole jsou stručně popsány všechny technologie využité při zpr
 Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C) v tom, že nepoužívá středníky ani složené závorky. Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Kvůli těmto vlastnostem byl vybrán pro tuto diplomovou práci.
 
 \section{Fiddler}\label{sec:fiddler}
-Fiddler je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný (Obr.\ref{fig:mitm}).
+Fiddler\cite{fiddler} je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný (Obr.\ref{fig:mitm}).
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=7cm]{pictures/mitm.png}
@@ -302,6 +302,9 @@ Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zac
        	
     \bibitem{jan}
        	Moravec Jan. \textit{Distribuované řízení kolon vozidel na autodráze}. \textcopyright2014, České vysoké učení technické v Praze, vedoucí práce Ing. Ivo Herman, Dostupné z: \\    \url{https://dspace.cvut.cz/bitstream/handle/10467/24299/F3-BP-2014-Moravec-Jan-prace.pdf} \\
+    
+    \bibitem{fiddler}
+    \url{https://www.telerik.com/fiddler}
     
     \bibitem{beautifulsoup}
     \url{https://www.crummy.com/software/BeautifulSoup/} 	
