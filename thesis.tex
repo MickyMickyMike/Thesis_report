@@ -79,7 +79,7 @@
   xleftmargin=10pt,xrightmargin=10pt,
   frame=tbrl,
   framerule=1pt,
-  language=Java,
+  language=Python,
   backgroundcolor=\color{mygray},   % choose the background color  
   commentstyle=\color{mygreen},    % comment style
   escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
@@ -267,7 +267,7 @@ Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. Slouž
 	\centering
 	\includegraphics[width=5cm]{pictures/vbox.png}
 	\caption{PC s virtuálními stroji \cite{vbox_pic}}
-	\label{fig:kafka}
+	\label{fig:vbox}
 \end{figure}
 
 Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zachycuje virtuální stroj a veškeré jeho nastavení v daném čase, v kterém je vytvořen. Tímto lze jednoduše vracet provedené změny zpět do bodu vytvoření snapshotu. Toho je možné využít při testování aplikací, využití je avšak možné i v oblasti bezpečnosti. Pokud je vytvořen snapshot čistého systému, lze se do něj vraátit v případě potenciálního nakažení virtuálního stroje. Této funkcionality se využívá i v této práci.
@@ -278,7 +278,51 @@ Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zac
 
 
 \chapter{Implementace}
+Z analýzy je patrné, že by zvoleným programovacím jazykem pro systém Magpie měl být Python. Prvním krokem implementace projektu je vytvořit funkční jádro, ke kterému by bylo možné přidávat ostatní komponenty a vylepšovat jeho funkcionalitu. Za toto jádro lze považovat stahování zdrojového kódu stránek. Následně je potřeba tento proces zabezpečit, zdokonalit a integrovat. Jednotlivé sekce implementace jsou následující:
+\begin{itemize}
+	\item Klient pro stahování webového obsahu
+	\item Zpracování dat a upload do databáze
+	\item Virtualizace 
+	\item Implementace frontového systému Kafka
+	\item Integrace pomocí systému Jenkins
+\end{itemize} 
 
+
+
+
+\section{Klient pro stahování webového obsahu}
+
+
+\begin{figure}[h]               
+	\begin{minted}{Javascript}
+	import hoho
+	def neco:
+	    koko = 3
+	    while zdek:
+	        print("To asi tezko")
+	\end{minted}      
+	\caption{Implementace bloku PI regulátor v jazyce C}
+	\label{fig:ctrl.c}
+\end{figure}
+
+
+
+\section{Zpracování dat a upload do databáze}
+
+
+
+
+\section{Virtualizace}
+
+
+
+
+\section{Implementace frontového systému Kafka}
+
+
+
+
+\section{Integrace pomocí systému Jenkins} 
 
 
 
