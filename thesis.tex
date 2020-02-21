@@ -278,7 +278,7 @@ Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zac
 
 
 \chapter{Implementace}
-Z analýzy je patrné, že by zvoleným programovacím jazykem pro systém Magpie měl být Python. Prvním krokem implementace projektu je vytvořit funkční jádro, ke kterému by bylo možné přidávat ostatní komponenty a vylepšovat jeho funkcionalitu. Za toto jádro lze považovat stahování zdrojového kódu stránek. Následně je potřeba tento proces zabezpečit, zdokonalit a integrovat. Jednotlivé sekce implementace jsou následující:
+Z analýzy je patrné, že by zvoleným programovacím jazykem pro systém Magpie měl být Python. Prvním krokem implementace projektu je vytvořit funkční jádro, ke kterému by bylo možné přidávat ostatní komponenty a vylepšovat jeho funkcionalitu. Za toto jádro lze považovat stahování zdrojového kódu stránek. Následně je potřeba tento proces zabezpečit, zdokonalit a integrovat do stávající infrastruktury Avastu. Jednotlivé sekce implementace jsou následující:
 \begin{itemize}
 	\item Klient pro stahování webového obsahu
 	\item Zpracování dat a upload do databáze
@@ -291,19 +291,44 @@ Z analýzy je patrné, že by zvoleným programovacím jazykem pro systém Magpi
 
 
 \section{Klient pro stahování webového obsahu}
+Při implementaci klientu pro stahování webového obsahu byla zvolena metoda s využitím programu Fiddler pro zachytávání internetové komunikace. Tato metoda přináší komplexnější odposlech bez nutnosti emulace webového prohlížeče. Bylo tedy nutné vytvořit skript pro ovládání internetového prohlížeče a Fiddleru, tento skript byl napsaný v jazyku Python, a dále bylo zapotřebí nastavit Fiddler pomocí inicializačního souboru, který je napsaný v javascriptu. Sekce je tedy rozdělena do dvou podsekcí:
+\begin{itemize}
+	\item Skript pro ovládání pomocných programů
+	\item Skript pro nastavení Fiddleru
+\end{itemize}
 
+\subsection{Skript pro ovládání pomocných programů}
+Tento skript je psaný v programovacím jazyku Python, stejně jako většina práce. Jeho hlavní činností je spuštění programu Fiddler a správa internetového prohlížeče. K ovládání webového prohlížeče byl použit nástroj Selenium(\ref{sec:selenium}) v podobě knihovny importované do jazyka Python. Pro komunikaci s webovým prohlížečem je nutné nainstalovat takzvaný webdriver, který zajistí správnou konfiguraci Selenia pro daný prohlížeč. Webdriver Geckodriver\cite{gecko}, je určený pro komunikaci s internetovým prohlížečem Mozilla Firefox\cite{firefox}, naproti tomu webdriver ChromeDriver\cite{chromedriver}  je vyvinut  pro komunikaci s internetovým prohlížečem Google Chrome\cite{chrome}. V práci byl využit internetový prohlížeč Mozilla Firefox, tudíž i Geckodriver.
+
+Jednoduchá implementace Selenia s ovládáním prohlížeče v jazyku Python může vypadat jako ve výřezu kódu (tzv. snippetu) \ref{fig:selenium}.
 
 \begin{figure}[h]               
-	\begin{minted}{Javascript}
-	import hoho
-	def neco:
-	    koko = 3
-	    while zdek:
-	        print("To asi tezko")
-	\end{minted}      
-	\caption{Implementace bloku PI regulátor v jazyce C}
-	\label{fig:ctrl.c}
+\begin{minted}{Python}
+import time
+
+from selenium.webdriver import Firefox
+from selenium.webdriver.firefox.options import Options
+
+opts = Options()
+opts.headless = False
+
+browser = Firefox(options=opts)
+browser.get("https://www.seznam.cz")
+
+time.sleep(2)
+browser.quit()
+\end{minted}      
+\caption{Implementace nástroje selenium s ovládáním prohlížeče}
+\label{fig:selenium}
 \end{figure}
+
+
+
+
+
+\subsection{Skript pro nastavení Fiddleru}
+
+
 
 
 
@@ -373,6 +398,18 @@ Z analýzy je patrné, že by zvoleným programovacím jazykem pro systém Magpi
 	\bibitem{pyvbox}
 	Dorman Michael. \textit{pyvbox Documentation}. \textcopyright2017 Dostupné z: \\
 	\url{https://buildmedia.readthedocs.org/media/pdf/pyvbox/latest/pyvbox.pdf}
+	
+	\bibitem{gecko}
+	\url{https://github.com/mozilla/geckodriver/releases}
+	
+	\bibitem{firefox}
+	\url{https://www.mozilla.org/cs/firefox/new/}
+	
+	\bibitem{chrome}
+	\url{https://www.google.com/intl/cs_CZ/chrome/}
+	
+	\bibitem{chromedriver}
+	\url{https://chromedriver.chromium.org/}
 	
 \end{thebibliography}
 
