@@ -321,7 +321,7 @@ browser.quit()
 \caption{Implementace nástroje selenium s ovládáním prohlížeče}
 \label{fig:selenium}
 \end{figure}
-Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat různé parametry. V tomto případě je zvolen přepínač \mintinline{Python}{headless}, který určuje spouštění webového prohlížeče bez grafického uživatelského prostředí (tvz. GUI), čímž lze docílit rychlejšího průběhu. Samotné načtení webové stránky se provádí pomocí metody \mintinline{Python}{get()}, kterému se do parametru dá url stránky (ve snippetu stránka \mintinline{Python}{https://www.seznam.cz}). Příkazem \mintinline{Python}{quit()} lze internetový prohlížeč zavřít. Metoda \mintinline{Python}{get()} je implementována, aby čekala na úplné načtení stránky, avšak nepočítá s postupným načítáním javascriptových souborů. Zde je tedy potřeba přidat časovač (tzv. timer), který před zavřením prohlížeče proces pozastaví na určitou dobu (zde 2 sekundy).
+Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat různé parametry. V tomto případě je zvolen přepínač \mintinline{Python}{headless}, který určuje spouštění webového prohlížeče bez grafického uživatelského prostředí (tvz. GUI), čímž lze docílit rychlejšího průběhu. Samotné načtení webové stránky se provádí pomocí metody \mintinline{Python}{get()}, kterému se do parametru dá url stránky (ve snippetu stránka \mintinline{Python}{https://www.seznam.cz}). Příkazem \mintinline{Python}{quit()} lze internetový prohlížeč zavřít. Metoda \mintinline{Python}{get()} je implementována, aby čekala na úplné načtení stránky, avšak nepočítá s postupným načítáním javascriptových souborů. Pro kompletní načtení webové stránky je tedy potřeba přidat časovač (tzv. timer), který před zavřením prohlížeče skript pozastaví na určitou dobu (zde 2 sekundy).
 
 
 
@@ -333,23 +333,54 @@ Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat rů
 
 
 \section{Zpracování dat a upload do databáze}
+Protože byl ke stahování dat použit program Fiddler, který zaznamenává kompletní komunikaci prohlížeče s webovým serverem, je potřeba stažená data profiltrovat. K tomuto účelu byl vytvořen skript v programovacím jazyku Python. Následně je zapotřebí protříděná data nahrát do systému Scavenger, kde se nachází databáze cleansetu. Tato sekce tedy může být rozdělena na dvě části:
+\begin{itemize}
+	\item Třídění dat
+	\item Upload do databáze
+\end{itemize}
+
+
+
+\subsection{Třídění dat}
+
+
+
+\subsection{Upload do databáze}
+
+
 
 
 
 
 \section{Virtualizace}
-
+Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox.
 
 
 
 \section{Implementace frontového systému Kafka}
 
 
+\subsection{Kafka producer}
+
+\subsection{Kafka consumer}
+
 
 
 \section{Integrace pomocí systému Jenkins} 
 
 
+\subsection{Systém Jenkins}
+
+\subsubsection{Job pro nahrávání url do Kafky}
+
+\subsubsection{Job pro spoustění skriptu pro stahování dat}
+
+\subsubsection{Job pro upload dat do databáze cleansetu}
+
+
+\subsection{Systém Luft}
+
+\subsubsection{Dockerizace skriptu Kafka consumer}
 
 
 
