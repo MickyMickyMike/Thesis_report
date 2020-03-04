@@ -300,7 +300,7 @@ Při implementaci klientu pro stahování webového obsahu byla zvolena metoda s
 \subsection{Skript pro ovládání pomocných programů}
 Tento skript je psaný v programovacím jazyku Python, stejně jako většina práce. Jeho hlavní činností je spuštění programu Fiddler a správa internetového prohlížeče. K ovládání webového prohlížeče byl použit nástroj Selenium(\ref{sec:selenium}) v podobě knihovny importované do jazyka Python. Pro komunikaci s webovým prohlížečem je nutné nainstalovat takzvaný webdriver, který zajistí správnou konfiguraci Selenia pro daný prohlížeč. Webdriver Geckodriver\cite{gecko}, je určený pro komunikaci s internetovým prohlížečem Mozilla Firefox\cite{firefox}, naproti tomu webdriver ChromeDriver\cite{chromedriver}  je vyvinut  pro komunikaci s internetovým prohlížečem Google Chrome\cite{chrome}. V práci byl využit internetový prohlížeč Mozilla Firefox, tudíž i nástroj Geckodriver.
 
-Jednoduchá implementace Selenia s ovládáním webového prohlížeče v jazyku Python může vypadat jako ve výřezu kódu (tzv. snippetu) \ref{fig:selenium}.
+Jednoduchá implementace Selenia s ovládáním webového prohlížeče v jazyku Python může vypadat jako ve výřezu kódu (tzv. snippetu) \ref{snip:selenium}.
 
 \begin{figure}[h]               
 \begin{minted}{Python}
@@ -319,14 +319,14 @@ time.sleep(2)
 browser.quit()
 \end{minted}      
 \caption{Implementace nástroje selenium s ovládáním prohlížeče}
-\label{fig:selenium}
+\label{snip:selenium}
 \end{figure}
 Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat různé parametry. V tomto případě je zvolen přepínač \mintinline{Python}{headless}, který určuje spouštění webového prohlížeče bez grafického uživatelského prostředí (tvz. GUI), čímž lze docílit rychlejšího průběhu. Samotné načtení webové stránky se provádí pomocí metody \mintinline{Python}{get()}, kterému se do parametru dá url stránky (ve snippetu stránka \mintinline{Python}{https://www.seznam.cz}). Příkazem \mintinline{Python}{quit()} lze internetový prohlížeč zavřít. Metoda \mintinline{Python}{get()} je implementována, aby čekala na úplné načtení stránky, avšak nepočítá s postupným načítáním javascriptových souborů. Pro kompletní načtení webové stránky je tedy potřeba přidat časovač (tzv. timer), který před zavřením prohlížeče skript pozastaví na určitou dobu (zde 2 sekundy).
 
 
 
 
-\subsection{Skript pro nastavení Fiddleru}
+\subsection{Skript pro nastavení Fiddleru}\label{sec:fiddler_setup}
 
 
 
@@ -342,8 +342,68 @@ Protože byl ke stahování dat použit program Fiddler, který zaznamenává ko
 
 
 \subsection{Třídění dat}
+Pro potřeby třídení dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data, spolu s jejich metadaty. Tyto soubory jsou inkrementačně očíslovány, podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}). Metadata každého souboru nesou tyto informace:
 
+\begin{table}[h]
+	
+	\centering
+	\begin{tabular}{ll}
+	url         	&  zdrojová stránka souboru \\
+	host        	&  název serveru, na kterém je zdrojová stránka \\
+	referer       	&  stránka, z které přišla žádost o načtení současné url \\
+	response kód   	&  kód, který byl zaznamenán v hlavičce souboru  \\
+	redirect		&  lokace, na kterou dojde k přesměrování \\
+	time			&  čas záznamu souboru
+	\end{tabular}
 
+\caption{Metadata stažených souborů}
+\label{fig:meta}
+\end{table}
+
+Protože Fiddler zaznamenává veškerou komunikaci, je zapotřebí odlišit komunikaci vyvolanou přístupem na požadovanou webovou stránku od zbylé. První soubor, který je v sekvenčním průchodu důležitý, bude v metadatech obsahovat požadovanou webovou stránku v klíčovém slovu \textit{url} (viz tabulka s metadaty \ref{fig:meta}). Hlavní smyčka třídícího skriptu je znázorněna na snippetu \ref{snip:filter}. 
+
+\begin{figure}[h]               
+\begin{minted}{Python}
+sorted_list = get_files_ids(directory)
+stripped_url = netloc_from_url(url)
+referers = [stripped_url]
+valid_ids = []
+
+for file_id in sorted_list:
+    data = f"{directory}/{file_id}.dat"
+    meta = get_meta_from_file(f"{directory}/{file_id}.meta")
+
+    netloc_url = netloc_from_url(meta["url"])
+    netloc_referer = netloc_from_url(meta["referer"])
+    netloc_redirect = netloc_from_url(meta["redirect"])
+
+    response = meta["response_code"]
+    redirect_response = response == 301 or response == 302
+    
+    if redirect_response and meta["host"] in referers:
+        if meta["redirect"] is not "":
+            referers.append(netloc_redirect)
+    elif os.path.getsize(data) < 9:
+        continue
+    elif netloc_url in referers or (
+        netloc_referer is not "" and 
+        netloc_referer in referers
+    ):
+        valid_ids.append(file_id)
+        referers.append(netloc_url)
+
+\end{minted}      
+\caption{Implementace filtrování stažených dat}
+\label{snip:filter}
+\end{figure}
+
+Metoda \mintinline{Python}{get_file_ids()} načítá id stažených souborů (očíslováno podle zaznamenaného pořadí) a ukládá je do listu, přes který iteruje hlavní smyčka skriptu. Metoda \mintinline{Python}{netloc_from_url()} vrací netloc (tj. doménové jméno první úrovně) zadané adresy. Každá url adresa se řídí daným formátem, zjednodušeně takto:
+\begin{eqnarray}
+<scheme>://<netloc>/<path>
+\end{eqnarray}
+Pro příklad \url{http://www.example.com/index} je tedy \mintinline{Python}{http} schéma, \mintinline{Python}{index} cesta a \mintinline{Python}{www.example.com} hledaný netloc. Toho bylo použito při procházení setříděného listu očíslovaných souborů. Před iterací je ještě zapotřebí inicializovat dva listy. List \mintinline{Python}{referers} bude obsahovat všechny již známé a chtěné referery (tj. netloc adresy, které si vyžádaly načtení zdrojových souborů současné url \ref{fig:meta}). Jak již bylo dříve zmíněno, prvním takovým refererem je původní zadaná adresa. Druhý list \mintinline{Python}{valid_ids} bude uchovávat názvy souborů, které byly vyhodnoceny jako validní (tj. soubory zachycené komunikací s původní zadanou adresou).
+
+V hlavní smyčce se nejprve načtou metadata k souboru pomocí metody \mintinline{Python}{get_meta_from_file()} a uloží se do slovníku \mintinline{Python}{meta}. Poté se tyto data oříznou pomocí metody \mintinline{Python}{netloc_from_url()} a dále se pracuje jen s jejich netloc částí. První podmínka vyhodnocuje přesměrování. Pokud je \mintinline{Python}{response_code} v metadatech souboru roven $301$ nebo $302$, což značí přesměrování, a pokud je zároveň \mintinline{Python}{host} této adresy již v listu \mintinline{Python}{referers}, nejedná se o validní soubor, však jde o soubor, který nese informace o přesměrování. Je tedy potřeba přidat netloc adresy, na kterou dojde k přesměrování (v metadatech klíčové slovo \mintinline{Python}{redirect}).
 
 \subsection{Upload do databáze}
 

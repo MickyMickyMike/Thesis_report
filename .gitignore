@@ -11,3 +11,4 @@ _minted-thesis
 *.gz
 *.toc
 *.blg
+*.lot
