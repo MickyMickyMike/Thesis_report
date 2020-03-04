@@ -26,6 +26,7 @@
 \newcommand{\tg}{\mathop{\mathrm{tg}}} %cesky tangens
 \newcommand{\cotg}{\mathop{\mathrm{cotg}}} %cesky cotangens
 
+
 \setcounter{tocdepth}{2}
 \usepackage{listings}
 \usepackage{multirow}
@@ -63,6 +64,8 @@
 \keywordsCS{Python, Virtualbox, Fiddler, html, js}
 \keywordsEN{Python, Virtualbox, Fiddler, html, js}
 % \website{http://site.example/thesis} %volitelná URL práce, objeví se v tiráži - úplně odstraňte, nemáte-li URL práce
+
+%\renewcommand{\baselinestretch}{1.5}
 
 \begin{document}
 
@@ -209,7 +212,7 @@ Z hlediska bezpečnosti by bylo rozumné spouštět virtuální stroj (neboli VM
 \section{Nahrání získaného obsahu do databáze cleansetu}
 Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. Ta je součástí většího systému aplikací, který nese interní označení Scavenger. Zjednodušeně lze říci, že tento systém obsahuje záznamy o všech antiviru známých souborech a url adresách (nakažených i čistých). Soubory se v systému Scavenger ukládají v podobě hashe vzniklé pomocí hashovacího algoritmu sha-256. Tímto lze docílit jednoduché kontroly duplicity (stejné soubory mohou mít rozdílné názvy, ale hash souboru je pro identické soubory stejná). K hashi souboru se přikládají metadata mimojiné s informací o původu souboru, času výskytu a prevalencí. 
 
-K nahrání souborů do Scavengeru lze využít síťový souborový systém Sambu, který implementuje přenos souborů po síti pomocí síťového protokolu SMB a to převážně v systémech Windows. Tato metoda je však z hlediska firemní infrastruktury zastaralá. Novější způsob představuje využití datové platformy HDP (Hortonworks data platform), která je založená na techlonogiích od společnosti Apache - Hadoop, Hive a Spark. Tato platforma se specializuje na přesun a zpracování velkého množství dat z různých zdrojů. Ke komunikaci se zmíněným systémem HDP lze využít interně vyvinutý python klient, který přesun souborů usnadní.
+K nahrání souborů do Scavengeru lze využít síťový souborový systém Sambu, který implementuje přenos souborů po síti pomocí síťového protokolu SMB a to převážně v systémech Windows. Tato metoda je však z hlediska firemní infrastruktury zastaralá. Novější způsob představuje využití datové platformy HCP (Hitachi content platform). Tato platforma se specializuje na přesun a zpracování velkého množství dat z různých zdrojů. Ke komunikaci se zmíněným systémem HCP lze využít interně vyvinutý python klient, který přesun souborů usnadní.
 
 
 
@@ -403,13 +406,67 @@ Metoda \mintinline{Python}{get_file_ids()} načítá id stažených souborů (o�
 \end{eqnarray}
 Pro příklad \url{http://www.example.com/index} je tedy \mintinline{Python}{http} schéma, \mintinline{Python}{index} cesta a \mintinline{Python}{www.example.com} hledaný netloc. Toho bylo použito při procházení setříděného listu očíslovaných souborů. Před iterací je ještě zapotřebí inicializovat dva listy. List \mintinline{Python}{referers} bude obsahovat všechny již známé a chtěné referery (tj. netloc adresy, které si vyžádaly načtení zdrojových souborů současné url \ref{fig:meta}). Jak již bylo dříve zmíněno, prvním takovým refererem je původní zadaná adresa. Druhý list \mintinline{Python}{valid_ids} bude uchovávat názvy souborů, které byly vyhodnoceny jako validní (tj. soubory zachycené komunikací s původní zadanou adresou).
 
-V hlavní smyčce se nejprve načtou metadata k souboru pomocí metody \mintinline{Python}{get_meta_from_file()} a uloží se do slovníku \mintinline{Python}{meta}. Poté se tyto data oříznou pomocí metody \mintinline{Python}{netloc_from_url()} a dále se pracuje jen s jejich netloc částí. První podmínka vyhodnocuje přesměrování. Pokud je \mintinline{Python}{response_code} v metadatech souboru roven $301$ nebo $302$, což značí přesměrování, a pokud je zároveň \mintinline{Python}{host} této adresy již v listu \mintinline{Python}{referers}, nejedná se o validní soubor, však jde o soubor, který nese informace o přesměrování. Je tedy potřeba přidat netloc adresy, na kterou dojde k přesměrování (v metadatech klíčové slovo \mintinline{Python}{redirect}).
+V hlavní smyčce se nejprve načtou metadata k souboru pomocí metody \mintinline{Python}{get_meta_from_file()} a uloží se do slovníku \mintinline{Python}{meta}. Poté se tyto data oříznou pomocí metody \mintinline{Python}{netloc_from_url()} a dále se pracuje jen s jejich netloc částí. První podmínka vyhodnocuje přesměrování. Pokud je \mintinline{Python}{response_code} v metadatech souboru roven $301$ nebo $302$, což značí přesměrování, a pokud je zároveň \mintinline{Python}{host} této adresy již v listu \mintinline{Python}{referers}, nejedná se o validní soubor, však jde o soubor, který nese informace o přesměrování. Je tedy potřeba přidat netloc adresy, na kterou dojde k přesměrování (v metadatech klíčové slovo \mintinline{Python}{redirect}). 
+
+Druhá podmínka je přidána pro optimalizaci. Fiddler zaznamenává velké množství souborů, které mají režijní charakter. Tyto soubory se vyznačují majou velikostí a jsou z hlediska filtrace nedůležité. Z toho důvodu se dál zpracovávají pouze soubory, které mají více než 8 bytů.
+
+Poslední podmínka již kontroluje samotné validní soubory. Pokud je netloc adresy, nebo netloc referera adresy již v listu \mintinline{Python}{referers}, jedná se o soubor zachycený při komunikaci s cílovou adresou a soubor je přidán do validního listu. Dále je netloc adresy přidán do \mintinline{Python}{referers} z důvodu, kdy by tato adresa odkazovala na jinou url při další komunikaci. Po iteraci nad všemi soubory v setříděném listu je výstupní list \mintinline{Python}{valid_ids} předán ke zpracování skriptu pro upload dat do databáze.
+
+
+
+
 
 \subsection{Upload do databáze}
+Pro nahrávání dat do databáze byl již dříve týmem, který spravuje systém Scavenger, vytvořen klient v podobě python knihovny. Tento klient používá HCP (Hitachi content platform) pro přesun dat mezi klientem a servery Scavengeru a představuje novější řešení oproti dříve používanému klientu Samba. Při uploadu dat do databáze lze tedy vycházet z tohoto kódu. V prvním kroku procesu uploadu do Scavengeru klient přesune požadovaný soubor do tzv. namespace (vyhrazený prostor na serverové části unikátní pro daného klienta) v HCP úložišti a připojí k němu požadovaná metadata. K tomuto namespace je připojen proces (tzv. feeder), který periodicky odebírá přítomné soubory i s jejich metadaty a přesouvá je do systému Scavenger. Při tomto procesu dochází k přejmenování souborů hashováním sha256.
+
+Implementace klientu je velmi jednoduchá (snippet \ref{snip:hcpupload}).
+\begin{figure}[h]               
+	\begin{minted}{Python}
+def upload_file(file, target_name, meta):
+    client = Client(**config.HCP_CONFIG)
+    client.upload_object(file, target_name, meta)
+	\end{minted}      
+	\caption{Implementace použití HCP klientu pro upload}
+	\label{snip:hcpupload}
+\end{figure}
+Z knihovny je potřeba provést import třídy \mintinline{Python}{Client()} a její inicializaci, při které se předává konfigurace klientu. Konfigurace obsahuje jméno \mintinline{Python}{namespace}, tedy cílový prostor v úložišti, ke kterému se připojit, přihlašovací jméno a heslo. Všechny tyto údaje byly vygenerovány týmem spravující HCP úložiště. Dále už stačí jen volat metodu \mintinline{Python}{upload_object()} a předat jí potřebné parametry. Mezi tyto parametry paří cesta k nahrávanému souboru (\mintinline{Python}{file}), název, jaký ponese soubor v úložišti (\mintinline{Python}{target_name}) a požadovaná metadata, která se mají k souboru přiložit (\mintinline{Python}{meta}). Zde není potřeba nahrávat všechna metadata získaná při stahování souborů. 
+
+\begin{figure}[h]               
+	\begin{minted}{Python}
+def set_meta_for_upload(meta_file, url):
+    meta = {
+    "source_url": meta_file["url"],
+    "source_url_referer": meta_file["referer"],
+    "trigger_url": url,
+    }
+	
+    return meta
+	\end{minted}      
+	\caption{Implementace metadat pro HCP upload}
+	\label{snip:metaupload}
+\end{figure}
 
 
 
+\begin{figure}[h]               
+	\begin{minted}{Python}
+for counter, file in enumerate(filenames):
+    file_name = f"{root}\\{directory}\\{file}"
 
+    meta = hcp_feeder.set_meta_for_upload(
+        files_filter.get_meta_from_file(f"{file_name}.meta"),
+        directory
+    )
+
+    hcp_feeder.upload_file(
+        f"{file_name}.dat",
+        f"{directory}{counter}",
+        meta
+    )
+	\end{minted}      
+	\caption{Implementace hlavní smyčky pro upload}
+	\label{snip:mainupload}
+\end{figure}
 
 
 \section{Virtualizace}
