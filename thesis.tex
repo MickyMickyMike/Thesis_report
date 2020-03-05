@@ -330,7 +330,40 @@ Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat rů
 
 
 \subsection{Skript pro nastavení Fiddleru}\label{sec:fiddler_setup}
+Program Fiddler se primárně ovládá přes grafické prostředí. Je však možné změnit jeho výchozí konfiguraci tak, aby se při spuštění rovnou načetl do požadovaného nastavení. K tomuto účelu slouží inicializační skript, který nese označení \mintinline{Python}{CustomRules.js}, jedná se tedy o skript psaný v javaScriptu. Fiddler při spuštění vždy načítá set pravidel, podle kterých se nastaví. Defaultně jsou tyto pravidla brána ze skriptu, který se nachází v instalačním adresáři programu. Skriptem \mintinline{Python}{CustomRules.js} lze tyto pravidla nahradit.
 
+Skript obsahuje mnoho funkcí pro různé sekce programu, z hlediska této práce je však důležitá pouze funkce \mintinline{Python}{OnBeforeResponse()}, která je zavolána vždy, když přijde ze serverové části nějaká odpověď (tzv. response). Implementace této metody je znázorněna v snippetu \ref{snip:fiddler}.
+
+\begin{figure}[h]               
+	\begin{minted}{Javascript}
+static function OnBeforeResponse(oSession: Session) {
+
+  var code = oSession.responseCode
+  if (code == 200 || code == 301 || code == 302) {
+
+      var path = "c:\\tmp\\fiddler_data\\"
+      var filename_dat  = path + oSession.id + ".dat";
+      var filename_meta = path + oSession.id + ".meta";
+
+      System.IO.File.WriteAllBytes(
+          filename_dat, oSession.responseBodyBytes);
+       
+      var url = oSession.url;
+      var host = oSession.host);
+      var ref = oSession.oRequest.headers["Referer"]);
+      var response = oSession.responseCode);
+      var redirect = oSession.oResponse.headers["Location"]);
+      var t = System.DateTime.Now);
+      
+      CreateMetaFile(url, host, ref, response, redirect, t)
+  }
+}
+	\end{minted}      
+	\caption{Implementace inicializačního skriptu Fiddleru}
+	\label{snip:fiddler}
+\end{figure}
+
+Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s daným serverem). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování z pravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ potom pro přesměrování dočasná (tzv. moved temporarily)\cite{response_codes}.
 
 
 
@@ -344,7 +377,7 @@ Protože byl ke stahování dat použit program Fiddler, který zaznamenává ko
 
 
 
-\subsection{Třídění dat}
+\subsection{Třídění dat}\label{sec:trideni}
 Pro potřeby třídení dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data, spolu s jejich metadaty. Tyto soubory jsou inkrementačně očíslovány, podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}). Metadata každého souboru nesou tyto informace:
 
 \begin{table}[h]
@@ -429,7 +462,7 @@ def upload_file(file, target_name, meta):
 	\caption{Implementace použití HCP klientu pro upload}
 	\label{snip:hcpupload}
 \end{figure}
-Z knihovny je potřeba provést import třídy \mintinline{Python}{Client()} a její inicializaci, při které se předává konfigurace klientu. Konfigurace obsahuje jméno \mintinline{Python}{namespace}, tedy cílový prostor v úložišti, ke kterému se připojit, přihlašovací jméno a heslo. Všechny tyto údaje byly vygenerovány týmem spravující HCP úložiště. Dále už stačí jen volat metodu \mintinline{Python}{upload_object()} a předat jí potřebné parametry. Mezi tyto parametry paří cesta k nahrávanému souboru (\mintinline{Python}{file}), název, jaký ponese soubor v úložišti (\mintinline{Python}{target_name}) a požadovaná metadata, která se mají k souboru přiložit (\mintinline{Python}{meta}). Zde není potřeba nahrávat všechna metadata získaná při stahování souborů. 
+Z knihovny je potřeba provést import třídy \mintinline{Python}{Client()} a její inicializaci, při které se předává konfigurace klientu. Konfigurace obsahuje jméno \mintinline{Python}{namespace}, tedy cílový prostor v úložišti, ke kterému se připojit, přihlašovací jméno a heslo. Všechny tyto údaje byly vygenerovány týmem spravující HCP úložiště. Dále už stačí jen volat metodu \mintinline{Python}{upload_object()} a předat jí potřebné parametry. Mezi tyto parametry paří cesta k nahrávanému souboru (\mintinline{Python}{file}), název, jaký ponese soubor v úložišti (\mintinline{Python}{target_name}) a požadovaná metadata, která se mají k souboru přiložit (\mintinline{Python}{meta}). Zde není potřeba nahrávat všechna metadata získaná při stahování souborů. Ve snippetu \ref{snip:metaupload} je kód, který tento výběr zajišťuje.
 
 \begin{figure}[h]               
 	\begin{minted}{Python}
@@ -442,12 +475,13 @@ def set_meta_for_upload(meta_file, url):
 	
     return meta
 	\end{minted}      
-	\caption{Implementace metadat pro HCP upload}
+	\caption{Implementace načtení metadat pro HCP upload}
 	\label{snip:metaupload}
 \end{figure}
 
+Metoda \mintinline{Python}{set_meta_fot_upload()} má dva vstupní parametry. Prvním je slovník \mintinline{Python}{meta_file}, který obsahuje všechna stažená metadata, druhým je \mintinline{Python}{url}, což je původní dotazovaná adresa. Výstupem metody je slovník s metadaty určenými pro upload do HCP úložiště. Pro soubor uložený na cleansetu je důležitý údaj o adrese, na které se soubor vyskytoval - \mintinline{Python}{source_url} a kdo na tuto adresu odkazoval - \mintinline{Python}{source_url_referer}. Třetím důležitým údajem je původní volaná adresa \mintinline{Python}{trigger_url}. Ta je důležitá v případě, že by se na cleansetu objevily dva totožné soubory. V takové situaci se nový soubor již nepřidá, aktualizují se však jeho metadata a v budoucnu je stále patrné, že byl tento soubor viděn při komunikaci s vícero rozdílnými adresami.
 
-
+Snippet \ref{snip:mainupload} znázorňuje hlavní smyčku skriptu pro upload souborů do HCP úložiště a následně do Scavengeru.
 \begin{figure}[h]               
 	\begin{minted}{Python}
 for counter, file in enumerate(filenames):
@@ -467,7 +501,12 @@ for counter, file in enumerate(filenames):
 	\caption{Implementace hlavní smyčky pro upload}
 	\label{snip:mainupload}
 \end{figure}
+V ní dochází k iteraci přes všechny validní soubory (výstup z třídění dat \ref{sec:trideni}). Pro každý soubor se nejdříve určí cesta souboru \mintinline{Python}{file_name}. Následně se nastaví metadata pro upload zavoláním metody \mintinline{Python}{set_meta_for_upload()}, které se předá cesta k souboru s metadaty a původní tázaná url (zde \mintinline{Python}{directory} z důvodu, že se stažené soubory ukládají do složek pojmenovaných podle původní zadané adresy). Na závěr cyklu hlavní smyčky je volána funkce \mintinline{Python}{upload_file}. Prvním parametrem je cesta k datovému souboru. Následuje cílový název souboru v HCP úložišti. Zde, aby se zajistila unikátnost souborů v úložišti, se soubory přejmenovávají podle klíče:
+\begin{eqnarray}
+\{puvodni\_ adresa\}\{poradi\_ zpracovaneho\_ souboru\}
+\end{eqnarray}
 
+ Toto je možné z důvodu, že se následně soubory automaticky přejmenovávají při přenosu z HCP úložiště do Scavengeru pomocí hashovací funkce sha256. Posledním parametrem pro upload jsou metadata souboru.
 
 \section{Virtualizace}
 Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox.
@@ -558,6 +597,9 @@ Z důvodu použití programu Fiddler pro stahování dat namísto emulace webov�
 	
 	\bibitem{chromedriver}
 	\url{https://chromedriver.chromium.org/}
+	
+	\bibitem{response_codes}
+	\url{https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html}
 	
 \end{thebibliography}
 
