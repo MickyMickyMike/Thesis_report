@@ -625,9 +625,86 @@ gs.directory_copy_from_guest(
 \subsection{Kafka producer}
 
 
+\begin{figure}[h]               
+	\begin{minted}{Python}
+class KafkaProducer(Producer):
+    def __init__(self):
+    super().__init__(**config.KAFKA_PRODUCER)
+	\end{minted}      
+	\caption{Implementace třídy Kafka Producer}
+	\label{snip:kafkaproducer}
+\end{figure}
+
+
+
+\begin{figure}[h]               
+	\begin{minted}{Python}
+def send_message_to_kafka(self, message, message_cnt):
+    self.produce(config.KAFKA_TOPIC, message.encode("utf-8"))
+    self.flush()
+    print(f"Message sent")
+	\end{minted}      
+	\caption{Posílání zpráv do frontového systému Kafka}
+	\label{snip:kafkasend}
+\end{figure}
+
+
+\begin{figure}[h]               
+	\begin{minted}{Python}
+for url_count, url in enumerate(urls):
+    if not tools.is_url(url):
+        continue
+
+    if not url.startswith("http"):
+        url = "http://" + url
+
+    kafka_producer.send_message_to_kafka(url, url_count)
+	\end{minted}      
+	\caption{Implementace hlavní smyčky posílání zpráv do Kafky}
+	\label{snip:kafkasendmain}
+\end{figure}
 
 
 \subsection{Kafka consumer}
+
+
+
+\begin{figure}[h]               
+	\begin{minted}{Python}
+class KafkaConsumer(confluent_kafka.Consumer):
+    def __init__(self):
+        super().__init__(**config.KAFKA_CONSUMER)
+        self.subscribe([config.KAFKA_TOPIC])
+	\end{minted}      
+	\caption{Implementace třídy Kafka Consumer}
+	\label{snip:kafkaconsumer}
+\end{figure}
+
+
+
+
+\begin{figure}[h]               
+	\begin{minted}{Python}
+def consume_url(self):
+	
+    print("Consuming message...")
+    msg = self.poll(config.KAFKA_CONSUMER_POLL_TIMEOUT)
+	
+    if msg is None:
+        return None
+    elif msg.error():
+        print(f"Error: {msg.error().name()}")
+        raise confluent_kafka.KafkaException(msg.error())
+    else:
+        print("Message consumed")
+        return msg.value().decode('utf-8')
+	\end{minted}      
+	\caption{Přijímání zpráv z frontového systému Kafka}
+	\label{snip:kafkapoll}
+\end{figure}
+
+
+
 
 
 
