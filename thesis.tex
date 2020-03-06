@@ -95,7 +95,7 @@
 Dnešní doba je plná rizik, která představují hrozbu pro každodenního uživatele internetu. Ať už se jedná o phishing (zisk citlivých údajů pomocí podvodné internetové komunikace) či různé druhy malwaru (nežádoucí programy mající za úkol poškodit uživatele). V boji s těmito riziky je důležité chránit sebe a svoje data pomocí antivirových programů. Jedním z nejrozšířenějších je Avast, který má přes 435 milionů aktivních uživatelů a měsíčně zabrání okolo 2 miliardám útoků\cite{avast_flier}.
 
 \section{Motivace}
-Avast, stejně jako většina antivirových programů, uchovává informace o všech známých škodlivých entitách. Tato databáze se denně rozšiřuje o spousty nových záznamů, které obsahují nejen informace o celých souborech, ale i kusy kódu webového obsahu (tzv. string detekce), které jsou považovány za příznak podvodných úmyslů. Může se však stát, že je tento kus kódu moc obecný a dochází tak i k blokování čistého obsahu (tzv. false-positive detekcím). Aby se těmto situacím předcházelo, je zapotřebí udržovat i databázi s čistými záznamy (tzv. cleanset). Tyto záznamy jsou převážně HTML a js soubory.
+Avast, stejně jako většina antivirových programů, uchovává informace o všech známých škodlivých entitách. Tato databáze se denně rozšiřuje o spousty nových záznamů, které obsahují nejen informace o celých souborech, ale i kusy kódu webového obsahu (tzv. string detekce), které jsou považovány za příznak podvodných úmyslů. Může se však stát, že je tento kus kódu moc obecný a dochází tak i k blokování čistého obsahu (tzv. false-positive detekcím). Aby se těmto situacím předcházelo, je zapotřebí udržovat i databázi s čistými záznamy (tzv. cleanset). Tyto záznamy jsou převážně HTML a .js soubory.
 
 Dříve, než se nová string detekce začlení do jádra antiviru, je její obsah porovnán se všemi záznamy na cleansetu a pokud dojde ke shodě (tj. detekční string je součástí nějakého souboru na cleansetu), je tato detekce považována za nevalidní. Tímto dochází k zabránění fals-positive detekcím. 
 
@@ -146,7 +146,7 @@ K získání čistých souborů je možné přistoupit dvěma způsoby. Jednou z
 
 Další problematikou je ošetření přesměrovávání (tzv. redirecty), které se na spoustě webových stránek používá. Jedna z možností je redirecty neřešit a zabývat se pouze obsahem dané url. To by proces získání zdrojových souborů usnadnilo. Není to ale příliš robustní řešení. Bylo by tedy rozumné s přesměrováváním webových stránek počítat. 
 
-Také by zde měla být implementována logika selekce pouze HTML a js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. To je možné provádět přímo při stahování souborů, nebo vždy pro zadanou adresu stáhnout všechny soubory a selekci provést následně.
+Také by zde měla být implementována logika selekce pouze HTML a .js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. To je možné provádět přímo při stahování souborů, nebo vždy pro zadanou adresu stáhnout všechny soubory a selekci provést následně.
 
 Jednotlivé rozebírané metody získání čistých souborů z webových stránek jsou tedy následující:
 \begin{itemize}
@@ -178,12 +178,12 @@ Z tohoto důvodu by bylo snazší použít nástroj \textit{Selenium}(\ref{sec:s
 	\caption{Diagram zachytávání komunikace Fiddlerem}
 	\label{fig:fiddler}
 \end{figure}
-Protože je \textit{Fiddler} původně vyvíjen pro testovací účely a sledování internetové komunikace (tzv. traffic), zachytává veškerý traffic, který skrze nástroj proudí (Obr.\ref{fig:fiddler}). Bylo by tedy potřeba implementovat logiku pro třídení a následnou selekci HTML a js souborů.
+Protože je \textit{Fiddler} původně vyvíjen pro testovací účely a sledování internetové komunikace (tzv. traffic), zachytává veškerý traffic, který skrze nástroj proudí (Obr.\ref{fig:fiddler}). Bylo by tedy potřeba implementovat logiku pro třídení a následnou selekci HTML a .js souborů.
 
-\subsubsection{Selekce HTML a js souborů}
-Prvním přístupem je emulace webového prohlížeče. Přináší výhodu v tom, že se při parsování HTML stránek rovnou přistupuje pouze k js a HTML souborům a tím odpadá nutnost následně nějakou selekci provádět. Metoda s použitím \textit{Fiddleru} je v tomto složitější. \textit{Fiddler} je komplexní nástroj a automaticky zachytává veškerou komunikaci - nejen soubory potřebné k vykrelení webové stránky, ale i režijní komunikaci mezi prohlížečem a serverem. Tento přístup je možné změnit pomocí již zmíněného inicializačního scriptu. 
+\subsubsection{Selekce HTML a .js souborů}
+Prvním přístupem je emulace webového prohlížeče. Přináší výhodu v tom, že se při parsování HTML stránek rovnou přistupuje pouze k .js a HTML souborům a tím odpadá nutnost následně nějakou selekci provádět. Metoda s použitím \textit{Fiddleru} je v tomto složitější. \textit{Fiddler} je komplexní nástroj a automaticky zachytává veškerou komunikaci - nejen soubory potřebné k vykrelení webové stránky, ale i režijní komunikaci mezi prohlížečem a serverem. Tento přístup je možné změnit pomocí již zmíněného inicializačního scriptu. 
 
-Avšak problémy této metody přináší i webový prohlížeč, kterého se zde využívá. Téměř vždy při spuštění prohlížeče probíhá nevyžádaná komunikace prohlížeče se servery, která je potřeba vytřídit. I zde je možné využít inicializačního scriptu \textit{Fiddleru}, implementovat třídění již při zachytávání komunikace a zachytávat pouze HTML a js soubory ze serverů, které odpovídají zpracovávané url. To ovšem přináší problémy s přesměrováním, které může seznam chtěných serverů libovolně navyšovat, což už by pro inicializační script představovalo nelehký úkol a takové řešení patrně nebude optimální. Druhý způsob je zachytávat HTML a js komunikaci ze všech serverů a selekci řešit až později při zpracování dat v \textit{Pythonu}. Nedostatkem této možnosti je zvýšená náročnost na paměť, kterou představuje zpracovávání více souborů. Předpokládá se ale, že tato nevyžádaná komunikace bude v poměru s chtěnými soubory minimální, tudíž by k výrazné zvýšení náročnosti na paměť dojít nemělo.
+Avšak problémy této metody přináší i webový prohlížeč, kterého se zde využívá. Téměř vždy při spuštění prohlížeče probíhá nevyžádaná komunikace prohlížeče se servery, která je potřeba vytřídit. I zde je možné využít inicializačního scriptu \textit{Fiddleru}, implementovat třídění již při zachytávání komunikace a zachytávat pouze HTML a .js soubory ze serverů, které odpovídají zpracovávané url. To ovšem přináší problémy s přesměrováním, které může seznam chtěných serverů libovolně navyšovat, což už by pro inicializační script představovalo nelehký úkol a takové řešení patrně nebude optimální. Druhý způsob je zachytávat HTML a .js komunikaci ze všech serverů a selekci řešit až později při zpracování dat v \textit{Pythonu}. Nedostatkem této možnosti je zvýšená náročnost na paměť, kterou představuje zpracovávání více souborů. Předpokládá se ale, že tato nevyžádaná komunikace bude v poměru s chtěnými soubory minimální, tudíž by k výrazné zvýšení náročnosti na paměť dojít nemělo.
 
 
 
@@ -293,7 +293,7 @@ Z analýzy je patrné, že by zvoleným programovacím jazykem pro systém Magpi
 
 
 
-\section{Klient pro stahování webového obsahu}
+\section{Klient pro stahování webového obsahu} \label{sec:stahovani}
 Při implementaci klientu pro stahování webového obsahu byla zvolena metoda s využitím programu Fiddler pro zachytávání internetové komunikace. Tato metoda přináší komplexnější odposlech bez nutnosti emulace webového prohlížeče. Bylo nutné vytvořit skript pro ovládání internetového prohlížeče a Fiddleru, tento skript byl napsaný v jazyku Python, a dále bylo zapotřebí nastavit Fiddler pomocí inicializačního souboru, který je napsaný v javascriptu. Sekce je tedy rozdělena do dvou podsekcí:
 \begin{itemize}
 	\item Skript pro ovládání pomocných programů
@@ -350,12 +350,12 @@ static function OnBeforeResponse(oSession: Session) {
        
       var url = oSession.url;
       var host = oSession.host);
-      var ref = oSession.oRequest.headers["Referer"]);
+      var referer = oSession.oRequest.headers["Referer"]);
       var response = oSession.responseCode);
       var redirect = oSession.oResponse.headers["Location"]);
-      var t = System.DateTime.Now);
+      var time = System.DateTime.Now);
       
-      CreateMetaFile(url, host, ref, response, redirect, t)
+      WriteMeta(url, host, referer, response, redirect, time)
   }
 }
 	\end{minted}      
@@ -363,8 +363,26 @@ static function OnBeforeResponse(oSession: Session) {
 	\label{snip:fiddler}
 \end{figure}
 
-Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s daným serverem). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování z pravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ potom pro přesměrování dočasná (tzv. moved temporarily)\cite{response_codes}.
+Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování z pravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ potom pro přesměrování dočasná (tzv. moved temporarily)\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
 
+Pokud se tak nastane, jsou vytvořeny dva soubory, které jsou pojmenovány podle id relace. Soubor s koncovkou \mintinline{Python}{.dat} je určený pro záznam zachycených dat, soubor \mintinline{Python}{.meta} slouží k uchování metadat o zachycené komunikaci. Následně se volá funkce \mintinline{Python}{WriteAllBytes()}, která z relace oSession přijme parametr \mintinline{Python}{responseBodyBytes}, který obsahuje tělo odpovědi ze serveru, tedy zachycená data, a zapíše je do datového souboru. Dále se shromáždí metadata potřebná pro filtraci souborů (Tabulka \ref{fig:meta}), která se zapíší do souboru \mintinline{Python}{.meta}. 
+
+
+\begin{table}[h]
+	
+	\centering
+	\begin{tabular}{ll}
+		url         	&  zdrojová stránka souboru \\
+		host        	&  název serveru, na kterém je zdrojová stránka \\
+		referer       	&  stránka, z které přišla žádost o načtení současné url \\
+		response kód   	&  kód, který byl zaznamenán v hlavičce souboru  \\
+		redirect		&  lokace, na kterou dojde k přesměrování \\
+		time			&  čas záznamu souboru
+	\end{tabular}
+	
+	\caption{Metadata stažených souborů}
+	\label{fig:meta}
+\end{table}
 
 
 
@@ -378,23 +396,7 @@ Protože byl ke stahování dat použit program Fiddler, který zaznamenává ko
 
 
 \subsection{Třídění dat}\label{sec:trideni}
-Pro potřeby třídení dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data, spolu s jejich metadaty. Tyto soubory jsou inkrementačně očíslovány, podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}). Metadata každého souboru nesou tyto informace:
-
-\begin{table}[h]
-	
-	\centering
-	\begin{tabular}{ll}
-	url         	&  zdrojová stránka souboru \\
-	host        	&  název serveru, na kterém je zdrojová stránka \\
-	referer       	&  stránka, z které přišla žádost o načtení současné url \\
-	response kód   	&  kód, který byl zaznamenán v hlavičce souboru  \\
-	redirect		&  lokace, na kterou dojde k přesměrování \\
-	time			&  čas záznamu souboru
-	\end{tabular}
-
-\caption{Metadata stažených souborů}
-\label{fig:meta}
-\end{table}
+Pro potřeby třídení dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data, spolu s jejich metadaty. Tyto soubory jsou inkrementačně očíslovány, podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}).
 
 Protože Fiddler zaznamenává veškerou komunikaci, je zapotřebí odlišit komunikaci vyvolanou přístupem na požadovanou webovou stránku od zbylé. První soubor, který je v sekvenčním průchodu důležitý, bude v metadatech obsahovat požadovanou webovou stránku v klíčovém slovu \textit{url} (viz tabulka s metadaty \ref{fig:meta}). Hlavní smyčka třídícího skriptu je znázorněna na snippetu \ref{snip:filter}. 
 
@@ -503,44 +505,199 @@ for counter, file in enumerate(filenames):
 \end{figure}
 V ní dochází k iteraci přes všechny validní soubory (výstup z třídění dat \ref{sec:trideni}). Pro každý soubor se nejdříve určí cesta souboru \mintinline{Python}{file_name}. Následně se nastaví metadata pro upload zavoláním metody \mintinline{Python}{set_meta_for_upload()}, které se předá cesta k souboru s metadaty a původní tázaná url (zde \mintinline{Python}{directory} z důvodu, že se stažené soubory ukládají do složek pojmenovaných podle původní zadané adresy). Na závěr cyklu hlavní smyčky je volána funkce \mintinline{Python}{upload_file}. Prvním parametrem je cesta k datovému souboru. Následuje cílový název souboru v HCP úložišti. Zde, aby se zajistila unikátnost souborů v úložišti, se soubory přejmenovávají podle klíče:
 \begin{eqnarray}
-\{puvodni\_ adresa\}\{poradi\_ zpracovaneho\_ souboru\}
+\{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}
 \end{eqnarray}
 
  Toto je možné z důvodu, že se následně soubory automaticky přejmenovávají při přenosu z HCP úložiště do Scavengeru pomocí hashovací funkce sha256. Posledním parametrem pro upload jsou metadata souboru.
 
 \section{Virtualizace}
-Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox.
+Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox. K tomu byla využita knihovna \mintinline{Python}{pyvbox}\cite{pyvbox}, která implementuje Virtualbox API do prostředí Pythonu. Není potřeba virtualizovat celý proces, ale jen část, která se zabývá stahováním dat. Bylo tedy zapotřebí vytvořit skript, který dokáže nastartovat virtuální stroj, v něm spustit aplikaci pro stahování souborů a tyto soubory přenést z virtuálního prostředí zpět do fyzického systému.
+
+K tomuto účelu byla vytvořena třída  \mintinline{Python}{Vbox}, jejíž inicializace (tzv. konstruktor) je zobrazena ve snippetu \ref{snip:vboxmain}.
+\begin{figure}[h]               
+	\begin{minted}{Python}
+import virtualbox
+
+class Vbox:
+    def __init__(self, machine=""):
+
+    # init virtualbox
+    self.vbox = virtualbox.VirtualBox()
+
+    # init session
+    self.session = virtualbox.Session()
+
+    # define machine and create a session
+    machines = self.list_all_machines(self.vbox)
+    if machine not in machines:
+        if len(machines) == 0:
+            print("No virtual machines to load")
+            sys.exit()
+
+        print(f"No or corrupted machine name, "
+            f"loading machine {machines[0]}")
+        machine = machines[0]
+
+    self.machine = self.vbox.find_machine(machine)
+	\end{minted}      
+	\caption{Implementace inicializace třídy Vbox}
+	\label{snip:vboxmain}
+\end{figure}
+Instanci této třídy lze použít k ovládání virtuálního stroje. K tomu je nutné inicializovat tři objekty - \mintinline{Python}{VirtualBox()}, \mintinline{Python}{Session()} a \mintinline{Python}{Machine()}. Instance třídy \mintinline{Python}{VirtualBox()} slouží k ovládání Virtualbox manažeru (program, který řídí jednotlivé zaregistrované virtuální stroje). Obecné nastavování se tedy provádí přes tento objekt. Třída \mintinline{Python}{Session()} je navázána na relaci konkrétního virtuálního stroje. Ovládání běhu stroje probíhá tedy s využitím tohoto objektu. Třída \mintinline{Python}{Machine()} reprezentuje konkrétní stroj, tak jak je zobrazen v manažeru Virtualboxu. Při inicializaci této třídy je zapotřebí předat název stroje, což je zde řešeno pomocí převzaté metody \mintinline{Python}{find_machine()}. Název stroje je možné předat konstruktoru pomocí parametru \mintinline{Python}{machine}. Pokud není žádný konkrétní stroj vybrán, je proveden výčet všech dostupných strojů přihlášených pod Virtualbox manažerem (metoda \mintinline{Python}{list_all_machines}) a načten první dostupný stroj.
+
+Pro ovládání spuštění virtuálního stroje s časováním byla vytvořena metoda \mintinline{Python}{boot_with_timeout()} (snippet \ref{snip:vboxboot}). 
+\begin{figure}[h]               
+	\begin{minted}{Python}
+def boot_with_timeout(self, timeout, login, password):
+
+    self.launch_machine()
+    self.wait_for_session_locked()
+
+    t_boot = 1
+
+    while t_boot < timeout:
+
+        print(f"Booting... ({t_boot}/{timeout})")
+        try:
+            gs = self.login(login, password)
+            gs.directory_exists("c:/")
+            print("Machine has started.")
+            return gs
+
+        except virtualbox.library.VBoxError as e:
+            print(f"Machine not started yet: {e}")
+
+        time.sleep(1)
+        t_boot += 1
+
+    raise DidntBootInTimeException("Timeout reached. "
+        "Machine didn't boot in time.")
+	\end{minted}      
+	\caption{Implementace bootovacího algoritmu pro virtualbox}
+	\label{snip:vboxboot}
+\end{figure}
+Tato metoda přijímá tři parametry. Prvním parametrem je \mintinline{Python}{timeout}, neboli čas, po kterém se metoda přeruší a zabrání se tak případnému nekonečného cyklu. Další dva parametry jsou přihlašovací jméno a heslo do uživatelského účtu ve virtuálním systému. Tyto údaje jsou potřeba pro inicializaci uživatele, ke které v průběhu spouštění systému (tzv. bootování) dochází. Na začátku je zavolána metoda \mintinline{Python}{launch_machine()}, která zahájí proces bootování. Aby nedocházelo k nepředvídatelnému průběhu, volá se zde další metoda \mintinline{Python}{wait_for_session_locked()}, která zajišťuje, že bootovací proces nebude pokračovat, dokud se neuzamkne virtuální stroj (parametr \mintinline{Python}{machine} třídy \mintinline{Python}{Vbox}) pro současnou relaci (parametr \mintinline{Python}{session}). Při ovládání stroje skrze neuzamčenou relaci může nastat chyba a následné ukončení skriptu. 
+
+Poněvadž Virtualbox API nemá implementovanou kontrolu průběhu bootování, nelze nijak zkontrolovat, zda je už virtuální stroj načtený a připravený k použití. Z tohoto důvodu je vytvořen \mintinline{Python}{while} cyklus, kde k této kontrole periodicky dochází. V každém průběhu cyklu dochází k inicializaci uživatelského účtu a následnému testu existence kořenové složky $c:/$ metodou \mintinline{Python}{directory_exists()}. Předpokládá se zde, že dojde k chybě, protože systém ještě není připravený takovéto příkazy zpracovávat. V takové situaci je výjimka odchycena a přechází se na další průběh cyklu. Pokud by již metoda \mintinline{Python}{directory_exists()} proběhla bez chybové hlášky, dá se očekávat, že je systém již připravený k používání. V tomto případě dojde k ukončení metody. Výstupem je objekt s inicializovaným uživatelským účtem v případě, že bootování proběhlo bez problémů, či chybová hláška \mintinline{Python}{DidntBootInTimeException} v situaci, kdy vypršel časový limit dříve, než mohl systém naběhnout.
+
+\begin{figure}[h]               
+	\begin{minted}{Python}
+commands = (
+    f"cd c:/tmp & "
+    f"python {config.VBOX_SCRIPT_PATH} {url}"
+)
+gs.execute(
+    "C:\\Windows\\System32\\cmd.exe", 
+    ["/C", commands]
+)
+	\end{minted}      
+	\caption{Spouštění příkazů ve virtuálním systému}
+	\label{snip:vboxcommand}
+\end{figure}
+S již vytvořeným objektem uživatelského účtu lze následně spouštět příkazy přes příkazový řádek (tzv. command line) virtuálního systému (snippet \ref{snip:vboxcommand}), kde parametr \mintinline{Python}{commands} obsahuje jednotlivé příkazy, tedy přesun do pracovní složky a spuštění skriptu pro stahování webového obsahu (viz sekce \ref{sec:stahovani}) s parametrem požadované adresy url.
+
+Pro přesun stažených souborů z virtuálního prostředí do reálného systému byla převzata metoda \mintinline{Python}{directory_copy_from_guest()} (snippet \ref{snip:vboxcopy}),
+\begin{figure}[h]               
+	\begin{minted}{Python}
+gs.directory_copy_from_guest(
+    dir_from_path,
+    dir_to_path,
+    [virtualbox.library.DirectoryCopyFlag(1)]
+)
+	\end{minted}      
+	\caption{Spouštění příkazů ve virtuálním systému}
+	\label{snip:vboxcopy}
+\end{figure}
+ která je implementována ve třídě pro uživatelský účet virtuálního stroje. Tato metoda kopíruje celou složku, která je předána v parametru \mintinline{Python}{dir_from_path} do cílové lokace specifikované paramterem \mintinline{Python}{dir_to_path}. Třetím parametrem metody je konfigurační hodnota (tzv. flag), která určuje typ přenosu.
+
+
+
+
+
 
 
 
 \section{Implementace frontového systému Kafka}
 
 
+
+
 \subsection{Kafka producer}
+
+
+
 
 \subsection{Kafka consumer}
 
 
 
-\section{Integrace pomocí systému Jenkins} 
+
+
+\section{Integrace do stávající infrastruktury} 
+
+
+
+
+
+
 
 
 \subsection{Systém Jenkins}
 
+
+
+
 \subsubsection{Job pro nahrávání url do Kafky}
 
+
+
+
 \subsubsection{Job pro spoustění skriptu pro stahování dat}
+
+
+
 
 \subsubsection{Job pro upload dat do databáze cleansetu}
 
 
+
+
+
+
+
+
 \subsection{Systém Luft}
+
+
+
 
 \subsubsection{Dockerizace skriptu Kafka consumer}
 
 
 
+
+
+
+
+
+
+
+
+
+
 \chapter{Otestování a zhodnocení přínosu}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
  \setlength{\parskip}{10pt}
