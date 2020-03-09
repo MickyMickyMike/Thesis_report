@@ -619,27 +619,32 @@ gs.directory_copy_from_guest(
 
 \section{Implementace frontového systému Kafka}
 
-
+Dalším krokem je implementace frontového systému Kafka, jehož serverová část je součástí firemní infrastruktury. K těmto účelům byly vygenerovány týmem spravující interní mutaci Kafky přihlašovací údaje pro systém Magpie (přihlašovací jméno, heslo a SSL certifikát). Pro implementaci samotného klientu byla použita Python knihovna \mintinline{Python}{confluent-kafka}\cite{confluent-kafka}, jejíž výhodou je možnost zabezpečené komunikace klientu se serverem. Byly vytvořeny dva skripty obsahující rozdílné klienty:
+\begin{itemize}
+	\item Kafka producer
+	\item Kafka consumer
+\end{itemize}
 
 
 \subsection{Kafka producer}
-
-
+Úkolem skriptu implementujícího klienta Kafka producer je posílání předzpracovaných url do frontového systému. Za tímto účelem byla vytvořena třída (tzv. class) \mintinline{Python}{KafkaProducer} využívající import trídy \mintinline{Python}{Producer} z knihovny \mintinline{Python}{confluent-kafka} (snippet \ref{snip:kafkaproducer}).
 \begin{figure}[h]               
 	\begin{minted}{Python}
+from confluent_kafka import Producer
+
 class KafkaProducer(Producer):
     def __init__(self):
-    super().__init__(**config.KAFKA_PRODUCER)
+        super().__init__(**config.KAFKA_PRODUCER)
 	\end{minted}      
 	\caption{Implementace třídy Kafka Producer}
 	\label{snip:kafkaproducer}
 \end{figure}
+Tímto způsobem lze přetížit konstruktor nadřazené třídy a obohatit ho o konfigurační informace \mintinline{Python}{KAFKA_PRODUCER}, tedy o přihlašovací jméno, heslo a cestu k SSL certifikátu.
 
-
-
+Při generování těchto informací byl vytvořen i tzv. \mintinline{Python}{TOPIC}, podle kterého se na serverové části ukládají zprávy. Producer klienti produkují zprávy do určitých topiců, ke kterým jsou přihlášeni konzumeři, kteří odtud zprávy stahují. Topic je tedy jakási nástěnka na serverové části Kafky. Metoda pro posílání zpráv do topicu \mintinline{Python}{send_message_to_kafka()} je znázorněna na snippetu \ref{snip:kafkasend}.
 \begin{figure}[h]               
 	\begin{minted}{Python}
-def send_message_to_kafka(self, message, message_cnt):
+def send_message_to_kafka(self, message):
     self.produce(config.KAFKA_TOPIC, message.encode("utf-8"))
     self.flush()
     print(f"Message sent")
@@ -647,8 +652,9 @@ def send_message_to_kafka(self, message, message_cnt):
 	\caption{Posílání zpráv do frontového systému Kafka}
 	\label{snip:kafkasend}
 \end{figure}
+Metoda přijímá v argumentu tělo zprávy \mintinline{Python}{message} a následně produkuje zprávu voláním metody \mintinline{Python}{produce()} zděděné z nadřazené třídy. Při produkování zprávy je v parametru předán název topicu, do kterého se má zpráva poslat. Zároveň je volána metoda \mintinline{Python}{flush()}, která zajistí vyprázdnění lokální fronty a přenesení všech zatím neodeslaných zpráv na server.
 
-
+Implementace hlavní smyčky posílání zpráv je k vidění na snippetu \ref{snip:kafkasendmain}. Pro každou url v listu načtených adres se nejdříve kontroluje, zda se jedná o url adresu. Toho je docíleno pomocí metody \mintinline{Python}{is_url()}, která využívá knihovnu \mintinline{Python}{URLParser} vyvíjenou pro interní účely firmy. Pokud je vyhodnoceno, že vstupní string \mintinline{Python}{url} není url adresa, je tento vstup přeskočen. Dále probíhá kontrola, zda adresa obsahuje informaci o protokolu. Tato kontrola probíhá s využitím nativní metody string objektu \mintinline{Python}{startswith()}. Pokud je zjištěno, že vstupní string protokol neobsahuje (nezačíná znaky \mintinline{Python}{http}), je k adrese přidán nezabezpečený protokol. Takto ošetřená adresa je následně předána metodě pro posílání zpráv \mintinline{Python}{send_mesasge_to_kafka()}.
 \begin{figure}[h]               
 	\begin{minted}{Python}
 for url_count, url in enumerate(urls):
@@ -658,7 +664,7 @@ for url_count, url in enumerate(urls):
     if not url.startswith("http"):
         url = "http://" + url
 
-    kafka_producer.send_message_to_kafka(url, url_count)
+    kafka_producer.send_message_to_kafka(url)
 	\end{minted}      
 	\caption{Implementace hlavní smyčky posílání zpráv do Kafky}
 	\label{snip:kafkasendmain}
@@ -666,12 +672,12 @@ for url_count, url in enumerate(urls):
 
 
 \subsection{Kafka consumer}
-
-
-
+Implementace skriptu pro přijímání zpráv ze serverové části byla opět realizována s využitím knihovny \mintinline{Python}{confuent-kafka}. Byla vytvořena třída, která dědí z importované třídy \mintinline{Python}{Consumer} (snippet \ref{snip:kafkaconsumer}).
 \begin{figure}[h]               
 	\begin{minted}{Python}
-class KafkaConsumer(confluent_kafka.Consumer):
+from confluent_kafka import Consumer
+
+class KafkaConsumer(Consumer):
     def __init__(self):
         super().__init__(**config.KAFKA_CONSUMER)
         self.subscribe([config.KAFKA_TOPIC])
@@ -679,7 +685,9 @@ class KafkaConsumer(confluent_kafka.Consumer):
 	\caption{Implementace třídy Kafka Consumer}
 	\label{snip:kafkaconsumer}
 \end{figure}
+I zde je konstruktor přetížen, a to z důvodu doplnění inicializace klientu o konfigurační data \mintinline{Python}{KAFKA_CONSUMER}. Jedná se o přihlašovačí jméno, heslo, SSL certifikát a oproti klientu producer navíc i parametr \mintinline{Python}{group id}. Tento parametr určuje, do jaké skupiny konzumerů tento klient spadá. Každý topic totiž může mít přihlášeno vícero skupin konzumerů. V takové situaci jsou zprávy odebírány vždy v rámci skupiny (přestože již skupina A odebrala z topicu zprávu, tato zpráva je stále viditělná pro skupinu B, dokud ji neodebere člen této skupiny). Dále při inicializaci probíhá přihlášení k odběru stejného topicu \mintinline{Python}{KAFKA_TOPIC}, který je využíván klientem pro posílání. Toho je docíleno metodou \mintinline{Python}{subscribe()}. Jeden konzumer může být přihlášený k oběru více než jednoho topiců. Z tohoto důvodu je jejím vstupem pole, které může obsahovat více elementů. Pro účely této práce postačuje však pouze jeden topic.
 
+Tato třída obsahuje metodu \mintinline{Python}{consume_url()}, která implementuje přijímání zpráv ze serveru (snippet \ref{snip:kafkapoll}).
 
 
 
@@ -834,6 +842,9 @@ def consume_url(self):
 	
 	\bibitem{response_codes}
 	\url{https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html}
+	
+	\bibitem{confluent-kafka}
+	\url{https://docs.confluent.io/current/clients/python.html}
 	
 \end{thebibliography}
 
