@@ -221,9 +221,9 @@ K nahrání souborů do Scavengeru lze využít síťový souborový systém Sam
 \section{Začlenění do stávající infrastruktury}
 Systém bude spouštěn periodicky, ale měl by být také spustitelný na vyžádání uživatelem. Pro takové požadavky lze použít systém Jenkins(\ref{sec:jenkins}), který je firmou Avast používaný k periodickému spouštění procesů. Jednotlivé části systému Magpie je možné oddělit do samostatných procesů (v terminologii systému Jenkins tzv. jobů), které se dají sekvenčně pouštět v závislosti na úspěšném ukončení předcházejícího jobu. Tento přístup přináší přehledné rozhraní, v kterém je možné jednotlivé části samostatně monitorovat, spolu s jednoduchým přístupem k výstupům jobů. Tímto způsobem by bylo možné přistoupit k získaným datům přímo, bez nutnosti data nahrávat do databáze v systému Scavenger, v případě, kdy by byl systém spuštěný manuálně.
 
-Jiným přístupem je využít firemní mutaci nástroje Kubernetes interně nazývanou Luft, která by umožňovala mít systém spuštěný bez přestávky. Velkou výhodou Kubernetes je jednoduché škálování, kdy lze při velkém vytížení jednoduše navýšit výpočetní prostředky danému procesu a tím urychlit jeho běh.
+Jiným přístupem je využít firemní mutaci nástroje Kubernetes interně nazývanou Luft\ref{sec:docker}, která by umožňovala mít systém spuštěný bez přestávky. Krom neustálého spuštění skriptu je velkou výhodou Kubernetes tzv. škálování, kdy lze při velkém vytížení jednoduše navýšit výpočetní prostředky danému procesu a tím urychlit jeho běh. Pro spuštění skriptu v Luftu je nejprve potřeba tento skript dockerizovat. Dockerizace je proces, při nímž je vytvořen tzv. docker image, neboli balíček, který je plně spustitelný ve virtualizovaném prostředí, například v Luftu. Při dockerizaci je nutné vytvořit \mintinline{Python}{Makefile}, který obsahuje informace o vzniku balíčku. 
 
-Je také možné pro jednotlivé části systému Magpie využít rozdílné technologie, a to kombinaci obou výše zmíněných.
+Je také možné pro jednotlivé části systému Magpie využít rozdílné technologie, například kombinaci obou výše zmíněných.
 
 
 
@@ -275,6 +275,8 @@ Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. Slouž
 
 Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zachycuje virtuální stroj a veškeré jeho nastavení v daném čase, v kterém je vytvořen. Tímto lze jednoduše vracet provedené změny zpět do bodu vytvoření snapshotu. Toho je možné využít při testování aplikací, využití je avšak možné i v oblasti bezpečnosti. Pokud je vytvořen snapshot čistého systému, lze se do něj vraátit v případě potenciálního nakažení virtuálního stroje. Této funkcionality se využívá i v této práci.
 
+
+\section{Docker}\label{sec:docker}
 
 
 
@@ -688,9 +690,6 @@ class KafkaConsumer(Consumer):
 I zde je konstruktor přetížen, a to z důvodu doplnění inicializace klientu o konfigurační data \mintinline{Python}{KAFKA_CONSUMER}. Jedná se o přihlašovačí jméno, heslo, SSL certifikát a oproti klientu producer navíc i parametr \mintinline{Python}{group id}. Tento parametr určuje, do jaké skupiny konzumerů tento klient spadá. Každý topic totiž může mít přihlášeno vícero skupin konzumerů. V takové situaci jsou zprávy odebírány vždy v rámci skupiny (přestože již skupina A odebrala z topicu zprávu, tato zpráva je stále viditělná pro skupinu B, dokud ji neodebere člen této skupiny). Dále při inicializaci probíhá přihlášení k odběru stejného topicu \mintinline{Python}{KAFKA_TOPIC}, který je využíván klientem pro posílání. Toho je docíleno metodou \mintinline{Python}{subscribe()}. Jeden konzumer může být přihlášený k oběru více než jednoho topiců. Z tohoto důvodu je jejím vstupem pole, které může obsahovat více elementů. Pro účely této práce postačuje však pouze jeden topic.
 
 Tato třída obsahuje metodu \mintinline{Python}{consume_url()}, která implementuje přijímání zpráv ze serveru (snippet \ref{snip:kafkapoll}).
-
-
-
 \begin{figure}[h]               
 	\begin{minted}{Python}
 def consume_url(self):
@@ -710,6 +709,35 @@ def consume_url(self):
 	\caption{Přijímání zpráv z frontového systému Kafka}
 	\label{snip:kafkapoll}
 \end{figure}
+Toho je docíleno převzatou metodou \mintinline{Python}{poll()}, která je volána s parametrem \mintinline{Python}{timeout}. Tato metoda se připojí k serverové části a po dobu zadaného limitu (tzv. timeout), je připravena přijímat zprávy. Další postup následuje podle typu zprávy, která byla přijata. V první podmínce probíhá kontrola, zda se vůbec k nějaké komunikaci došlo. Pokud byla fronta prázdná po celou dobu čekání, metoda \mintinline{Python}{poll()} nevrací žádnou hodnotu a \mintinline{Python}{msg} tak není deklarována. V tomto případě je z metody \mintinline{Python}{consume_url()} navrácen \mintinline{Python}{None} (prázdná hodnota). V případě, kdy ke komunikaci došlo, avšak v průběhu nastala chyba, je tato chyba zachycena v objektu příchozí zprávy \mintinline{Python}{msg.error()}. Druhá podmínka tedy kontroluje, zda byl průběh komunikace bezchybný. Pokud ne, je výstupem metody objekt s chybovou hláškou. Pokud nenastal žádný z předešlých dvou případů lze očekávat, že \mintinline{Python}{msg} obsahuje objekt přijaté zprávy. V tomto případě je tedy výstupem metody dekódovaná hodnota zprávy \mintinline{Python}{msg.value()}. 
+
+V hlavním programu pro příjem zpráv z Kafky dochází nejdříve k inicializaci Kafka klienta typu konzumer (snippet \ref{snip:kafkamain consum}).
+\begin{figure}[h]               
+	\begin{minted}{Python}
+from lib.kafka_consumer import KafkaConsumer
+
+if __name__ == "__main__":
+    kafka_consumer = KafkaConsumer()
+    
+    while True:
+        url_to_process = kafka_consumer.consume_url()
+
+        if url_to_process is None:
+            continue
+        
+        process_url(url_to_process)
+	\end{minted}      
+	\caption{Hlavní smyčka přijímání zpráv z Kafky}
+	\label{snip:kafkamain consum}
+\end{figure}
+Následuje nekonečná smyčka, v které se volá již popsaná metoda \mintinline{Python}{consume_url()}. Pokud tato metoda vrátí \mintinline{Python}{None}, tedy situace, kdy je fronta prázdná, pokračuje se v běhu cyklu. V opačné situaci je volána metoda \mintinline{Python}{process_url()}, které je zpráva předána. Tato metoda je provázána se spouštěním virtuálního prostředí a následném běhu klientu pro stahování webového obsahu (o propojení více v sekci \ref{sec:jenk}).  Skript pro hlavní smyčku příjmu zpráv z Kafky je zdockerizován a spuštěn v systému Luft, tedy firemní mutaci systému Kubernetes (více v sekci \ref{sec:luft}). 
+
+
+
+
+
+\section{Integrace do stávající infrastruktury} \label{sec:integrace}
+Při vývoji bylo rozhodnuto využít oba v analýze rozebírané systémy pro interní správu skriptů. Projekt je tedy rozložen, část je spouštěna v Jenkinsu a část ve firemní mutaci Kubernetes nazývané Luft.  
 
 
 
@@ -717,23 +745,13 @@ def consume_url(self):
 
 
 
-
-\section{Integrace do stávající infrastruktury} 
-
-
-
-
-
-
-
-
-\subsection{Systém Jenkins}
-
+\subsection{Systém Jenkins} \label{sec:jenk}
+Do systému Jenkins byl přesunut skript pro upload url do Kafky (Kafka producer), skript pro zabezpečené stahování dat a skript pro upload dat do databáze cleansetu. Pro každý skript byl vytvořen samostatný job (obdoba jednoduchého projektu v Jenkinsu, který jde parametrizovat a periodicky spouštět).
 
 
 
 \subsubsection{Job pro nahrávání url do Kafky}
-
+koko
 
 
 
@@ -751,12 +769,12 @@ def consume_url(self):
 
 
 
-\subsection{Systém Luft}
+\subsection{Systém Luft}\label{sec:luft}
+V Luftu je spuštěn skript odebírající zprávy z frontového systému Kafka, který byl dockerizován. Dockerizace je proces vytvoření tzv. docker image (samostatně spustitelný balík v prostředí podporující funkcionalitu dockeru, např. Luft). Tento balíček byl následně nahrán do systému Luft. Tím je docíleno neustálého běhu skriptu, což je pro tento typ programu praktické.
 
 
 
-
-\subsubsection{Dockerizace skriptu Kafka consumer}
+\subsubsection{Dockerizace skriptu Kafka consumer} 
 
 
 
