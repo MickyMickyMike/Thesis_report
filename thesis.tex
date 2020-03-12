@@ -743,9 +743,13 @@ Při vývoji bylo rozhodnuto využít oba v analýze rozebírané systémy pro i
 
 
 \subsection{Vytvoření a nastavení virtuálního stroje} \label{sec:virtualka}
-koko
-
-
+K vytvoření virtuálního stroje byl použit grafický manažer Virtualboxu. Firemní infrastruktura obsahuje úložiště s již předvytvořené šablony operačních systémů ve formátu .ovf (open virtualization format), které se dají do Virtualboxu nahrát (tzv. import appliance). Pro potřeby projektu byla využita šablona s operačním systémem Windows 7 v 32 bitové verzi. Takto vytvořený virtuální systém je již zcela spustitělný, je potřeba jej však ještě nastavit pro potřeby běhu systému Magpie. Je potřeba nainstalovat program Fiddler, potřebné knihovny pro Python (základní verze Pythonu je již obsažena v použité šabloně operačního systému) a nástroj geckodriver, který slouží ke komunikaci python knihovny Selenium s webovým prohlížečem. Prerekvizity virtuálního prostředí jsou tedy následující:
+\begin{itemize}
+	\item Fiddler
+	\item Python knihovna selenium
+	\item Geckodriver
+\end{itemize}
+Takto nastavený virtuální stroj je již připravený k využití. Pro systém byl následně vytvořen tzv. snapshot (uložení stavu virtuálního stroje). Při provozu bude systém vždy spouštěn z daného snapshotu a po provedení akcí nad zadanou url do daného snapshotu opět uveden. Tím se vynuluje riziko spojené s nakažením systému škodlivým obsahem.
 
 
 
