@@ -774,7 +774,7 @@ Konfigurace dále obsahuje sekci Build, v které je potřeba nastavit příkaz (
 
 
 
-\subsubsection{Job pro stahování a filtraci dat}
+\subsubsection{Job pro stahování a filtraci dat} \label{sec:jenkinsvirt}
 Druhým vytvořeným projektem v systému Jenkins je job pro spouštění zabezpečeného stahování a následné filtrování dat \mintinline{Python}{url_processing}. K tomu je zapotřebí virtuální stroj, který byl vytvořen v sekci \ref{sec:virtualka}. Tento job je spouštěn samostatně pro každou url, kterou dostává parametrem při spuštění. Tento parametr je předáván ze skriptu, který dostává zprávy z frontového systému Kafka. Ten je však spuštěn v systému Luft. Proto byl v konfigurační sekci jobu vytvořen tzv. trigger token, tedy autorizační řetězec znaků (tzv. string). Pomocí tohoto autorizačního stringu je možné tento job spouštět, a to pomocí dotazu na specifickou url adresu (viz \ref{trigger}).
 \begin{equation} \label{trigger}
 JENKINS\_URL/job/url\_processing/build?token=TOKEN
@@ -811,13 +811,45 @@ Poněvadž se v jobu přistupuje do HCP úložiště, je potřeba v sekci Bindin
 
 
 \subsection{Systém Luft}\label{sec:luft}
-V Luftu je spuštěn skript odebírající zprávy z frontového systému Kafka, který byl dockerizován. Dockerizace je proces vytvoření tzv. docker image (samostatně spustitelný balík v prostředí podporující funkcionalitu dockeru, např. Luft). Tento balíček byl následně nahrán do systému Luft. Tím je docíleno neustálého běhu skriptu, což je pro tento typ programu praktické.
+V Luftu je spuštěn skript odebírající zprávy z frontového systému Kafka, který byl dockerizován. Dockerizace je proces vytvoření tzv. docker image (samostatně spustitelný balík v prostředí podporující funkcionalitu dockeru, např. Luft). Tento balíček byl následně nahrán (tzv. deploy) do systému Luft. Tím je docíleno neustálého běhu skriptu, což je pro tento typ programu praktické.
 
 
 
 \subsubsection{Dockerizace skriptu Kafka consumer} 
+Pro vytvoření docker image je nutné nejprve vytvořit tzv. Dockerfile (obdoba Makefile pro kompilaci jakyka c). Jedná se o soubor, který obsahuje sekvenci příkazů, které se mají při kompilaci docker balíčku provézt. Dockerfile pro balíček obsahující skript Kafka consumer je znázorněn na snippetu \ref{snip:docker}.
 
+\begin{figure}[h]               
+	\begin{minted}{Docker}
+FROM AVAST_DOCKER/python:3.7
 
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir \
+-r requirements.txt \
+--index-url \
+https://AVAST_ARTIFACTORY/pip/packages
+
+ADD kafka_consumer_runner.py /
+ADD lib/kafka_consumer.py /lib/
+ADD config/config.py /config/
+
+CMD ["python", "./kafka_consumer_runner.py"]
+	\end{minted}      
+	\caption{Hlavní smyčka přijímání zpráv z Kafky}
+	\label{snip:docker}
+\end{figure}
+
+První řádek s příkazem \mintinline{Python}{FROM} určuje, odkud stáhnout tzv. image template (tj. docker balíček, který obsahuje prostředí, které se má při kompilaci docker kontejneru vytvořit). Protože je skript kafka consumer napsaný v Pythonu, je zapotřebí použít příslušný template. Kvůli bezpečnosti a pro zajištění integrity má firma vlastní úložiště s docker balíčky. Proto je balíček $python:3.7$ stažen z interního úložiště.
+
+Dalším příkazem je překopírován soubor \mintinline{Python}{requirements.txt} do prostředí nově vzniklého kontejneru. Tento soubor obsahuje seznam nestandardních python knihoven, tedy knihoven, které je potřeba ručně doinstalovat a nejsou obsaženy v instalaci pythonu.
+
+Dále je spuštěn příkaz \mintinline{Python}{pip install}, tyto nestandardní knihovny nainstaluje. K tomu je z bezpečnostních důvodů opět využito interní úložiště obsahující předschválené python knihovny.
+
+Těmito příkazy je tedy připravené prostředí kontejneru. Zbývá přesunout zdrojové soubory skriptu, který zde poběží. Toho je docíleno příkazy \mintinline{Python}{ADD}. Posledním příkazem \mintinline{Python}{CMD} je spuštěn samotný skript.
+
+Takto vytvořený Dockerfile je potřeba sestavit (tzv. build) a následně nasadit (tzv. deploy). K sestavení balíčku byl využit firemní server TeamCity (server pro kontinuální integraci a správu sestavování aplikací vyvíjen firmou JetBrains \cite{teamcity}). Zdejší firemní struktura obsahuje šablony pro build docker balíčků, které jsou následně nahrány do již zmíněného firemního úložiště.
+
+Při nasazení aplikace do Luftu bylo opět využito firemní šablony. Při nasazování je potřeba vytvořit .yaml soubor, obsahující veškerou konfiguraci vznikající aplikace. Tento soubor byl převzat, bylo zde zapotřebí pouze nastavit enviromentální proměnné, které skript využívá. Jednalo se o přihlašovací údaje a SSL certifikát k frontovému serveru Kafka a token, pomocí kterého skript spouští jenkins job pro stahování souborů (viz sekce \ref{sec:jenkinsvirt}).
 
 
 
@@ -904,6 +936,9 @@ V Luftu je spuštěn skript odebírající zprávy z frontového systému Kafka,
 	
 	\bibitem{confluent-kafka}
 	\url{https://docs.confluent.io/current/clients/python.html}
+	
+	\bibitem{teamcity}
+	\url{https://www.jetbrains.com/teamcity/}
 	
 \end{thebibliography}
 
