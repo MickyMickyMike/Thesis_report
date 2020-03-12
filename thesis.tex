@@ -453,7 +453,7 @@ Poslední podmínka již kontroluje samotné validní soubory. Pokud je netloc a
 
 
 
-\subsection{Upload do databáze}
+\subsection{Upload do databáze} \label{sec:upload}
 Pro nahrávání dat do databáze byl již dříve týmem, který spravuje systém Scavenger, vytvořen klient v podobě python knihovny. Tento klient používá HCP (Hitachi content platform) pro přesun dat mezi klientem a servery Scavengeru a představuje novější řešení oproti dříve používanému klientu Samba. Při uploadu dat do databáze lze tedy vycházet z tohoto kódu. V prvním kroku procesu uploadu do Scavengeru klient přesune požadovaný soubor do tzv. namespace (vyhrazený prostor na serverové části unikátní pro daného klienta) v HCP úložišti a připojí k němu požadovaná metadata. K tomuto namespace je připojen proces (tzv. feeder), který periodicky odebírá přítomné soubory i s jejich metadaty a přesouvá je do systému Scavenger. Při tomto procesu dochází k přejmenování souborů hashováním sha256.
 
 Implementace klientu je velmi jednoduchá (snippet \ref{snip:hcpupload}).
@@ -628,7 +628,7 @@ Dalším krokem je implementace frontového systému Kafka, jehož serverová č
 \end{itemize}
 
 
-\subsection{Kafka producer}
+\subsection{Kafka producer} \label{sec:kafkaproducer}
 Úkolem skriptu implementujícího klienta Kafka producer je posílání předzpracovaných url do frontového systému. Za tímto účelem byla vytvořena třída (tzv. class) \mintinline{Python}{KafkaProducer} využívající import trídy \mintinline{Python}{Producer} z knihovny \mintinline{Python}{confluent-kafka} (snippet \ref{snip:kafkaproducer}).
 \begin{figure}[h]               
 	\begin{minted}{Python}
@@ -673,7 +673,7 @@ for url_count, url in enumerate(urls):
 \end{figure}
 
 
-\subsection{Kafka consumer}
+\subsection{Kafka consumer} \label{sec:kafkaconsumer}
 Implementace skriptu pro přijímání zpráv ze serverové části byla opět realizována s využitím knihovny \mintinline{Python}{confuent-kafka}. Byla vytvořena třída, která dědí z importované třídy \mintinline{Python}{Consumer} (snippet \ref{snip:kafkaconsumer}).
 \begin{figure}[h]               
 	\begin{minted}{Python}
@@ -737,8 +737,13 @@ Následuje nekonečná smyčka, v které se volá již popsaná metoda \mintinli
 
 
 \section{Integrace do stávající infrastruktury} \label{sec:integrace}
-Při vývoji bylo rozhodnuto využít oba v analýze rozebírané systémy pro interní správu skriptů. Projekt je tedy rozložen, část je spouštěna v Jenkinsu a část ve firemní mutaci Kubernetes nazývané Luft.  
+Při vývoji bylo rozhodnuto využít oba v analýze rozebírané systémy pro interní správu skriptů. Projekt je tedy rozložen, část je spouštěna v Jenkinsu a část ve firemní mutaci Kubernetes nazývané Luft. Dále bylo zapotřebí vytvořit a nastavit virtuální stroj, který se bude spouštět pro stahování souborů ze zadaných url.
 
+
+
+
+\subsection{Vytvoření a nastavení virtuálního stroje} \label{sec:virtualka}
+koko
 
 
 
@@ -746,26 +751,62 @@ Při vývoji bylo rozhodnuto využít oba v analýze rozebírané systémy pro i
 
 
 \subsection{Systém Jenkins} \label{sec:jenk}
-Do systému Jenkins byl přesunut skript pro upload url do Kafky (Kafka producer), skript pro zabezpečené stahování dat a skript pro upload dat do databáze cleansetu. Pro každý skript byl vytvořen samostatný job (obdoba jednoduchého projektu v Jenkinsu, který jde parametrizovat a periodicky spouštět).
+Do systému Jenkins byl přesunut skript pro upload url do Kafky (Kafka producer), skript pro zabezpečené stahování dat a skript pro upload dat do databáze cleansetu. Pro každý skript byl vytvořen samostatný projekt, neboli job, který jde parametrizovat a periodicky spouštět (job je již spuštěná instance jenkins projektu, často se ale toto označení používá obecněji pro celý projekt). Jenkins joby je možné napojit přímo na git repozitář systému Magpie, takže se při jejich startu vždy stáhne nejaktuálnější verze kódu, který má být spuštěn. To jde nastavit v konfiguraci jobu, v sekci Source Code Management.
 
+Dále bylo potřeba v prostředí každého jobu nastavit údaje, které se podle firemních nařízení z bezpečnostních důvodů nesmějí uvádět v kódu git repozitáře. Jedná se o přístupové údaje k aplikacím, tedy hesla, certifikáty, či tokeny.
 
 
 \subsubsection{Job pro nahrávání url do Kafky}
-koko
+Pro skript, který zajišťuje předzpracovávání zadaných adres a následný upload do Kafky byl vytvořen job \mintinline{Python}{feeder_kafka_urls}. Tento job obsahuje proces rozebíraný v sekci \ref{sec:kafkaproducer}. Job je nastaven tak, aby přijímal tři typy argumentů (tzv. parametrizace jobu, neboli spouštění s parametry) (viz Obr.\ref{fig:kafka_feed}). 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=8cm]{pictures/jenkins_kafka_feed.png}
+	\caption{Parametry pro job \mintinline{Python}{feeder_kafka_urls}}
+	\label{fig:kafka_feed}
+\end{figure}
+
+Prvním je parametr s názvem \mintinline{Python}{download_alexa}, který zajišťuje, že se před nahráním url do Kafky spustí kód pro stáhnutí top url stránek z listu na adrese \url{https://www.alexa.com/topsites}. Tato možnost je zaškrtnuta v základním nastavení (tzv. defaultně) a to z důvodu periodického spouštění tohoto jobu. Zbylé dva parametry jsou zde pro manuální spouštění. Prvním je možnost textového souboru \mintinline{Python}{urls_file.txt}, kdy uživatel může nahrát soubor s požadovaným listem webových adres, které chce stáhnout. Zbývá textový parametr \mintinline{Python}{urls}, kde se mohou adresy zadávat přímo do textového pole. Toho lze využít při potřebě stáhnout jen jednu požadovanou adresu. 
+
+Skript využívá přístup do frontového systému Kafka. Bylo tedy zapotřebí v konfiguraci jobu nastavit požadované přístupové údaje. To je možné v konfigurační sekci Bindings, kde lze vytvořit tzv. enviromentální proměnné (proměnná, která je přístupná odkudkoliv v celém prostředí) pro daný job. Takto byl nastavený SSL certifikát pro klienty Kafky a přístupové heslo pro autorizaci posílaných zpráv.
+
+Konfigurace dále obsahuje sekci Build, v které je potřeba nastavit příkaz (tzv. command), který se má při spuštění provézt. Jedná se o command příkazové řádky operačního systému Windows, který spouští skript pro upload souborů do frontového systému Kafka v prostředí pythonu se zadanými parametry.
 
 
 
-\subsubsection{Job pro spoustění skriptu pro stahování dat}
+\subsubsection{Job pro stahování a filtraci dat}
+Druhým vytvořeným projektem v systému Jenkins je job pro spouštění zabezpečeného stahování a následné filtrování dat \mintinline{Python}{url_processing}. K tomu je zapotřebí virtuální stroj, který byl vytvořen v sekci \ref{sec:virtualka}. Tento job je spouštěn samostatně pro každou url, kterou dostává parametrem při spuštění. Tento parametr je předáván ze skriptu, který dostává zprávy z frontového systému Kafka. Ten je však spuštěn v systému Luft. Proto byl v konfigurační sekci jobu vytvořen tzv. trigger token, tedy autorizační řetězec znaků (tzv. string). Pomocí tohoto autorizačního stringu je možné tento job spouštět, a to pomocí dotazu na specifickou url adresu (viz \ref{trigger}).
+\begin{equation} \label{trigger}
+JENKINS\_URL/job/url\_processing/build?token=TOKEN
+\end{equation}
+$JENKINS\_URL$ značí webovou adresu serveru, na kterém běží firemní verze tohoto systému a $TOKEN$ je vygenerovaný autorizační řetězec znaků. Takto zadaný dotaz spustí job bez parametru. Pro předání parametru je nutné tento dotaz upravit,
+\begin{equation}
+.../url\_processing/BuildWithParameters?token=TOKEN\&url=URL
+\end{equation}
+kde $URL$ značí předávaný parametr url.
+
+Je také nutné nastavit enviromentální proměnné pro přihlašovací údaje do virtuálního systému. Toho je opět docíleno pomocí konfigurační sekce Bindings v nastavení jenkins projektu. 
+
+Při startu jobu se spustí skript, který ovládá virtuální stroj. Toto je nastaveno v konfigurační sekci Build. Po úspěšném startu virtuálního stroje je ve virtuálním prostředí spuštěn klient pro stahování webového obsahu a následně stažené soubory přeneseny zpět do prostředí jobu v Jenkinsu. Zde dochází k filtraci dat a soubory, které jsou vyhodnocené jako relevantní pro zadanou url adresu jsou po doběhnutí jobu exportovány v podobě tzv. job artifactů (soubory, které jsou i po ukončení jobu dostupné k manipulaci). Tento export je proveden v konfigurační sekci Post-build Actions. Zde je také nastaveno, aby se po doběhnutí jobu spustil proces pro upload dat do databáze cleansetu (tzv. job trigger). Poněvadž jsou oba procesy v prostředí Jenkinsu, není potřeba generovat trigger token.
+
+
 
 
 
 
 \subsubsection{Job pro upload dat do databáze cleansetu}
+Třetím projektem vytvořeným v systému Jenkins je job pro upload do databáze cleansetu nazvaný \mintinline{Python}{scav_hcp_feeder}. Tento job nemá žádné vstupní parametry, využívá však exportované artifacty z jobu pro stahování a filtraci dat. Toto je nastaveno v konfigurační sekci Build (viz Obr.\ref{fig:jenkins_artifacts}). 
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=8cm]{pictures/jenkins_artifacts.png}
+	\caption{Přenos artifactů mezi joby}
+	\label{fig:jenkins_artifacts}
+\end{figure}
 
+Parametr Project name určuje, z jakého projektu se mají exportované artifacty kopírovat, zde projekt \mintinline{Python}{url_processing}. Parametrem Which build lze přímo určit specifické číslo buildu projektu, z kterého se mají exportované artifacty získat. Lze také nastavit, aby se vždy braly z posledního úspěšného buildu, což je znázorněno na obrázku. Konfigurační sekce Build dále obsahuje příkaz pro spuštění samotného skriptu pro přenos těchto exportovaných souborů. 
 
-
-
+Poněvadž se v jobu přistupuje do HCP úložiště, je potřeba v sekci Bindings nastavit enviromantální proměnné obsahující přihlašovací údaje.
 
 
 
