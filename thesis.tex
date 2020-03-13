@@ -277,9 +277,16 @@ Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zac
 
 
 \section{Docker}\label{sec:docker}
+Docker je souhrn produktů typu PaaS (platform as a service) vyvíjen firmou Docker, Inc. \cite{docker}. Služba využívá virtualizaci operačních systémů či jiných platforem k vytvoření tzv. kontejnerů. Tyto kontejnery obsahují vlastní knihovny a konfigurace, ke spuštění však potřebují centrální systém, nazývaní Docker Engine. V tomto je tato služba oproti virtuálním strojům (např. Virtualbox) více odlehčená, nevýhodou je však nutnost centrálního operačního systému. 
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=8cm]{pictures/docker.png}
+	\caption{Systém s dockerizovanými aplikacemi \cite{docker}}
+	\label{fig:docker}
+\end{figure}
 
-
+K dockerizaci aplikace je potřeba vytvořit tzv. Dockerfile, který obsahuje sekvenci příkazů k sestavení kontejneru.
 
 
 \chapter{Implementace}
@@ -882,9 +889,22 @@ Při nasazení aplikace do Luftu bylo opět využito firemní šablony. Při nas
 
  \setlength{\parskip}{10pt}
 
+
+
+
+
 \begin{conclusion}
 
+
+
+
+
+
+
+
+
 \end{conclusion}
+
 
 \bibliographystyle{csn690}
 \bibliography{mybibliographyfile}
@@ -912,6 +932,9 @@ Při nasazení aplikace do Luftu bylo opět využito firemní šablony. Při nas
 	
 	\bibitem{virutalbox}
 	\url{https://www.virtualbox.org/manual/ch01.html}
+	
+	\bibitem{docker}
+	\url{https://www.docker.com/resources/what-container}
 	
 	\bibitem{vbox_pic}
 	\url{https://www.virtualnipc.cz/wp-content/gallery/140701-1-uvod-do-virtualizace-na-desktopu/cache/140701-uvod-do-virtualizace-na-desktopu-img-1.png-nggid013-ngg0dyn-640x480x100-00f0w010c010r110f110r010t010.png}
