@@ -286,7 +286,7 @@ Docker je souhrn produktů typu PaaS (platform as a service) vyvíjen firmou Doc
 	\label{fig:docker}
 \end{figure}
 
-K dockerizaci aplikace je potřeba vytvořit tzv. Dockerfile, který obsahuje sekvenci příkazů k sestavení kontejneru.
+K dockerizaci aplikace je potřeba vytvořit tzv. Dockerfile, který obsahuje sekvenci příkazů k sestavení kontejneru. Ten je poté možné spustit ve službě Kubernetes dostupné firmou Docker, Inc. Tato služba je tzv. Task Manager, neboli systém, v kterém je možné spravovat jednotlivé procesy, zde spuštěné instance kontejnerů.
 
 
 \chapter{Implementace}
@@ -875,8 +875,8 @@ Při nasazení aplikace do Luftu bylo opět využito firemní šablony. Při nas
 \chapter{Otestování a zhodnocení přínosu}
 
 
-
-
+\section{Zobecnění projektu a budoucí využití}
+V současné době je projekt Magpie využit k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací.
 
 
 
