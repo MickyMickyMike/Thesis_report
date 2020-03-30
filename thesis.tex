@@ -875,6 +875,23 @@ Při nasazení aplikace do Luftu bylo opět využito firemní šablony. Při nas
 \chapter{Otestování a zhodnocení přínosu}
 
 
+\section{Testovací proces}
+Před nasazením aplikace do provozu bylo nutné zajistit důkladné otestování. Tento proces byl převážně realizován formou end-to-end. Tato metoda kontroluje, zda je celkový běh aplikace předpokládaný a zda aplikace vrací na zadaná vstupní data očekávané výstupy. Tento typ testování byl použit nejdříve pro jednotlivé komponenty, a následně pro celý běh aplikace. Komponenty, které byly při testování monitorovány jsou následující:
+\begin{itemize}
+	\item Nahrávání adres do frontového systému Kafka
+	\item Přijímání zpráv z Kafky a následná inicializace stahovacího procesu
+	\item Zabecnečené stahování a filtrování dat
+	\item Nahrávání validních dat do HCP úložistě 
+\end{itemize}
+
+\subsection{Komponenty využívající frontový systém Kafka}
+Skripty pro komunikaci se systémem Kafka byly testovány již v průběhu vývoje, neočekávaly se zde tedy rozsáhlé komplikace. Při formě end-to-end byl zlomek testovacích adres v procesu Kafka Producer nahrán do Kafky a následně byly v procesu Kafka Consumer všechny adresy úspěšně přečteny. Následně byl proveden tzv. zatěžkávací test, tedy test, jehož snahou je určit, jak náročný provoz je daný systém schopný unést bez poruchy. Předpokládaná zátěž systému Magpie je v řádu tisíců až desetitisíců zpráv týdně. V zatěžkávacím testu byl tedy proveden přenos milionu zpráv, což bylo vyhodnoceno jako dostačující množství. Všechny přijaté zprávy byly následně uloženy do souboru, jehož velikost byla porovnána se souborem obsahujícím vstupní data. Ze shody velikosti obou souborů bylo vyhodnoceno, že byl přenos úspěšný.
+\subsection{Zabezpečené stahování a filtrování dat}
+Prvotní testovací množina dat obsahovala 1000 vzorků a jednalo se o starší seznam nejvíce navštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa}.
+
+\subsection{Přenos souborů do HCP úložiště}
+
+
 \section{Zobecnění projektu a budoucí využití}
 V současné době je projekt Magpie využit k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Tyto stránky často vypadají velmi podobně 
 
@@ -966,6 +983,9 @@ V současné době je projekt Magpie využit k doplňování cleansetu stahován
 	
 	\bibitem{teamcity}
 	\url{https://www.jetbrains.com/teamcity/}
+	
+	\bibitem{alexa}
+	\url{https://www.alexa.com/topsites}
 	
 \end{thebibliography}
 
