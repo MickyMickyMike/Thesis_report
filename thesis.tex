@@ -372,7 +372,7 @@ static function OnBeforeResponse(oSession: Session) {
 	\label{snip:fiddler}
 \end{figure}
 
-Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování z pravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ potom pro přesměrování dočasná (tzv. moved temporarily)\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
+Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování z pravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ dříve sloužil pro přesměrování dočasná (tzv. moved temporarily), od standartdu HTTP/1.1 je však více využíván pro všeobecná přesměrování\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
 
 Pokud se tak nastane, jsou vytvořeny dva soubory, které jsou pojmenovány podle id relace. Soubor s koncovkou \mintinline{Python}{.dat} je určený pro záznam zachycených dat, soubor \mintinline{Python}{.meta} slouží k uchování metadat o zachycené komunikaci. Následně se volá funkce \mintinline{Python}{WriteAllBytes()}, která z relace oSession přijme parametr \mintinline{Python}{responseBodyBytes}, který obsahuje tělo odpovědi ze serveru, tedy zachycená data, a zapíše je do datového souboru. Dále se shromáždí metadata potřebná pro filtraci souborů (Tabulka \ref{fig:meta}), která se zapíší do souboru \mintinline{Python}{.meta}. 
 
@@ -876,7 +876,7 @@ Při nasazení aplikace do Luftu bylo opět využito firemní šablony. Při nas
 
 
 \section{Testovací proces}
-Před nasazením aplikace do provozu bylo nutné zajistit důkladné otestování. Tento proces byl převážně realizován formou end-to-end. Tato metoda kontroluje, zda je celkový běh aplikace předpokládaný a zda aplikace vrací na zadaná vstupní data očekávané výstupy. Tento typ testování byl použit nejdříve pro jednotlivé komponenty, a následně pro celý běh aplikace. Komponenty, které byly při testování monitorovány jsou následující:
+Před nasazením aplikace do provozu bylo nutné zajistit důkladné otestování. Tento proces byl převážně realizován formou end-to-end. Tato metoda kontroluje, zda je běh testované aplikace předpokládaný a zda aplikace vrací na zadaná vstupní data očekávané výstupy. Tento typ testování byl použit nejdříve pro jednotlivé komponenty, a následně pro celý běh aplikace. Komponenty, které byly při testování monitorovány jsou následující:
 \begin{itemize}
 	\item Nahrávání adres do frontového systému Kafka
 	\item Přijímání zpráv z Kafky a následná inicializace stahovacího procesu
@@ -884,10 +884,86 @@ Před nasazením aplikace do provozu bylo nutné zajistit důkladné otestován�
 	\item Nahrávání validních dat do HCP úložistě 
 \end{itemize}
 
+
+
 \subsection{Komponenty využívající frontový systém Kafka}
 Skripty pro komunikaci se systémem Kafka byly testovány již v průběhu vývoje, neočekávaly se zde tedy rozsáhlé komplikace. Při formě end-to-end byl zlomek testovacích adres v procesu Kafka Producer nahrán do Kafky a následně byly v procesu Kafka Consumer všechny adresy úspěšně přečteny. Následně byl proveden tzv. zatěžkávací test, tedy test, jehož snahou je určit, jak náročný provoz je daný systém schopný unést bez poruchy. Předpokládaná zátěž systému Magpie je v řádu tisíců až desetitisíců zpráv týdně. V zatěžkávacím testu byl tedy proveden přenos milionu zpráv, což bylo vyhodnoceno jako dostačující množství. Všechny přijaté zprávy byly následně uloženy do souboru, jehož velikost byla porovnána se souborem obsahujícím vstupní data. Ze shody velikosti obou souborů bylo vyhodnoceno, že byl přenos úspěšný.
+
+
 \subsection{Zabezpečené stahování a filtrování dat}
-Prvotní testovací množina dat obsahovala 1000 vzorků a jednalo se o starší seznam nejvíce navštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa}.
+Testování této komponenty bylo nejobsáhlejší a probíhalo na vícero testovacích množinách. Prvotní testovací množina dat obsahovala 1000 vzorků a jednalo se o starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa}. Pro každou adresu byly staženy zdrojové soubory a následně byla provedena analýza výstupních dat. Při této analýze bylo zjištěno, že přes prvotní předpoklady není ošetření přesměrování se stavovými kódy 301 a 302 dostačující. Stavový kód 301 se používá pro trvalné přesměrování (tzv. Moved Permanently), kód 302 byl původně navržen pro dočasné přesměrování, nyní je nejčastěji používaným stavovým kódem pro obecná přesměrování. Z analýzy vyplynulo, že množství stránek používá i jiné stavové kódy pro přesměrování. Z ještě nezmíněných se nejčastěji objevoval kód 307, který od standardu HTTP/1.1 nahradil kód 302 pro dočasné redirecty (tzv. Temporary redirect). Proto bylo ošetření přesměrovávacích stavových kódů rozšířeno. Byl upraven inicializační skript(\ref{snip:fiddler}) pro program Fiddler, který obsahuje podmínku pro zachytávané stavové kódy(\ref{snip:fiddler_new}). 
+
+\begin{figure}[h]               
+	\begin{minted}{Javascript}
+if (code == 200 || code == 301 || code == 302)
+	\end{minted}      
+	\caption{Původní podmínka selekce stavových kódů}
+	\label{snip:fiddler_new}
+\end{figure}
+
+Zmiňovaná podmínka byla rozšířena na zachytávání všech stavových kódů z intervalu $(299,310)$ (znázorněno na snippetu \ref{snip:fiddler_new_new}).
+\begin{figure}[h]               
+	\begin{minted}{Javascript}
+if (oSession.responseCode == 200 || 
+    (299 < oSession.responseCode < 310))
+	\end{minted}      
+	\caption{Upravená podmínka selekce stavových kódů}
+	\label{snip:fiddler_new_new}
+\end{figure}
+
+Z analýzy následně vyplynula důležitost uchovávání logu (výpis informačních zpráv) prohlížeče. Tento výpis je důležitý v situacích, kdy zadaná stránka již neexistuje, nebo se v průběhu připojení naskytly jiné komplikace a obsah stránky není dostupný. V takovém případě není nutné pokračovat třídícím algoritmem, poněvadž všechny zachycené soubory obsahují pouze režijní komunikaci prohlížeče a Fiddleru. Geckodriver (webdriver používaný nástrojem Selenium k ovládání internetového prohlížeče Mozilla Firefox) ovšem tuto funkcionalitu nepodporuje. Z toho důvodu bylo od těchto nástrojů odstoupeno a byl použit Chromedriver v souvislosti s internetovým prohlížečem Google Chrome. K tomu bylo zapotřebí na virtuální stroj nainstalovat zmíněný webdriver ve verzi shodné s nainstalovaným prohlížečem Google Chrome (pro oba programy byla nainstalována nejnovější verze 80). Základní ovládání prohlížeče se liší pouze v importování a následné inicializaci rozdílné třídy reprezentující prohlížeč z knihovny nástroje Selenium. Kód pro ovládání prohlížeče nástrojem Selenium \ref{snip:selenium} byl tedy přepsán. Základní ovládání prohlížeče Google Chrome s využitím logování je znázorněno na snippetu \ref{snip:selenium_new}.
+
+\begin{figure}[h]               
+	\begin{minted}{Python}
+import time 
+
+from selenium.webdriver import Chrome
+import selenium.webdriver.common.desired_capabilities
+import selenium.webdriver
+
+chrome_options = selenium.webdriver.ChromeOptions()
+
+d = desired_capabilities.DesiredCapabilities.CHROME
+d['goog:loggingPrefs'] = {'browser': 'ALL'}
+
+browser = Chrome(
+    options=chrome_options, 
+    desired_capabilities=d
+)
+
+browser.get("https://www.seznam.cz")
+log = browser.get_log('browser')
+	\end{minted}      
+	\caption{Ovládání prohlížeče Google Chrome pomocí nástroje Selenium}
+	\label{snip:selenium_new}
+\end{figure}
+
+Obdobně jako u prohlížeče Firefox lze měnit nastavení prohlížeče skrze instanci dedikované třídy, zde \mintinline{Python}{ChromeOptions}. Dále je potřeba vytvořit instanci třídy \mintinline{Python}{DesiredCapabilities}, v které je možné nastavit logovací preference(\ref{snip:log_pref}).
+\begin{figure}[h]               
+	\begin{minted}{Python}
+d['goog:loggingPrefs'] = {'browser': 'ALL'}
+	\end{minted}      
+	\caption{Logovací preference prohlížeče}
+	\label{snip:log_pref}
+\end{figure}
+Parametr \mintinline{Python}{'ALL'} určuje úroveň logování, tedy zda se mají ukládat všechny informační zprávy (ALL), nebo jen zprávy typu ERROR či WARNING.
+Tato instance je předána spolu s třídou pro nastavení prohlížeče jako parametry při inicializaci prohlížeče. Po načtění stránky lze přistoupit k logu pomocí metody \mintinline{Python}{get_log()}, která vrací strukturu obsahující informace v závislosti na nastavených logovacích preferencích. Při iteraci nad touto strukturou lze přistoupit k jednotlivým záznamům (snippet\ref{snip:selenium_logger}). 
+\begin{figure}[h]               
+	\begin{minted}{Python}
+for entry in log:
+    print(f"{entry['message']}")
+    if 'Fiddler - DNS Lookup Failed' in entry['message']:
+        raise DNSLookUpFailException(entry['message'])
+    if 'Fiddler - Connection Failed' in entry['message']:
+        raise ConnectionFailException(entry['message'])
+    if 'Fiddler - Receive Failure' in entry['message']:
+        raise ReceiveFailureException(entry['message'])
+	\end{minted}      
+	\caption{Iterace nad strukturou obsahující logování prohlížeče}
+	\label{snip:selenium_logger}
+\end{figure}
+Tento výpis byl následně použit k vytvoření podmínek kontrolujících, zda byla stránka skutečně načtena. Chybové hlášky prohlížeče nejsou nijak exaktní, bylo tedy nutné podmínky vytvořit na základě porovnávání stringů. Z analýzy vyplynulo, že se při neexistující stránce nebo při přerušeném připojení objevují tři rozdílné výpisy. Byly tedy vytvořeny podmínky, které tyto výpisy odchytávají a vytvářejí výjimky, které se na začátku procesu filtrování dat vyhodnocují.
+
 
 \subsection{Přenos souborů do HCP úložiště}
 
