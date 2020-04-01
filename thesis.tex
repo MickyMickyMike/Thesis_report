@@ -513,7 +513,7 @@ for counter, file in enumerate(filenames):
 	\label{snip:mainupload}
 \end{figure}
 V ní dochází k iteraci přes všechny validní soubory (výstup z třídění dat \ref{sec:trideni}). Pro každý soubor se nejdříve určí cesta souboru \mintinline{Python}{file_name}. Následně se nastaví metadata pro upload zavoláním metody \mintinline{Python}{set_meta_for_upload()}, které se předá cesta k souboru s metadaty a původní tázaná url (zde \mintinline{Python}{directory} z důvodu, že se stažené soubory ukládají do složek pojmenovaných podle původní zadané adresy). Na závěr cyklu hlavní smyčky je volána funkce \mintinline{Python}{upload_file}. Prvním parametrem je cesta k datovému souboru. Následuje cílový název souboru v HCP úložišti. Zde, aby se zajistila unikátnost souborů v úložišti, se soubory přejmenovávají podle klíče:
-\begin{eqnarray}
+\begin{eqnarray}\label{prejmenovavani}
 \{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}
 \end{eqnarray}
 
@@ -966,7 +966,18 @@ Tento výpis byl následně použit k vytvoření podmínek kontrolujících, zd
 
 
 \subsection{Přenos souborů do HCP úložiště}
+Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byla opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
 
+Při této analýze bylo avšak zjištěno, že přejmenovávání nahraných souborů podle klíče
+\begin{eqnarray}\label{prej}
+\{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}
+\end{eqnarray}
+ není optimální. V HCP úložišti mohou být pouze unikátní soubory (soubory s unikátním názvem). K přenosu souborů z HCP úložiště do systému Scavenger nedochází hned, avšak periodicky s časovým odstupem. V situaci, kdy by v tomto čase byla zpracována stejná url adresa vícekrát, došlo by k pokusu o nahrání souboru, který by měl stejné jméno jako soubor již přítomný v HCP úložišti a přenos by neproběhl. Bylo tedy nutné klíč přetvořit aby byla zachována unikátnost. K tomuto účelu je k názvu souboru přidáván i současný čas. Nový klíč pro přejmenovávání nahrávaných souborů tedy vypadá následovně: 
+\begin{eqnarray}\label{prejm}
+\{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}\{aktuální\_čas\}
+\end{eqnarray}
+
+Dále byla na začátek přenosu přidána kontrola, zda při filtraci dat byly vůbec některé soubory označeny jako validní. Pokud tomu tak není, proces se automaticky ukončí.
 
 \section{Zobecnění projektu a budoucí využití}
 V současné době je projekt Magpie využit k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Tyto stránky často vypadají velmi podobně 
