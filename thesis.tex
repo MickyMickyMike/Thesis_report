@@ -65,7 +65,7 @@
 \keywordsEN{Python, Virtualbox, Fiddler, html, js}
 % \website{http://site.example/thesis} %volitelná URL práce, objeví se v tiráži - úplně odstraňte, nemáte-li URL práce
 
-%\renewcommand{\baselinestretch}{1.5}
+\renewcommand{\baselinestretch}{1.2}
 
 \begin{document}
 
@@ -980,8 +980,14 @@ Při této analýze bylo avšak zjištěno, že přejmenovávání nahraných so
 Dále byla na začátek přenosu přidána kontrola, zda při filtraci dat byly vůbec některé soubory označeny jako validní. Pokud tomu tak není, proces se automaticky ukončí.
 
 \section{Zobecnění projektu a budoucí využití}
-V současné době je projekt Magpie využit k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Tyto stránky často vypadají velmi podobně 
+V současné době je projekt Magpie využit k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Při analýze těchto stránek, tedy při rozhodování zda je stránka phishingového charakteru, je často potřeba podívat se do zdrojových souborů stránky. K zisku těchto dat by bylo možné využívat systém Magpie. 
 
+Jiným využitím Magpie při analýze malwaru může být zisk infikovaných souborů s následným nahráním do systému Scavenger. Systém Scavenger obsahuje kromě databáze cleansetu mimojiné i databázi škodlivých souborů. Rozhodovací logika vložení nahrávaného souboru do příslušné databáze je lehce implementovatelná v systému Scavenger pomocí filterů založených na metadatech nahrávaných souborů. Pokud by byly tedy metadata obohaceny o tuto informaci, je Magpie schopný zpracovávat i infikovaná data.
+
+
+
+\section{Zhodnocení přínosu}
+Hlavní přínos systému Magpie ční v automatizaci doplňování cleansetu. Dříve bylo doplňování čistých či infikovaných HTML a .js souborů do databáze Scavengeru práce analytiků, kteří museli pro každý nahraný soubor manuálně zvolit, zda se jedná o soubor infikovaný či nikoliv. Tímto způsobem není možné zpracovávat obsáhlý počet čistých souborů, které je třeba nahrávat na cleanset, aby bylo zajištěno jeho funkčnosti. Díky systému Magpie je možné cleanset obohacovat o 200 000 nových souborů týdně, čímž je mnohonásobně navýšena stávající kapacita přidávání dat. V důsledku toho je cleanset obsáhlejší, což přispívá k lépe fungující automatizaci při vydávání nových detekcí. Virové definice vytvářejí nejen analytici, kteří musejí kontrolovat, zda definice neblokuje čisté soubory na cleansetu. Virové detekce zároveň vznikají i díky automatickým nástrojům, u kterých je silný cleanset neméně důležitý. Díky silnému cleansetu klesá množství špatných detekcí vytvořených automatickými nástroji a Magpie silný cleanset vytváří.
 
 
 
