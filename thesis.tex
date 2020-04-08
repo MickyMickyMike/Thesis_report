@@ -102,34 +102,30 @@ Dříve, než se nová string detekce začlení do jádra antiviru, je její obs
 Ideálním stavem je tedy mít záznam o veškerém čistém obsahu internetu, což je samozřejmě nemožné. Avšak čím více záznamů cleanset obsahuje, tím kvalitnější je běh antivirového programu. V současné době dochází k doplňování cleansetu pouze občasně a to převážně manuálně za pomoci jednoduchých scriptů.
 
 \section{Cíle práce} 
- Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit systém, který by modernizoval doplňování cleansetu, avšak současně je možné jej zobecnit k využití i v jiných aplikacích. Systému bylo dáno kódové označení \textit{Magpie} (česky Straka), protože aplikace, stejně jako straky, bude shromažďovat data z různých míst a ukládat je na jedno místo. Výsledná aplikace bude řádně otestována a bude zhodnocen její přínos.
+ Hlavním cílem této práce je vytvořit plně automatizovaný systém, který bude databázi s čistými záznamy periodicky doplňovat o nový obsah, čímž by mělo dojít ke zlepšení funčnosti antivirového programu. Dále bude potřeba systém začlenit do již stávající  infrastruktury. Primárním úkolem je tedy vytvořit systém, který by modernizoval doplňování cleansetu, avšak současně je možné jej zobecnit k využití i v jiných aplikacích. Systému bylo dáno kódové označení \textit{Magpie} (česky Straka), protože aplikace, stejně jako straky, bude shromažďovat data z různých míst a shromažďovat je na jedno místo. Výsledná aplikace bude řádně otestována a bude zhodnocen její přínos.
 
 
 \chapter{Analýza a řešení problému}
 Jednotlivé body práce by se daly rozdělit na vícero dílčích podproblémů:
 
 \begin{itemize}
-	\item Výběr programovacícho jazyka
 	\item Předzpracování zadaných adres webových stránek
 	\item Získání čistých souborů z webových stránek
 	\item Zabezpečení stahovacího procesu
 	\item Nahrání získaného obsahu do databáze cleansetu
 	\item Začlenění do stávající infrastruktury
+	\item Určení programovacího jazyka
 \end{itemize}
-
-\section{Výběr programovacího jazyka}
-Podle prvních odhadů a požadavků bude práce obsahovat více odlišných částí, které by měly být jednoduše ovladatelné a propojitelné. K tomu by šlo využít programovacího jazyka \textit{Python}(\ref{sec:python}), který obsahuje velké množství dostupných knihoven. Tato volba je i v soulady s firemní politikou.
-
-
-
 
 
 \section{Předzpracování zadaných adres}
-Předzpracování zadaných adres  se bude řešit pomocí frontového systému \textit{Kafka}(\ref{sec:kafka}).
+K předzpracování zadávaných adres lze využít frontový systém \textit{Kafka}(\ref{sec:kafka}).
 
-Systém by měl reagovat na dva typy vstupů. Prvním vstupem budou adresy s vysokou prevalencí (případem takové adresy může být třeba internetový obchod \url{www.amazon.com}), které budou systému periodicky dodávány z externích modulů. Vstupem ale může být i ručně zadaná adresa či seznam adres v případě, kdy by operátor systému potřeboval na cleanset dodat soubory z webových stránek s menší prevalencí, či, ve více obecném řešení, by potřeboval stáhnout zdrojové soubory cílených webových stránek pro odlišné účely.
+Systém by měl reagovat na dva typy vstupů. Prvním vstupem budou adresy s vysokou prevalencí (případem takové adresy může být třeba internetový obchod \url{www.amazon.com}), které budou systému periodicky dodávány z externích modulů. Jako vstupní data lze využít seznamy poskytované službou Alexa Top Sitex \cite{alexa}, jež obsahují nejnavštěvovanější stránky kategorizované podle obsahu, či obdobný seznam jiné služby mazývané Majestic Milion \cite{majestic}.
 
-V obou případech se vložené adresy nahrají do frontového systému, odkud se budou postupně odebírat (Obr.\ref{fig:kafka_schema}). Využití \textit{Kafky} má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit \textit{Kafky}, které by zde šlo využít, je potvrzování zpracované zprávy po přijetí. Tím dojde vždy ke zpracování všech zpráv ve frontě. 
+Kromě automatického zpracovávání výše zmíněných seznamů může být vstupem i ručně zadaná adresa či seznam adres v případě potřeby operátora systému dodat na cleanset soubory z webových stránek s menší prevalencí, či ve více obecném řešení, potřeby stáhnout zdrojové soubory cílených webových stránek pro odlišné účely.
+
+V případě využití Kafky je možné adresy z odlišných seznamů nahrát do frontového systému, odkud se budou postupně odebírat (Obr.\ref{fig:kafka_schema}). Využití \textit{Kafky} má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit \textit{Kafky}, které lze využít, je potvrzování zpracované zprávy po přijetí. Tím dojde vždy ke zpracování všech zpráv ve frontě. 
 
 \begin{figure}[h]
 	\centering
@@ -142,20 +138,20 @@ V obou případech se vložené adresy nahrají do frontového systému, odkud s
 
 
 \section{Získání čistých souborů z webových stránek}
-K získání čistých souborů je možné přistoupit dvěma způsoby. Jednou z možností je otevírat stránky ve webovém prohlížeči a k získání souborů použít nástroj \textit{Fiddler}(\ref{sec:fiddler}), druhým způsobem je emulace webového prohlížeče v \textit{Pythonu} a stahování zdrojových kódů stránek. 
+Jednou z možností jak přistupovat k získání čistých souborů je otevírat stránky ve webovém prohlížeči a k získání souborů použít nástroj \textit{Fiddler}(\ref{sec:fiddler}). Jiným způsobem je emulace webového prohlížeče v \textit{Pythonu} s následným stahováním zdrojových kódů stránek bez využití programů třetích stran (webový prohlížeč, Fiddler).
 
-Další problematikou je ošetření přesměrovávání (tzv. redirecty), které se na spoustě webových stránek používá. Jedna z možností je redirecty neřešit a zabývat se pouze obsahem dané url. To by proces získání zdrojových souborů usnadnilo. Není to ale příliš robustní řešení. Bylo by tedy rozumné s přesměrováváním webových stránek počítat. 
+Problematiku při implementaci stahování dat činí přesměrovávání (tzv. redirecty), které se na spoustě webových stránek používá. Redirecty je možné neřešit a zabývat se pouze obsahem dané url, což by proces získání zdrojových souborů usnadnilo. Stažená data by avšak byla nekompletní.
 
-Také by zde měla být implementována logika selekce pouze HTML a .js souborů, ostatní soubory pro funkčnost cleansetu nejsou důležité. To je možné provádět přímo při stahování souborů, nebo vždy pro zadanou adresu stáhnout všechny soubory a selekci provést následně.
+V průběhu stahování dat by také měla být implementována logika selekce vybraných typů souborů. Pro cleanset jsou validní pouze HTML a .js soubory, ostatní soubory (css soubory, obrázky a jiné) lze tedy filtrovat. Tuto selekci je možné provádět přímo při stahování souborů, či následně po stáhnutí celého obsahu zadané adresy.
 
-Jednotlivé rozebírané metody získání čistých souborů z webových stránek jsou tedy následující:
+Jednotlivé rozebírané metody získání čistých souborů z webových stránek jsou následující:
 \begin{itemize}
 	\item Emulace webového prohlížeče a následné parsování webových stránek 
 	\item Spouštění stránek v prohlížeči a zachytávání komunikace Fiddlerem
 \end{itemize}
 
 \subsection{Emulace webového prohlížeče} \label{sec:parsing}
-Oproti druhé metodě s využitím nástroje \textit{Fiddler} by byla emulace webového prohlížeče bezesporu rychlejší. Pro práci s webovými stránkami v \textit{Pythonu} existuje více knihoven, avšak nejčastěji se používá knihovna \textit{Requests}. Její interface je daleko snazší na použití než u knihovny \textit{Urllib}, jejíž výhodou je pouze fakt, že je již obsažena v základní instalaci \textit{Pythonu} a není nutno ji doinstalovávat. 
+Výhodou emluace webového prohlížeče oproti druhé metodě s využitím nástroje \textit{Fiddler} je v rychlost a jednoduchost z hlediska využitých nástrojů.  Pro práci s webovými stránkami v \textit{Pythonu} existuje více knihoven, avšak nejčastěji se používá knihovna \textit{Requests}. Její interface je daleko snazší na použití než u knihovny \textit{Urllib}, jejíž výhodou je pouze fakt, že je již obsažena v základní instalaci \textit{Pythonu} a není nutno ji doinstalovávat. 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=9cm]{pictures/scrapper.png}
@@ -190,7 +186,7 @@ Avšak problémy této metody přináší i webový prohlížeč, kterého se zd
 
 
 \section{Zabezpečení stahovacího procesu}\label{sec:zabezpeceni}
-Z bezpečnostních důvodů je kladen důraz na to, aby byl veškerý proces stahování webového obsahu zabezpečen. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není moc bezpečné řešení. Jedním z možných způsobů jak docílit základní bezpečnosti je vytvoření a obsluha virtuálního stroje, na kterém by docházelo ke stahování souborů. 
+Z bezpečnostních důvodů je kladen důraz na zabezpečení veškerého procesu stahování webového obsahu. Předpokládá se sice, že všechny stažené soubory budou nezavirované, avšak spoléhat se na to není bezpečné řešení. Jedním z možných způsobů jak docílit základní bezpečnosti je vytvoření a obsluha virtuálního stroje, na kterém by docházelo ke stahování souborů. 
 
 Celý koncept zabezpečení stahování pomocí virtuálního systému je ovlivněn použitím nástroje \textit{Fiddler}(\ref{sec:fiddler}) pro stahování souborů z webových stránek. Tato metoda by využívala \textit{Fiddler}, který by běžel na pozadí, spolu s prohlížečem, v kterém by byly stránky otevírány a pomocí \textit{Fiddleru} zachytávána komunikace (Obr.\ref{fig:virtualbox}). 
 \begin{figure}[h]
@@ -210,7 +206,7 @@ Z hlediska bezpečnosti by bylo rozumné spouštět virtuální stroj (neboli VM
 
 
 \section{Nahrání získaného obsahu do databáze cleansetu}
-Dalším krokem bude přesun získaného obsahu do samotné databáze cleansetu. Ta je součástí většího systému aplikací, který nese interní označení Scavenger. Zjednodušeně lze říci, že tento systém obsahuje záznamy o všech antiviru známých souborech a url adresách (nakažených i čistých). Soubory se v systému Scavenger ukládají v podobě hashe vzniklé pomocí hashovacího algoritmu sha-256. Tímto lze docílit jednoduché kontroly duplicity (stejné soubory mohou mít rozdílné názvy, ale hash souboru je pro identické soubory stejná). K hashi souboru se přikládají metadata mimojiné s informací o původu souboru, času výskytu a prevalencí. 
+Dalším krokem je přesun získaného obsahu do samotné databáze cleansetu. Ta je součástí většího systému aplikací, který nese interní označení Scavenger. Zjednodušeně lze říci, že tento systém obsahuje záznamy o všech antiviru známých souborech a url adresách (nakažených i čistých). Soubory se v systému Scavenger ukládají v podobě hashe vzniklé pomocí hashovacího algoritmu sha-256. Tímto lze docílit jednoduché kontroly duplicity (stejné soubory mohou mít rozdílné názvy, ale hash souboru je pro identické soubory stejná). K hashi souboru se přikládají metadata mimojiné s informací o původu souboru, času výskytu a prevalencí. 
 
 K nahrání souborů do Scavengeru lze využít síťový souborový systém Sambu, který implementuje přenos souborů po síti pomocí síťového protokolu SMB a to převážně v systémech Windows. Tato metoda je však z hlediska firemní infrastruktury zastaralá. Novější způsob představuje využití datové platformy HCP (Hitachi content platform). Tato platforma se specializuje na přesun a zpracování velkého množství dat z různých zdrojů. Ke komunikaci se zmíněným systémem HCP lze využít interně vyvinutý python klient, který přesun souborů usnadní.
 
@@ -219,53 +215,56 @@ K nahrání souborů do Scavengeru lze využít síťový souborový systém Sam
 
 
 \section{Začlenění do stávající infrastruktury}
-Systém bude spouštěn periodicky, ale měl by být také spustitelný na vyžádání uživatelem. Pro takové požadavky lze použít systém Jenkins(\ref{sec:jenkins}), který je firmou Avast používaný k periodickému spouštění procesů. Jednotlivé části systému Magpie je možné oddělit do samostatných procesů (v terminologii systému Jenkins tzv. jobů), které se dají sekvenčně pouštět v závislosti na úspěšném ukončení předcházejícího jobu. Tento přístup přináší přehledné rozhraní, v kterém je možné jednotlivé části samostatně monitorovat, spolu s jednoduchým přístupem k výstupům jobů. Tímto způsobem by bylo možné přistoupit k získaným datům přímo, bez nutnosti data nahrávat do databáze v systému Scavenger, v případě, kdy by byl systém spuštěný manuálně.
+Předpokládá se, že bude systém spouštěn periodicky, ale měl by být také spustitelný na vyžádání uživatelem. Pro takové požadavky lze použít systém Jenkins(\ref{sec:jenkins}), který je firmou Avast používaný k periodickému spouštění procesů. Jednotlivé části systému Magpie je možné oddělit do samostatných procesů (v terminologii systému Jenkins tzv. jobů), které se dají sekvenčně pouštět v závislosti na úspěšném ukončení předcházejícího jobu. Tento přístup přináší přehledné rozhraní, v kterém je možné jednotlivé části samostatně monitorovat, spolu s jednoduchým přístupem k výstupům jobů. Tímto způsobem by bylo možné přistoupit k získaným datům přímo, bez nutnosti data nahrávat do databáze v systému Scavenger, v případě, kdy by byl systém spuštěný manuálně.
 
 Jiným přístupem je využít firemní mutaci nástroje Kubernetes interně nazývanou Luft\ref{sec:docker}, která by umožňovala mít systém spuštěný bez přestávky. Krom neustálého spuštění skriptu je velkou výhodou Kubernetes tzv. škálování, kdy lze při velkém vytížení jednoduše navýšit výpočetní prostředky danému procesu a tím urychlit jeho běh. Pro spuštění skriptu v Luftu je nejprve potřeba tento skript dockerizovat. Dockerizace je proces, při nímž je vytvořen tzv. docker image, neboli balíček, který je plně spustitelný ve virtualizovaném prostředí, například v Luftu. Při dockerizaci je nutné vytvořit \mintinline{Python}{Makefile}, který obsahuje informace o vzniku balíčku. 
 
 Je také možné pro jednotlivé části systému Magpie využít rozdílné technologie, například kombinaci obou výše zmíněných.
 
+\section{Programovací jazyk}
+Převážná část práce bude psána v programovacím jazyku \textit{Python}. \textit{Python} obsahuje velké množství dostupných knihoven, čímž lze docílit snadné integrity mezi jednotlivými komponentami aplikace Magpie. Tato volba je i v souladu s firemní politikou. 
 
-
+Při volbě stahování dat s využitím nástroje Fiddler bude dalším využitým programovacím jazykem \textit{JavaScript}, neboť v tomto jazyku je psán inicializační soubor zmíněného nástroje.
 
 
 
 \chapter{Použité technologie}
 V této kapitole jsou stručně popsány všechny technologie využité při zpracovávání této práce.
+
 \section{Python 3.7}\label{sec:python}
-Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C) v tom, že nepoužívá středníky ani složené závorky. Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Kvůli těmto vlastnostem byl vybrán pro tuto diplomovou práci.
+Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C). Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Kvůli těmto vlastnostem byl vybrán pro tuto diplomovou práci.
 
 \section{Fiddler}\label{sec:fiddler}
-Fiddler\cite{fiddler} je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe. Zde je však tento útok chtěný (Obr.\ref{fig:mitm}).
+Fiddler\cite{fiddler} je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se útočník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe (Obr.\ref{fig:mitm}).
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=7cm]{pictures/mitm.png}
 	\caption{MitM útok \cite{mitm}}
 	\label{fig:mitm}
 \end{figure}
-Jeho automatizace lze docílit inicializačním souborem, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je fiddler schopný zachytávat i šifrovanou komunikaci, kvůli čemuž byl použit v této práci.
+Jeho automatizace lze docílit inicializačním souborem, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je fiddler schopný zachytávat i šifrovanou komunikaci.
 
 \section{Selenium} \label{sec:selenium}
 Selenium je opensource nástroj používaný k automatizovanému přístupu k webovým aplikacím. Těchto vlastností se často využívá při testování, avšak v této práci je použit pouze k obsluze webového prohlížeče. Selenium obsahuje vlastní vývojové prostředí, které lze využít bez velké znalosti programování, existují však i jeho implementace do většiny populárních programovacích jazyků.
 
 
 \section{Jenkins} \label{sec:jenkins}
-Jenkins je opensource CI/CD systém (continuous integration and delivery) umožňující vykonávání automatických či periodických operací (tzv. jobů). Používá se převážně k spouštění buildů a udržování testů. Joby lze spoustět automaticky po vzniku nové verze vyvíjeného programu, lze je ale i spouštět pravidelně v předem určený čas, čehož bylo v této práci využito.
+Jenkins je opensource CI/CD systém (continuous integration and delivery) umožňující vykonávání automatických či periodických operací (tzv. jobů). Používá se převážně k spouštění buildů a udržování testů. Joby lze spoustět automaticky po vzniku nové verze vyvíjeného programu, lze je ale i spouštět pravidelně v předem určený čas.
 
 \section{Kafka}\label{sec:kafka}
-Kafka by se dala zařadit mezi frontové systémy. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na procesing velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu třeba u RabbitMQ (tj. jiný frontový systém), avšak do tzv. topiců. Jeden Topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (Obr.\ref{fig:kafka}). 
+Kafku lze řadit mezi frontové systémy. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na procesing velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu třeba u RabbitMQ (tj. jiný frontový systém), avšak do tzv. topiců. Jeden Topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (Obr.\ref{fig:kafka}). 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=7cm]{pictures/kafka.png}
 	\caption{Znázornění Kafka systému \cite{kafka}}
 	\label{fig:kafka}
 \end{figure}
-Zprávy do topicu posílá proces, který se nazývá Producer. Obdobně proces, který data čte, je nazýván Consumer. Ten dostává zprávy z topicu v závislosti na indexaci a časové známky. K jednomu topicu může být přihlášeno více nezávislých konzumerů, kteří jsou rozděleni do rozdílných skupin a každá skupina dostává identické zprávy, čím se zabrání vzájemnému čtení stejných zpráv.
+Zprávy do topicu posílá proces, který se nazývá Producer. Obdobně proces, který data čte, je nazýván Consumer. Ten dostává zprávy z topicu v závislosti na indexaci a časové známky. K jednomu topicu může být přihlášeno více nezávislých konzumerů, kteří jsou rozděleni do odlišných skupin a každá skupina dostává identické zprávy. Tím je zabráněno vzájemnému čtení stejných zpráv.
 
 Zprávy zůstávají v topicu po určitou dobu, což určuje hodnota retence. Po tuto dobu jsou zprávy přístupny pro každou skupinu konzumerů. Síla kafku je v politice přečtených zpráv. Na rozdíl od zmiňovaného RabbitMQ, který přečtením zprávy zprávu odstraní ze své fronty, funguje v kafce tzv. potvrzovací systém. Konzumer dostane zprávu, a po jejím zpracování vyšle tzv. commit, kterým oznámí úspěšné zpracování. Pokud by v průběhu nastala chyba, tento commit se nepošle a zpráva se vrátí zpátky, kde může být přečtena jiným konzumerem ve skupině.
 
 \section{Virtualbox}\label{sec:virtualbox}
-Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. Slouží k instalaci virtuálních operačních systémů na jednom fyzickém stroji. Jeho výhodou je multiplatformnost, což znamená, že je možné ho nainstalovat na MS Windows i operační systémy s unixovým jádrem (Linux, Mac OS). Tímto lze docílit například spuštění linuxového systému pod operačním systémem Windows.\cite{virutalbox}
+Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. Slouží k instalaci  a obsluze virtuálních operačních systémů na jednom fyzickém stroji. Jeho výhodou je multiplatformnost, což znamená, že je možné ho nainstalovat na MS Windows i operační systémy s unixovým jádrem (Linux, Mac OS). Tímto lze docílit například spuštění linuxového systému pod operačním systémem Windows.\cite{virutalbox}
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=5cm]{pictures/vbox.png}
@@ -273,7 +272,7 @@ Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. Slouž
 	\label{fig:vbox}
 \end{figure}
 
-Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zachycuje virtuální stroj a veškeré jeho nastavení v daném čase, v kterém je vytvořen. Tímto lze jednoduše vracet provedené změny zpět do bodu vytvoření snapshotu. Toho je možné využít při testování aplikací, využití je avšak možné i v oblasti bezpečnosti. Pokud je vytvořen snapshot čistého systému, lze se do něj vraátit v případě potenciálního nakažení virtuálního stroje. Této funkcionality se využívá i v této práci.
+Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zachycuje virtuální stroj a veškeré jeho nastavení v daném čase, v kterém je vytvořen. Tímto lze jednoduše vracet provedené změny zpět do bodu vytvoření snapshotu. Toho je možné využít při testování aplikací, využití je avšak možné i v oblasti bezpečnosti. Pokud je vytvořen snapshot čistého systému, lze se do něj vrátit v případě potenciálního nakažení virtuálního stroje.
 
 
 \section{Docker}\label{sec:docker}
@@ -1085,6 +1084,9 @@ Posledním bodem zadání bylo důsledné otestování navrženého systému. Te
 	
 	\bibitem{alexa}
 	\url{https://www.alexa.com/topsites}
+	
+	\bibitem{majestic}
+	\url{TODO}
 	
 \end{thebibliography}
 
