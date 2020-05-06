@@ -227,7 +227,7 @@ Jiným přístupem je využít firemní mutaci nástroje Kubernetes\ref{sec:dock
 Je také možné pro jednotlivé části systému Magpie využít rozdílné technologie, například kombinaci obou výše zmíněných.
 
 \section{Programovací jazyk}
-Převážná část práce bude psána v programovacím jazyku Python. Python obsahuje velké množství dostupných knihoven, čímž lze docílit snadné integrity mezi jednotlivými komponentami aplikace Magpie. Tato volba je i v souladu s firemní politikou. 
+Převážná část práce bude psána v programovacím jazyku Python\cite{python}. Python obsahuje velké množství dostupných knihoven, čímž lze docílit snadné integrity mezi jednotlivými komponentami aplikace Magpie. Tato volba je i v souladu s firemní politikou. 
 
 Při volbě stahování dat s využitím nástroje Fiddler bude dalším využitým programovacím jazykem JavaScript, neboť v tomto jazyku je psán inicializační soubor zmíněného nástroje.
 
@@ -345,7 +345,7 @@ Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat rů
 
 
 \subsection{Skript pro nastavení Fiddleru}\label{sec:fiddler_setup}
-Program Fiddler se primárně ovládá přes grafické prostředí. Je však možné změnit jeho výchozí konfiguraci tak, aby se při spuštění rovnou načetl do požadovaného nastavení. K tomuto účelu slouží inicializační skript, který nese označení \mintinline{Python}{CustomRules.js}, jedná se tedy o skript psaný v javaScriptu. Fiddler při spuštění vždy načítá set pravidel, podle kterých se nastaví. Defaultně jsou tyto pravidla brána ze skriptu, který se nachází v instalačním adresáři programu. Skriptem \mintinline{Python}{CustomRules.js} lze tyto pravidla nahradit.
+Program Fiddler se primárně ovládá přes grafické prostředí, je však možné změnit jeho výchozí konfiguraci. K tomuto účelu slouží inicializační skript, který nese označení \mintinline{Python}{CustomRules.js}, jedná se tedy o skript psaný v javaScriptu. Fiddler při spuštění vždy načítá set pravidel, podle kterých se nastaví. Defaultně jsou tato pravidla brána ze skriptu, který se nachází v instalačním adresáři programu. Skriptem \mintinline{Python}{CustomRules.js} lze tyto pravidla nahradit.
 
 Skript obsahuje mnoho funkcí pro různé sekce programu, z hlediska této práce je však důležitá pouze funkce \mintinline{Python}{OnBeforeResponse()}, která je zavolána vždy, když přijde ze serverové části nějaká odpověď (tzv. response). Implementace této metody je znázorněna v snippetu \ref{snip:fiddler}.
 
@@ -378,9 +378,9 @@ static function OnBeforeResponse(oSession: Session) {
 	\label{snip:fiddler}
 \end{figure}
 
-Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování z pravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ dříve sloužil pro přesměrování dočasná (tzv. moved temporarily), od standartdu HTTP/1.1 je však více využíván pro všeobecná přesměrování\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
+Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování zpravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ dříve sloužil pro přesměrování dočasná (tzv. moved temporarily), od standartdu HTTP/1.1 je však více využíván pro všeobecná přesměrování\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
 
-Pokud se tak nastane, jsou vytvořeny dva soubory, které jsou pojmenovány podle id relace. Soubor s koncovkou \mintinline{Python}{.dat} je určený pro záznam zachycených dat, soubor \mintinline{Python}{.meta} slouží k uchování metadat o zachycené komunikaci. Následně se volá funkce \mintinline{Python}{WriteAllBytes()}, která z relace oSession přijme parametr \mintinline{Python}{responseBodyBytes}, který obsahuje tělo odpovědi ze serveru, tedy zachycená data, a zapíše je do datového souboru. Dále se shromáždí metadata potřebná pro filtraci souborů (Tabulka \ref{fig:meta}), která se zapíší do souboru \mintinline{Python}{.meta}. 
+Při nastání této situace jsou vytvořeny dva soubory, které jsou pojmenovány podle id relace. Soubor s koncovkou \mintinline{Python}{.dat} je určený pro záznam zachycených dat, soubor \mintinline{Python}{.meta} slouží k uchování metadat o zachycené komunikaci. Následně se volá funkce \mintinline{Python}{WriteAllBytes()}, která z relace oSession přijme parametr \mintinline{Python}{responseBodyBytes}, který obsahuje tělo odpovědi ze serveru, tedy zachycená data, a zapíše je do datového souboru. Dále se shromáždí metadata potřebná pro filtraci souborů (Tabulka \ref{fig:meta}), která se zapíší do souboru \mintinline{Python}{.meta}. 
 
 
 \begin{table}[h]
@@ -458,7 +458,7 @@ Pro příklad \url{http://www.example.com/index} je tedy \mintinline{Python}{htt
 
 V hlavní smyčce se nejprve načtou metadata k souboru pomocí metody \mintinline{Python}{get_meta_from_file()} a uloží se do slovníku \mintinline{Python}{meta}. Poté se tyto data oříznou pomocí metody \mintinline{Python}{netloc_from_url()} a dále se pracuje jen s jejich netloc částí. První podmínka vyhodnocuje přesměrování. Pokud je \mintinline{Python}{response_code} v metadatech souboru roven $301$ nebo $302$, což značí přesměrování, a pokud je zároveň \mintinline{Python}{host} této adresy již v setu \mintinline{Python}{referers}, nejedná se o validní soubor, jde však o soubor, který nese informace o přesměrování. Je tedy potřeba přidat netloc adresy, na kterou dojde k přesměrování (v metadatech klíčové slovo \mintinline{Python}{redirect}). 
 
-Druhá podmínka je přidána pro optimalizaci. Fiddler zaznamenává velké množství souborů, které mají režijní charakter. Tyto soubory se vyznačují majou velikostí a jsou z hlediska filtrace nedůležité. Z toho důvodu se dál zpracovávají pouze soubory, které mají více než 8 bytů.
+Druhá podmínka je přidána pro optimalizaci. Fiddler zaznamenává velké množství souborů, které mají režijní charakter. Tyto soubory se vyznačují malou velikostí a jsou z hlediska filtrace nedůležité. Z toho důvodu se dál zpracovávají pouze soubory, které mají více než 8 bytů.
 
 Poslední podmínka již kontroluje samotné validní soubory. Pokud je netloc adresy, nebo netloc referera adresy již v setu \mintinline{Python}{referers}, jedná se o soubor zachycený při komunikaci s cílovou adresou a soubor je přidán do validního listu. Dále je netloc adresy přidán do \mintinline{Python}{referers} z důvodu, kdy by tato adresa odkazovala na jinou url při další komunikaci. Po iteraci nad všemi soubory v setříděném listu je výstupní list \mintinline{Python}{valid_ids} předán ke zpracování skriptu pro upload dat do databáze.
 
@@ -785,7 +785,7 @@ Pro skript, který zajišťuje předzpracovávání zadaných adres a následný
 
 Prvním je parametr s názvem \mintinline{Python}{download_alexa}, který zajišťuje, že se před nahráním url do Kafky spustí kód pro stáhnutí top url stránek z listu na adrese \url{https://www.alexa.com/topsites}. Tato možnost je zaškrtnuta v základním nastavení (tzv. defaultně) a to z důvodu periodického spouštění tohoto jobu. Zbylé dva parametry jsou zde pro manuální spouštění. Prvním je možnost textového souboru \mintinline{Python}{urls_file.txt}, kdy uživatel může nahrát soubor s požadovaným listem webových adres, které chce stáhnout. Zbývá textový parametr \mintinline{Python}{urls}, kde se mohou adresy zadávat přímo do textového pole. Toho lze využít při potřebě stáhnout jen jednu požadovanou adresu. 
 
-Skript využívá přístup do frontového systému Kafka. Bylo tedy zapotřebí v konfiguraci jobu nastavit požadované přístupové údaje. To je možné v konfigurační sekci Bindings, kde lze vytvořit tzv. enviromentální proměnné (proměnná, která je přístupná odkudkoliv v celém prostředí) pro daný job. Takto byl nastavený SSL certifikát pro klienty Kafky a přístupové heslo pro autorizaci posílaných zpráv.
+Skript využívá přístup do frontového systému Kafka. Bylo tedy zapotřebí v konfiguraci jobu nastavit požadované přístupové údaje. To je možné v konfigurační sekci Bindings, kde lze vytvořit tzv. environmentální proměnné (proměnná, která je přístupná odkudkoliv v celém prostředí) pro daný job. Takto byl nastavený SSL certifikát pro klienty Kafky a přístupové heslo pro autorizaci posílaných zpráv.
 
 Konfigurace dále obsahuje sekci Build, v které je potřeba nastavit příkaz (tzv. command), který se má při spuštění provézt. Jedná se o command příkazové řádky operačního systému Windows, který spouští skript pro upload souborů do frontového systému Kafka v prostředí pythonu se zadanými parametry.
 
@@ -802,7 +802,7 @@ $JENKINS\_URL$ značí webovou adresu serveru, na kterém běží firemní verze
 \end{equation}
 kde $URL$ značí předávaný parametr url.
 
-Je také nutné nastavit enviromentální proměnné pro přihlašovací údaje do virtuálního systému. Toho je opět docíleno pomocí konfigurační sekce Bindings v nastavení jenkins projektu. 
+Je také nutné nastavit environmentální proměnné pro přihlašovací údaje do virtuálního systému. Toho je opět docíleno pomocí konfigurační sekce Bindings v nastavení jenkins projektu. 
 
 Při startu jobu se spustí skript, který ovládá virtuální stroj. Toto je nastaveno v konfigurační sekci Build. Po úspěšném startu virtuálního stroje je ve virtuálním prostředí spuštěn klient pro stahování webového obsahu a následně stažené soubory přeneseny zpět do prostředí jobu v Jenkinsu. Zde dochází k filtraci dat a soubory, které jsou vyhodnocené jako relevantní pro zadanou url adresu jsou po doběhnutí jobu exportovány v podobě tzv. job artifactů (soubory, které jsou i po ukončení jobu dostupné k manipulaci). Tento export je proveden v konfigurační sekci Post-build Actions. Zde je také nastaveno, aby se po doběhnutí jobu spustil proces pro upload dat do databáze cleansetu (tzv. job trigger). Poněvadž jsou oba procesy v prostředí Jenkinsu, není potřeba generovat trigger token.
 
@@ -823,7 +823,7 @@ Třetím projektem vytvořeným v systému Jenkins je job pro upload do databáz
 
 Parametr Project name určuje, z jakého projektu se mají exportované artifacty kopírovat, zde projekt \mintinline{Python}{url_processing}. Parametrem Which build lze přímo určit specifické číslo buildu projektu, z kterého se mají exportované artifacty získat. Lze také nastavit, aby se vždy braly z posledního úspěšného buildu, což je znázorněno na obrázku. Konfigurační sekce Build dále obsahuje příkaz pro spuštění samotného skriptu pro přenos těchto exportovaných souborů. 
 
-Poněvadž se v jobu přistupuje do HCP úložiště, je potřeba v sekci Bindings nastavit enviromantální proměnné obsahující přihlašovací údaje.
+Poněvadž se v jobu přistupuje do HCP úložiště, je potřeba v sekci Bindings nastavit environmentální proměnné obsahující přihlašovací údaje.
 
 
 
@@ -833,7 +833,7 @@ V Kubernetes je spuštěn skript odebírající zprávy z frontového systému K
 
 
 \subsubsection{Dockerizace skriptu Kafka consumer} 
-Pro vytvoření docker image je nutné nejprve vytvořit tzv. Dockerfile (obdoba Makefile pro kompilaci jakyka c). Jedná se o soubor, který obsahuje sekvenci příkazů, které se mají při kompilaci docker balíčku provézt. Dockerfile pro balíček obsahující skript Kafka consumer je znázorněn na snippetu \ref{snip:docker}.
+Pro vytvoření docker image je nutné nejprve vytvořit tzv. Dockerfile (obdoba Makefile pro kompilaci jakyka c). Jedná se o soubor, který obsahuje sekvenci příkazů, které se mají při kompilaci docker balíčku provést. Dockerfile pro balíček obsahující skript Kafka consumer je znázorněn na snippetu \ref{snip:docker}.
 
 \begin{figure}[h]               
 	\begin{minted}{Docker}
@@ -860,13 +860,13 @@ První řádek s příkazem \mintinline{Python}{FROM} určuje, odkud stáhnout t
 
 Dalším příkazem je překopírován soubor \mintinline{Python}{requirements.txt} do prostředí nově vzniklého kontejneru. Tento soubor obsahuje seznam nestandardních python knihoven, tedy knihoven, které je potřeba ručně doinstalovat a nejsou obsaženy v instalaci pythonu.
 
-Dále je spuštěn příkaz \mintinline{Python}{pip install}, tyto nestandardní knihovny nainstaluje. K tomu je z bezpečnostních důvodů opět využito interní úložiště obsahující předschválené python knihovny.
+Dále je spuštěn příkaz \mintinline{Python}{pip install}, který tyto nestandardní knihovny nainstaluje. K tomu je z bezpečnostních důvodů opět využito interní úložiště obsahující předschválené python knihovny.
 
 Těmito příkazy je tedy připravené prostředí kontejneru. Zbývá přesunout zdrojové soubory skriptu, který zde poběží. Toho je docíleno příkazy \mintinline{Python}{ADD}. Posledním příkazem \mintinline{Python}{CMD} je spuštěn samotný skript.
 
 Takto vytvořený Dockerfile je potřeba sestavit (tzv. build) a následně nasadit (tzv. deploy). K sestavení balíčku byl využit firemní server TeamCity (server pro kontinuální integraci a správu sestavování aplikací vyvíjen firmou JetBrains \cite{teamcity}). Zdejší firemní struktura obsahuje šablony pro build docker balíčků, které jsou následně nahrány do již zmíněného firemního úložiště.
 
-Při nasazení aplikace do Kubernetes bylo opět využito firemní šablony. Při nasazování je potřeba vytvořit .yaml soubor, obsahující veškerou konfiguraci vznikající aplikace. Tento soubor byl převzat, bylo zde zapotřebí pouze nastavit enviromentální proměnné, které skript využívá. Jednalo se o přihlašovací údaje a SSL certifikát k frontovému serveru Kafka a token, pomocí kterého skript spouští jenkins job pro stahování souborů (viz sekce \ref{sec:jenkinsvirt}).
+Při nasazení aplikace do Kubernetes bylo opět využito firemní šablony. Při nasazování je potřeba vytvořit .yaml soubor, obsahující veškerou konfiguraci vznikající aplikace. Tento soubor byl převzat, bylo zde zapotřebí pouze nastavit environmentální proměnné, které skript využívá. Jednalo se o přihlašovací údaje a SSL certifikát k frontovému serveru Kafka a token, pomocí kterého skript spouští jenkins job pro stahování souborů (viz sekce \ref{sec:jenkinsvirt}).
 
 
 
@@ -972,7 +972,7 @@ Tento výpis byl následně použit k vytvoření podmínek kontrolujících, zd
 
 
 \subsection{Přenos souborů do HCP úložiště}
-Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byla opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
+Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byl opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
 
 Při této analýze bylo avšak zjištěno, že přejmenovávání nahraných souborů podle klíče
 \begin{eqnarray}\label{prej}
@@ -988,12 +988,12 @@ Dále byla na začátek přenosu přidána kontrola, zda při filtraci dat byly 
 \section{Zobecnění projektu a budoucí využití}
 V současné době je projekt Magpie využit k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Při analýze těchto stránek, tedy při rozhodování zda je stránka phishingového charakteru, je často potřeba podívat se do zdrojových souborů stránky. K zisku těchto dat by bylo možné využívat systém Magpie. 
 
-Jiným využitím Magpie při analýze malwaru může být zisk infikovaných souborů s následným nahráním do systému Scavenger. Systém Scavenger obsahuje kromě databáze cleansetu mimojiné i databázi škodlivých souborů. Rozhodovací logika vložení nahrávaného souboru do příslušné databáze je lehce implementovatelná v systému Scavenger pomocí filterů založených na metadatech nahrávaných souborů. Pokud by byly tedy metadata obohaceny o tuto informaci, je Magpie schopný zpracovávat i infikovaná data.
+Jiným využitím Magpie při analýze malwaru může být zisk infikovaných souborů s následným nahráním do systému Scavenger. Systém Scavenger obsahuje kromě databáze cleansetu mimojiné i databázi škodlivých souborů. Rozhodovací logika vložení nahrávaného souboru do příslušné databáze je lehce implementovatelná v systému Scavenger pomocí filterů založených na metadatech nahrávaných souborů. Pokud by byla tedy metadata obohacena o tuto informaci, je Magpie schopný zpracovávat i infikovaná data.
 
 
 
 \section{Zhodnocení přínosu}
-Hlavní přínos systému Magpie ční v automatizaci doplňování cleansetu. Dříve bylo doplňování čistých či infikovaných html a js souborů do databáze Scavengeru práce analytiků, kteří museli pro každý nahraný soubor manuálně zvolit, zda se jedná o soubor infikovaný či nikoliv. Tímto způsobem není možné zpracovávat obsáhlý počet čistých souborů, které je třeba nahrávat na cleanset, aby bylo zajištěno jeho funkčnosti. Díky systému Magpie je možné cleanset obohacovat o 200 000 nových souborů týdně, čímž je mnohonásobně navýšena stávající kapacita přidávání dat. V důsledku toho je cleanset obsáhlejší, což přispívá k lépe fungující automatizaci při vydávání nových detekcí. Virové definice vytvářejí nejen analytici, kteří musejí kontrolovat, zda definice neblokuje čisté soubory na cleansetu. Virové detekce zároveň vznikají i díky automatickým nástrojům, u kterých je silný cleanset neméně důležitý. Díky silnému cleansetu klesá množství špatných detekcí vytvořených automatickými nástroji a Magpie silný cleanset vytváří.
+Hlavní přínos systému Magpie je v automatizaci doplňování cleansetu. Dříve bylo doplňování čistých či infikovaných html a js souborů do databáze Scavengeru prací analytiků, kteří museli pro každý nahraný soubor manuálně zvolit, zda se jedná o soubor infikovaný či nikoliv. Tímto způsobem není možné zpracovávat obsáhlý počet čistých souborů, které je třeba nahrávat na cleanset, aby byla zajištěna jeho funkčnost. Díky systému Magpie je možné cleanset obohacovat o 200 000 nových souborů týdně, čímž je mnohonásobně navýšena stávající kapacita přidávání dat. V důsledku toho je cleanset obsáhlejší, což přispívá k lépe fungující automatizaci při vydávání nových detekcí. Virové detekce vytvářejí analytici, kteří musejí kontrolovat, zda detekce neblokuje čisté soubory na cleansetu. Virové detekce zároveň vznikají i díky automatickým nástrojům, u kterých je silný cleanset neméně důležitý. Díky silnému cleansetu klesá množství špatných detekcí vytvořených automatickými nástroji a Magpie silný cleanset vytváří.
 
 
 
@@ -1011,13 +1011,15 @@ Hlavní přínos systému Magpie ční v automatizaci doplňování cleansetu. D
 
 \begin{conclusion}
 
-Diplomová práce spočívala ve vytvoření automatizovaného systému pro obohacování cleansetu o čisté html a js soubory stahováním těchto dat ze zadaných url adres. Prvním bodem zadání byla analýza možných způsobů realizace tohoto systému. Během této analýzy bylo zjištěno, jaké jsou nejlepší postupy při realizaci projektu. 
+Diplomová práce spočívala ve vytvoření automatizovaného systému pro obohacování cleansetu o čisté html a js soubory stahováním těchto souborů ze zadaných url adres. Prvním bodem zadání byla analýza možných způsobů realizace tohoto systému. Během této analýzy bylo zjištěno, jaké jsou nejlepší postupy při realizaci projektu. 
 
 Na základě toho byl vytvořen projekt Magpie. Projekt byl navržen v programovacím jazyku Python a je rozdělen do několika komponent. Pro předzpracování vstupních dat byl vytvořen skript využívající frontový systém Apache Kafka. Pomocí skriptu je možné zpracovávat seznamy url adres služby Alexa Top Sites, či ručně zadané adresy. Tento skript je nasazen v systému Jenkins. Dále byl vytvořen skript pro čtení zpráv z frontového systému Kafka. Tento skript byl dockerizován a nasazen v systému Kubernetes. Jádro projektu spočívá ve stahování dat pomocí MitM klientu Fiddler v kombinaci s internetovým prohlížečem Google Chrome ovládaným pomocí nástroje Selenium. Tento proces je spouštěn na virtuálním stroji s využitím programu Oracle Virtualbox a nasazen v systému Jenkins. Stažená data jsou odesílána do HCP úložiště a následně nahrána do databáze cleansetu v systému Scavenger, k čemuž slouží poslední komponenta také nasazená v systému Jenkins.
 
-Dalším bodem zadání bylo zobecnění vzniklého systému pro budoucí využití v jiných projektech. Se zobecněním bylo počítáno již při samotném návrhu hlavní aplikace. Systém Magpie je schopný zpracovávat nejen adresy pro stahování dat k doplňování cleansetu.
+Dalším bodem zadání bylo zobecnění vzniklého systému pro budoucí využití v jiných projektech. Se zobecněním bylo počítáno již při samotném návrhu hlavní aplikace. Systém Magpie je schopný zpracovávat nejen adresy pro stahování dat k doplňování cleansetu. Toho bude v budoucnu využito při analýze phishingových i jinak potenciálně nebezpečných url adres.
 
 Posledním bodem zadání bylo důsledné otestování navrženého systému. Testování proběhlo na vícero testovacích množinách s využitím seznamu adres služby Alexa Top Sites. Každá komponenta byla otestována zvlášt a nakonec bylo využito i end-to-end testování celé aplikace.
+
+Díky systému Magpie je nyní možné rozšiřovat cleanset o desetitísice nových souborů týdně, což je oproti dosavadnímu ručnímu rozšiřování výrazné zlepšení. 
 
 
 
@@ -1118,6 +1120,19 @@ Posledním bodem zadání bylo důsledné otestování navrženého systému. Te
 	The Majestic Million. \textit{SEO Backlink Checker and Link Building Toolset | Majestic.com} [online]. [cit. 14.04.2020]. Dostupné z:  \\ 
 	\url{https://majestic.com/reports/majestic-million}
 	
+	\bibitem{book1}
+	Eric Lawrence, CreateSpace Independent Publishing Platform (2015).\textit{ Debugging with
+	Fiddler: The complete reference from the creator of the Fiddler Web Debugger, 2nd
+	Edition.} ISBN: 9781511572903.
+	
+	\bibitem{book2}
+	Ryan Mitchell, O'Reilly Media, Inc. (2018). \textit{Web Scraping with Python, 2nd Edition.}
+	ISBN: 9781491985564.
+	
+	\bibitem{book3}
+	Harry Colvin, CreateSpace Independent Publishing Platform (2015). \textit{VirtualBox: An
+	Ultimate Guide Book on Virtualization with VirtualBox.} ISBN: 1522769889.
+		
 \end{thebibliography}
 
 \appendix
@@ -1274,18 +1289,31 @@ Posledním bodem zadání bylo důsledné otestování navrženého systému. Te
 
 \begin{figure}
 	\dirtree{%
-		.1 slotcar-sw\DTcomment{adresář s Java projektem}.
-		.1 SimulinkControllers.
-		.2 SISO\DTcomment{jednovstupový regulátor}.
-		.2 TwoInputSingleOutput\DTcomment{dvouvstupový regulátor}.
-		.2 MISO\DTcomment{vícevstupový regulátor}.
-		.2 transferscript.bat\DTcomment{skript pro přenos souborů}.
-		.1 text.
+		.1 Magpie\DTcomment{adresář s Python projektem}.
+		.2 config.
+		.3 config.py\DTcomment{configurační soubor}.
+		.2 lib.
+		.3 files\_filter.py\DTcomment{metody pro filtrování dat}.
+		.3 hcp\_feeder.py\DTcomment{metody pro HCP komunikaci}.
+		.3 kafka\_consumer.py\DTcomment{implementace klientu Kafka consumer}.
+		.3 kafka\_producer.py\DTcomment{implementace klientu Kafka producer}.
+		.3 logger.py\DTcomment{implementace logování}.
+		.3 tools.py\DTcomment{metody pro obecné nástroje}.
+		.3 virtualbox\_handler.py\DTcomment{metody pro program VirtualBox}.
+		.2 vbox\_scripts.
+		.3 browser\_controller.py\DTcomment{skript spouštěný ve virtuálním prostředí}.
+		.3 CustomRules.js\DTcomment{inicializační skript prograu Fiddler}.
+		.2 Dockerfile\DTcomment{dockerizační skript}.
+		.2 hcp\_feeder\_runner.py\DTcomment{spouštěcí skript pro HCP upload}.
+		.2 kafka\_consumer\_runner.py\DTcomment{spouštěcí skript pro Kafka consumer}.
+		.2 local\_runner.py\DTcomment{spouštěcí skript pro lokální spuštění}.
+		.2 requirements.txt\DTcomment{soubor s knihovnami pro dockerizační skript}.
+		.2 url\_processing\_runner.py\DTcomment{spouštěcí skript pro zpracování dat}.
+		.2 urls\_to\_kafka\_runner.py\DTcomment{spouštěcí skript pro Kafka producer}.
+		.1 Text.
 		.2 thesis.pdf\DTcomment{text práce ve formátu PDF}.
 		.2 thesis.tex\DTcomment{text práce ve formátu \LaTeX}.
 		.2 pictures\DTcomment{zdrojové obrázky pro formát \LaTeX}.
-		.1 video.
-		.2 tutorial.mp4\DTcomment{instruktážní video}.
 	}
 \end{figure}
 
