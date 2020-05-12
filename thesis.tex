@@ -65,7 +65,7 @@
 \keywordsEN{Python, Virtualbox, Fiddler, html, js}
 % \website{http://site.example/thesis} %volitelná URL práce, objeví se v tiráži - úplně odstraňte, nemáte-li URL práce
 
-\renewcommand{\baselinestretch}{1.2}
+\renewcommand{\baselinestretch}{1.15}
 
 \begin{document}
 
@@ -152,6 +152,7 @@ Jednotlivé rozebírané metody získání čistých souborů z webových strán
 
 \subsection{Emulace webového prohlížeče} \label{sec:parsing}
 Výhodou emluace webového prohlížeče oproti druhé metodě s využitím nástroje Fiddler je rychlost a jednoduchost z hlediska využitých nástrojů (absence nutnosti využívat programy třetích stran). Pro práci s webovými stránkami v Pythonu existuje více knihoven, z nichž nejčastěji používaná je knihovna Requests. Její základ je postaven na knihovně Urllib, která je sice již obsažena v základní instalaci Pythonu a není nutno ji doinstalovávat, avšak z hlediska použití vyžaduje velké množství obalovacího kódu (kód, který zaručuje spravný běh programu v nestandardních situacích), jež je už v knihovně  Requests implementován.
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=9cm]{pictures/scrapper.png}
@@ -264,7 +265,7 @@ Kafku lze řadit mezi frontové systémy. Jedná se o opensource platformu slou�
 	\caption{Znázornění Kafka systému \cite{kafka}}
 	\label{fig:kafka}
 \end{figure}
-Zprávy do topicu posílá proces, který se nazývá producer. Obdobně proces, který data čte, je nazýván consumer. Ten dostává zprávy z topicu v závislosti na indexaci a časové známky. K jednomu topicu může být přihlášeno více nezávislých consumerů, které jsou rozděleny do odlišných skupin (tvz. Group ID) a každá skupina dostává identické zprávy. Tím je zabráněno vzájemnému čtení stejných zpráv.
+Zprávy do topicu posílá proces, který se nazývá producer. Obdobně proces, který data čte, je nazýván consumer. Ten dostává zprávy z topicu v závislosti na indexaci a časové známky. K jednomu topicu může být přihlášeno více nezávislých consumerů, které jsou rozděleny do odlišných skupin (tzv. Group ID) a každá skupina dostává identické zprávy. Tím je zabráněno vzájemnému čtení stejných zpráv.
 
 Tato politika čtení zpráv je velkou výhodou oproti zmiňovanému systému RabbitMQ, kde po přečtení zpráva mizí. 
 
@@ -339,38 +340,36 @@ browser.quit()
 \caption{Implementace nástroje selenium s ovládáním prohlížeče}
 \label{snip:selenium}
 \end{figure}
-Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat různé parametry. V tomto případě je zvolen přepínač \mintinline{Python}{headless}, který určuje spouštění webového prohlížeče bez grafického uživatelského prostředí (tvz. GUI), čímž lze docílit rychlejšího průběhu. Samotné načtení webové stránky se provádí pomocí metody \mintinline{Python}{get()}, kterému se do parametru dá url stránky (ve snippetu stránka \mintinline{Python}{https://www.seznam.cz}). Příkazem \mintinline{Python}{quit()} lze internetový prohlížeč zavřít. Metoda \mintinline{Python}{get()} je implementována, aby čekala na úplné načtení stránky, avšak nepočítá s postupným načítáním javascriptových souborů. Pro kompletní načtení webové stránky je tedy potřeba přidat časovač (tzv. timer), který před zavřením prohlížeče skript pozastaví na určitou dobu (zde 2 sekundy).
+Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat různé parametry. V tomto případě je zvolen přepínač \mintinline{Python}{headless}, který určuje spouštění webového prohlížeče bez grafického uživatelského prostředí (tzv. GUI), čímž lze docílit rychlejšího průběhu. Samotné načtení webové stránky se provádí pomocí metody \mintinline{Python}{get()}, které se do parametru dá url stránky (ve snippetu stránka \mintinline{Python}{https://www.seznam.cz}). Příkazem \mintinline{Python}{quit()} lze internetový prohlížeč zavřít. Metoda \mintinline{Python}{get()} je implementována, aby čekala na úplné načtení stránky, avšak nepočítá s asynchronním načítáním. Pro kompletní načtení webové stránky je tedy potřeba přidat časovač (tzv. timer), který před zavřením prohlížeče skript pozastaví na určitou dobu (zde 2 sekundy).
 
 
 
 
 \subsection{Skript pro nastavení Fiddleru}\label{sec:fiddler_setup}
-Program Fiddler se primárně ovládá přes grafické prostředí, je však možné změnit jeho výchozí konfiguraci. K tomuto účelu slouží inicializační skript, který nese označení \mintinline{Python}{CustomRules.js}, jedná se tedy o skript psaný v javaScriptu. Fiddler při spuštění vždy načítá set pravidel, podle kterých se nastaví. Defaultně jsou tato pravidla brána ze skriptu, který se nachází v instalačním adresáři programu. Skriptem \mintinline{Python}{CustomRules.js} lze tyto pravidla nahradit.
-
-Skript obsahuje mnoho funkcí pro různé sekce programu, z hlediska této práce je však důležitá pouze funkce \mintinline{Python}{OnBeforeResponse()}, která je zavolána vždy, když přijde ze serverové části nějaká odpověď (tzv. response). Implementace této metody je znázorněna v snippetu \ref{snip:fiddler}.
+Program Fiddler se primárně ovládá přes grafické rozhranní, je však možné změnit jeho výchozí konfiguraci. K tomuto účelu slouží inicializační skript, který nese označení \mintinline{Python}{CustomRules.js}, jedná se tedy o skript psaný v javaScriptu. Fiddler při spuštění vždy načítá set pravidel, podle kterých se nastaví. Defaultně jsou tato pravidla brána ze skriptu, který se nachází v instalačním adresáři programu. Skriptem \mintinline{Python}{CustomRules.js} lze tyto pravidla nahradit.
 
 \begin{figure}[h]               
 	\begin{minted}{Javascript}
 static function OnBeforeResponse(oSession: Session) {
-
+	
   var code = oSession.responseCode
   if (code == 200 || code == 301 || code == 302) {
-
-      var path = "c:\\tmp\\fiddler_data\\"
-      var filename_dat  = path + oSession.id + ".dat";
-      var filename_meta = path + oSession.id + ".meta";
-
-      System.IO.File.WriteAllBytes(
-          filename_dat, oSession.responseBodyBytes);
-       
-      var url = oSession.url;
-      var host = oSession.host);
-      var referer = oSession.oRequest.headers["Referer"]);
-      var response = oSession.responseCode);
-      var redirect = oSession.oResponse.headers["Location"]);
-      var time = System.DateTime.Now);
-      
-      WriteMeta(url, host, referer, response, redirect, time)
+	
+    var path = "c:\\tmp\\fiddler_data\\"
+    var filename_dat  = path + oSession.id + ".dat";
+    var filename_meta = path + oSession.id + ".meta";
+	
+    System.IO.File.WriteAllBytes(
+    filename_dat, oSession.responseBodyBytes);
+	
+    var url = oSession.url;
+    var host = oSession.host);
+    var referer = oSession.oRequest.headers["Referer"]);
+    var response = oSession.responseCode);
+    var redirect = oSession.oResponse.headers["Location"]);
+    var time = System.DateTime.Now);
+	
+    WriteMeta(url, host, referer, response, redirect, time)
   }
 }
 	\end{minted}      
@@ -378,7 +377,9 @@ static function OnBeforeResponse(oSession: Session) {
 	\label{snip:fiddler}
 \end{figure}
 
-Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování zpravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ dříve sloužil pro přesměrování dočasná (tzv. moved temporarily), od standartdu HTTP/1.1 je však více využíván pro všeobecná přesměrování\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
+Skript obsahuje mnoho funkcí pro různé sekce programu, z hlediska této práce je však důležitá pouze funkce \mintinline{Python}{OnBeforeResponse()}, která je zavolána vždy, když přijde ze serverové části nějaká odpověď (tzv. response). Implementace této metody je znázorněna v snippetu \ref{snip:fiddler}.
+
+Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování zpravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ dříve sloužil pro přesměrování dočasná (tzv. moved temporarily), od standardu HTTP/1.1 je však více využíván pro všeobecná přesměrování\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
 
 Při nastání této situace jsou vytvořeny dva soubory, které jsou pojmenovány podle id relace. Soubor s koncovkou \mintinline{Python}{.dat} je určený pro záznam zachycených dat, soubor \mintinline{Python}{.meta} slouží k uchování metadat o zachycené komunikaci. Následně se volá funkce \mintinline{Python}{WriteAllBytes()}, která z relace oSession přijme parametr \mintinline{Python}{responseBodyBytes}, který obsahuje tělo odpovědi ze serveru, tedy zachycená data, a zapíše je do datového souboru. Dále se shromáždí metadata potřebná pro filtraci souborů (Tabulka \ref{fig:meta}), která se zapíší do souboru \mintinline{Python}{.meta}. 
 
@@ -391,7 +392,7 @@ Při nastání této situace jsou vytvořeny dva soubory, které jsou pojmenová
 		host        	&  název serveru, na kterém je zdrojová stránka \\
 		referer       	&  stránka, z které přišla žádost o načtení současné url \\
 		response kód   	&  kód, který byl zaznamenán v hlavičce souboru  \\
-		redirect		&  lokace, na kterou dojde k přesměrování \\
+		redirect		&  destinace v případě přesměrování \\
 		time			&  čas záznamu souboru
 	\end{tabular}
 	
@@ -411,9 +412,9 @@ Protože byl ke stahování dat použit program Fiddler, který zaznamenává ko
 
 
 \subsection{Třídění dat}\label{sec:trideni}
-Pro potřeby třídení dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data, spolu s jejich metadaty. Tyto soubory jsou inkrementačně očíslovány, podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}).
+Pro potřeby třídení dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data, spolu s jejich metadaty. Tyto soubory jsou inkrementálně očíslovány podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}).
 
-Protože Fiddler zaznamenává veškerou komunikaci, je zapotřebí odlišit komunikaci vyvolanou přístupem na požadovanou webovou stránku od zbylé. První soubor, který je v sekvenčním průchodu důležitý, bude v metadatech obsahovat požadovanou webovou stránku v klíčovém slovu \textit{url} (viz tabulka s metadaty \ref{fig:meta}). Hlavní smyčka třídícího skriptu je znázorněna na snippetu \ref{snip:filter}. 
+Protože Fiddler zaznamenává veškerou komunikaci, je zapotřebí odlišit komunikaci vyvolanou přístupem na požadovanou webovou stránku od zbylé (např. režijní komunikace mezi prohlížečem a serverem). První soubor, který je v sekvenčním průchodu důležitý, bude v metadatech obsahovat požadovanou webovou stránku v hodnotě pole \textit{url} (viz tabulka s metadaty \ref{fig:meta}). Hlavní smyčka třídícího skriptu je znázorněna na snippetu \ref{snip:filter}. 
 
 \begin{figure}[h]               
 \begin{minted}{Python}
@@ -454,7 +455,7 @@ Metoda \mintinline{Python}{get_file_ids()} načítá id stažených souborů (o�
 \begin{eqnarray}
 <scheme>://<netloc>/<path>
 \end{eqnarray}
-Pro příklad \url{http://www.example.com/index} je tedy \mintinline{Python}{http} schéma, \mintinline{Python}{index} cesta a \mintinline{Python}{www.example.com} hledaný netloc. Toho bylo použito při procházení setříděného listu očíslovaných souborů. Před iterací je ještě zapotřebí inicializovat dvě datové struktury. Set \mintinline{Python}{referers} bude obsahovat všechny již známé a chtěné referery (tj. netloc adresy, které si vyžádaly načtení zdrojových souborů současné url \ref{fig:meta}). Jak již bylo dříve zmíněno, prvním takovým refererem je původní zadaná adresa. Druhá struktura, list \mintinline{Python}{valid_ids}, bude uchovávat názvy souborů, které byly vyhodnoceny jako validní (tj. soubory zachycené komunikací s původní zadanou adresou).
+Pro příklad \url{http://www.example.com/index} je tedy \mintinline{Python}{http} schéma, \mintinline{Python}{index} cesta a \mintinline{Python}{www.example.com} hledaný netloc. Toho bylo použito při procházení setříděného listu očíslovaných souborů. Před iterací je ještě zapotřebí inicializovat dvě datové struktury. Set \mintinline{Python}{referers} bude obsahovat všechny již známé a chtěné referery (tj. netloc adresy, které si vyžádaly načtení zdrojových souborů současné url \ref{fig:meta}). Jak již bylo dříve zmíněno, prvním takovým refererem je původní zadaná adresa. Druhá struktura, list \mintinline{Python}{valid_ids}, bude uchovávat názvy souborů, které byly vyhodnoceny jako validní (tj. soubory zachycené při komunikaci s původní zadanou adresou).
 
 V hlavní smyčce se nejprve načtou metadata k souboru pomocí metody \mintinline{Python}{get_meta_from_file()} a uloží se do slovníku \mintinline{Python}{meta}. Poté se tyto data oříznou pomocí metody \mintinline{Python}{netloc_from_url()} a dále se pracuje jen s jejich netloc částí. První podmínka vyhodnocuje přesměrování. Pokud je \mintinline{Python}{response_code} v metadatech souboru roven $301$ nebo $302$, což značí přesměrování, a pokud je zároveň \mintinline{Python}{host} této adresy již v setu \mintinline{Python}{referers}, nejedná se o validní soubor, jde však o soubor, který nese informace o přesměrování. Je tedy potřeba přidat netloc adresy, na kterou dojde k přesměrování (v metadatech klíčové slovo \mintinline{Python}{redirect}). 
 
@@ -467,7 +468,7 @@ Poslední podmínka již kontroluje samotné validní soubory. Pokud je netloc a
 
 
 \subsection{Upload do databáze} \label{sec:upload}
-Pro nahrávání dat do databáze byl již dříve týmem, který spravuje systém Scavenger, vytvořen klient v podobě python knihovny. Tento klient používá HCP (Hitachi content platform) pro přesun dat mezi klientem a servery Scavengeru a představuje novější řešení oproti dříve používanému klientu Samba. Při uploadu dat do databáze lze tedy vycházet z tohoto kódu. V prvním kroku procesu uploadu do Scavengeru klient přesune požadovaný soubor do tzv. namespace (vyhrazený prostor na serverové části unikátní pro daného klienta) v HCP úložišti a připojí k němu požadovaná metadata. K tomuto namespace je připojen proces (tzv. feeder), který periodicky odebírá přítomné soubory i s jejich metadaty a přesouvá je do systému Scavenger. Při tomto procesu dochází k přejmenování souborů hashováním sha256.
+Pro nahrávání dat do databáze byl již dříve týmem, který spravuje systém Scavenger, vytvořen klient v podobě python knihovny. Tento klient používá HCP (Hitachi content platform) pro přesun dat mezi klientem a servery Scavengeru a představuje novější řešení oproti dříve používanému klientu Samba. Při uploadu dat do databáze lze tedy vycházet z tohoto kódu. V prvním kroku procesu uploadu do Scavengeru klient přesune požadovaný soubor do tzv. namespace (vyhrazený prostor na serverové části unikátní pro daného klienta) v HCP úložišti a připojí k němu požadovaná metadata. K tomuto namespace je připojen proces (tzv. feeder), který periodicky odebírá přítomné soubory i s jejich metadaty a přesouvá je do systému Scavenger, kde jsou soubory indexovány pomocí hashovací funkce sha256.
 
 Implementace klientu je velmi jednoduchá (snippet \ref{snip:hcpupload}).
 \begin{figure}[h]               
@@ -485,9 +486,9 @@ Z knihovny je potřeba provést import třídy \mintinline{Python}{Client()} a j
 	\begin{minted}{Python}
 def set_meta_for_upload(meta_file, url):
     meta = {
-    "source_url": meta_file["url"],
-    "source_url_referer": meta_file["referer"],
-    "trigger_url": url,
+        "source_url": meta_file["url"],
+        "source_url_referer": meta_file["referer"],
+        "trigger_url": url,
     }
 	
     return meta
@@ -496,19 +497,18 @@ def set_meta_for_upload(meta_file, url):
 	\label{snip:metaupload}
 \end{figure}
 
-Metoda \mintinline{Python}{set_meta_fot_upload()} má dva vstupní parametry. Prvním je slovník \mintinline{Python}{meta_file}, který obsahuje všechna stažená metadata, druhým je \mintinline{Python}{url}, což je původní dotazovaná adresa. Výstupem metody je slovník s metadaty určenými pro upload do HCP úložiště. Pro soubor uložený na cleansetu je důležitý údaj o adrese, na které se soubor vyskytoval - \mintinline{Python}{source_url} a kdo na tuto adresu odkazoval - \mintinline{Python}{source_url_referer}. Třetím důležitým údajem je původní volaná adresa \mintinline{Python}{trigger_url}. Ta je důležitá v případě, že by se na cleansetu objevily dva totožné soubory. V takové situaci se nový soubor již nepřidá, aktualizují se však jeho metadata a v budoucnu je stále patrné, že byl tento soubor viděn při komunikaci s vícero rozdílnými adresami.
+Metoda \mintinline{Python}{set_meta_fot_upload()} má dva vstupní parametry. Prvním je slovník \mintinline{Python}{meta_file}, který obsahuje všechna stažená metadata, druhým je \mintinline{Python}{url}, což je původní dotazovaná adresa. Výstupem metody je slovník s metadaty určenými pro upload do HCP úložiště. Pro soubor uložený na cleansetu je důležitý údaj o adrese, na které se soubor vyskytoval – \mintinline{Python}{source_url} – a kdo na tuto adresu odkazoval – \mintinline{Python}{source_url_referer}. Třetím důležitým údajem je původní volaná adresa \mintinline{Python}{trigger_url}. Ta je důležitá v případě, že by se na cleansetu objevily dva totožné soubory. V takové situaci se nový soubor již nepřidá, aktualizují se však jeho metadata a v budoucnu je stále patrné, že byl tento soubor viděn při komunikaci s vícero rozdílnými adresami.
 
-Snippet \ref{snip:mainupload} znázorňuje hlavní smyčku skriptu pro upload souborů do HCP úložiště a následně do Scavengeru.
 \begin{figure}[h]               
 	\begin{minted}{Python}
 for counter, file in enumerate(filenames):
     file_name = f"{root}\\{directory}\\{file}"
-
+	
     meta = hcp_feeder.set_meta_for_upload(
         files_filter.get_meta_from_file(f"{file_name}.meta"),
         directory
     )
-
+	
     hcp_feeder.upload_file(
         f"{file_name}.dat",
         f"{directory}{counter}",
@@ -518,17 +518,18 @@ for counter, file in enumerate(filenames):
 	\caption{Implementace hlavní smyčky pro upload}
 	\label{snip:mainupload}
 \end{figure}
-V ní dochází k iteraci přes všechny validní soubory (výstup z třídění dat \ref{sec:trideni}). Pro každý soubor se nejdříve určí cesta souboru \mintinline{Python}{file_name}. Následně se nastaví metadata pro upload zavoláním metody \mintinline{Python}{set_meta_for_upload()}, které se předá cesta k souboru s metadaty a původní tázaná url (zde \mintinline{Python}{directory} z důvodu, že se stažené soubory ukládají do složek pojmenovaných podle původní zadané adresy). Na závěr cyklu hlavní smyčky je volána funkce \mintinline{Python}{upload_file}. Prvním parametrem je cesta k datovému souboru. Následuje cílový název souboru v HCP úložišti. Zde, aby se zajistila unikátnost souborů v úložišti, se soubory přejmenovávají podle klíče:
-\begin{eqnarray}\label{prejmenovavani}
+
+Snippet \ref{snip:mainupload} znázorňuje hlavní smyčku skriptu pro upload souborů do HCP úložiště a následně do Scavengeru. V ní dochází k iteraci přes všechny validní soubory (výstup z třídění dat \ref{sec:trideni}). Pro každý soubor se nejdříve určí cesta souboru \mintinline{Python}{file_name}. Následně se nastaví metadata pro upload zavoláním metody \mintinline{Python}{set_meta_for_upload()}, které se předá cesta k souboru s metadaty a původní tázaná url (zde \mintinline{Python}{directory} z důvodu, že se stažené soubory ukládají do složek pojmenovaných podle původní zadané adresy). Na závěr cyklu hlavní smyčky je volána funkce \mintinline{Python}{upload_file}. Prvním parametrem je cesta k datovému souboru. Následuje cílový název souboru v HCP úložišti. Zde, aby se zajistila unikátnost souborů v úložišti, se soubory přejmenovávají podle klíče:
+\begin{center}\label{prejmenovavani}
 \{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}
-\end{eqnarray}
+\end{center}
 
  Toto je možné z důvodu, že se následně soubory automaticky přejmenovávají při přenosu z HCP úložiště do Scavengeru pomocí hashovací funkce sha256. Posledním parametrem pro upload jsou metadata souboru.
 
 \section{Virtualizace}
-Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox. K tomu byla využita knihovna \mintinline{Python}{pyvbox}\cite{pyvbox}, která implementuje Virtualbox API do prostředí Pythonu. Není potřeba virtualizovat celý proces, ale jen část, která se zabývá stahováním dat. Bylo tedy zapotřebí vytvořit skript, který dokáže nastartovat virtuální stroj, v něm spustit aplikaci pro stahování souborů a tyto soubory přenést z virtuálního prostředí zpět do fyzického systému.
+Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox. K tomu byla využita knihovna \mintinline{Python}{pyvbox}\cite{pyvbox}, která implementuje Virtualbox API v prostředí Pythonu. Není potřeba virtualizovat celý proces, ale jen část, která se zabývá stahováním dat. Bylo tedy zapotřebí vytvořit skript, který dokáže nastartovat virtuální stroj, v něm spustit aplikaci pro stahování souborů a tyto soubory přenést z virtuálního prostředí zpět do fyzického systému.
 
-K tomuto účelu byla vytvořena třída  \mintinline{Python}{Vbox}, jejíž inicializace (tzv. konstruktor) je zobrazena ve snippetu \ref{snip:vboxmain}.
+K tomuto účelu byla vytvořena třída  \mintinline{Python}{Vbox}, jejíž inicializace (tzv. konstruktor) je zobrazena ve snippetu \ref{snip:vboxmain}. Instanci této třídy lze použít k ovládání virtuálního stroje. K tomu je nutné inicializovat tři objekty – \mintinline{Python}{VirtualBox()}, \mintinline{Python}{Session()} a \mintinline{Python}{Machine()}. Instance třídy \mintinline{Python}{VirtualBox()} slouží k ovládání Virtualbox manažeru (program, který řídí jednotlivé zaregistrované virtuální stroje). Obecné nastavování se tedy provádí přes tento objekt. Třída \mintinline{Python}{Session()} je navázána na relaci konkrétního virtuálního stroje. Ovládání běhu stroje probíhá tedy s využitím tohoto objektu. Třída \mintinline{Python}{Machine()} reprezentuje konkrétní stroj, tak jak je zobrazen v manažeru Virtualboxu. Při inicializaci této třídy je zapotřebí předat název stroje, což je zde řešeno pomocí převzaté metody \mintinline{Python}{find_machine()}. Název stroje je možné předat konstruktoru pomocí parametru \mintinline{Python}{machine}. Pokud není žádný konkrétní stroj vybrán, je proveden výčet všech dostupných strojů přihlášených pod Virtualbox manažerem (metoda \mintinline{Python}{list_all_machines}) a načten první dostupný stroj.
 \begin{figure}[h]               
 	\begin{minted}{Python}
 import virtualbox
@@ -549,8 +550,10 @@ class Vbox:
             print("No virtual machines to load")
             sys.exit()
 
-        print(f"No or corrupted machine name, "
-            f"loading machine {machines[0]}")
+        print(
+            "No or corrupted machine name, "
+            f"loading machine {machines[0]}"
+        )
         machine = machines[0]
 
     self.machine = self.vbox.find_machine(machine)
@@ -558,9 +561,9 @@ class Vbox:
 	\caption{Implementace inicializace třídy Vbox}
 	\label{snip:vboxmain}
 \end{figure}
-Instanci této třídy lze použít k ovládání virtuálního stroje. K tomu je nutné inicializovat tři objekty - \mintinline{Python}{VirtualBox()}, \mintinline{Python}{Session()} a \mintinline{Python}{Machine()}. Instance třídy \mintinline{Python}{VirtualBox()} slouží k ovládání Virtualbox manažeru (program, který řídí jednotlivé zaregistrované virtuální stroje). Obecné nastavování se tedy provádí přes tento objekt. Třída \mintinline{Python}{Session()} je navázána na relaci konkrétního virtuálního stroje. Ovládání běhu stroje probíhá tedy s využitím tohoto objektu. Třída \mintinline{Python}{Machine()} reprezentuje konkrétní stroj, tak jak je zobrazen v manažeru Virtualboxu. Při inicializaci této třídy je zapotřebí předat název stroje, což je zde řešeno pomocí převzaté metody \mintinline{Python}{find_machine()}. Název stroje je možné předat konstruktoru pomocí parametru \mintinline{Python}{machine}. Pokud není žádný konkrétní stroj vybrán, je proveden výčet všech dostupných strojů přihlášených pod Virtualbox manažerem (metoda \mintinline{Python}{list_all_machines}) a načten první dostupný stroj.
 
-Pro ovládání spuštění virtuálního stroje s časováním byla vytvořena metoda \mintinline{Python}{boot_with_timeout()} (snippet \ref{snip:vboxboot}). 
+
+Pro ovládání spuštění virtuálního stroje s časováním byla vytvořena metoda \mintinline{Python}{boot_with_timeout()} (snippet \ref{snip:vboxboot}). Tato metoda přijímá tři parametry. Prvním parametrem je \mintinline{Python}{timeout}, neboli čas, po kterém se metoda přeruší a zabrání se tak případnému nekonečného cyklu. Další dva parametry jsou přihlašovací jméno a heslo do uživatelského účtu ve virtuálním systému. Tyto údaje jsou potřeba pro inicializaci uživatele, ke které v průběhu spouštění systému (tzv. bootování) dochází. Na začátku je zavolána metoda \mintinline{Python}{launch_machine()}, která zahájí proces bootování. Aby nedocházelo k nepředvídatelnému průběhu, volá se zde další metoda \mintinline{Python}{wait_for_session_locked()}, která zajišťuje, že bootovací proces nebude pokračovat, dokud se neuzamkne virtuální stroj (parametr \mintinline{Python}{machine} třídy \mintinline{Python}{Vbox}) pro současnou relaci (parametr \mintinline{Python}{session}). Při ovládání stroje skrze neuzamčenou relaci může nastat chyba a následné ukončení skriptu. 
 \begin{figure}[h]               
 	\begin{minted}{Python}
 def boot_with_timeout(self, timeout, login, password):
@@ -585,15 +588,16 @@ def boot_with_timeout(self, timeout, login, password):
         time.sleep(1)
         t_boot += 1
 
-    raise DidntBootInTimeException("Timeout reached. "
-        "Machine didn't boot in time.")
+    raise DidntBootInTimeException(
+        "Timeout reached. Machine didn't boot in time."
+    )
 	\end{minted}      
 	\caption{Implementace bootovacího algoritmu pro virtualbox}
 	\label{snip:vboxboot}
 \end{figure}
-Tato metoda přijímá tři parametry. Prvním parametrem je \mintinline{Python}{timeout}, neboli čas, po kterém se metoda přeruší a zabrání se tak případnému nekonečného cyklu. Další dva parametry jsou přihlašovací jméno a heslo do uživatelského účtu ve virtuálním systému. Tyto údaje jsou potřeba pro inicializaci uživatele, ke které v průběhu spouštění systému (tzv. bootování) dochází. Na začátku je zavolána metoda \mintinline{Python}{launch_machine()}, která zahájí proces bootování. Aby nedocházelo k nepředvídatelnému průběhu, volá se zde další metoda \mintinline{Python}{wait_for_session_locked()}, která zajišťuje, že bootovací proces nebude pokračovat, dokud se neuzamkne virtuální stroj (parametr \mintinline{Python}{machine} třídy \mintinline{Python}{Vbox}) pro současnou relaci (parametr \mintinline{Python}{session}). Při ovládání stroje skrze neuzamčenou relaci může nastat chyba a následné ukončení skriptu. 
 
-Poněvadž Virtualbox API nemá implementovanou kontrolu průběhu bootování, nelze nijak zkontrolovat, zda je už virtuální stroj načtený a připravený k použití. Z tohoto důvodu je vytvořen \mintinline{Python}{while} cyklus, kde k této kontrole periodicky dochází. V každém průběhu cyklu dochází k inicializaci uživatelského účtu a následnému testu existence kořenové složky $c:/$ metodou \mintinline{Python}{directory_exists()}. Předpokládá se zde, že dojde k chybě, protože systém ještě není připravený takovéto příkazy zpracovávat. V takové situaci je výjimka odchycena a přechází se na další průběh cyklu. Pokud by již metoda \mintinline{Python}{directory_exists()} proběhla bez chybové hlášky, dá se očekávat, že je systém již připravený k používání. V tomto případě dojde k ukončení metody. Výstupem je objekt s inicializovaným uživatelským účtem v případě, že bootování proběhlo bez problémů, či chybová hláška \mintinline{Python}{DidntBootInTimeException} v situaci, kdy vypršel časový limit dříve, než mohl systém naběhnout.
+
+Poněvadž Virtualbox API nemá implementovanou kontrolu průběhu bootování, nelze nijak zkontrolovat, zda je už virtuální stroj načtený a připravený k použití. Z tohoto důvodu je vytvořen \textit{while} cyklus, kde k této kontrole periodicky dochází. V každém průběhu cyklu dochází k inicializaci uživatelského účtu a následnému testu existence kořenové složky c:/ metodou \mintinline{Python}{directory_exists()}. Předpokládá se zde, že dojde k chybě, protože systém ještě není připravený takovéto příkazy zpracovávat. V takové situaci je výjimka odchycena a přechází se na další průběh cyklu. Pokud by již metoda \mintinline{Python}{directory_exists()} proběhla bez chybové hlášky, dá se očekávat, že je systém již připravený k používání. V tomto případě dojde k ukončení metody. Výstupem je objekt s inicializovaným uživatelským účtem v případě, že bootování proběhlo bez problémů, či chybová hláška \mintinline{Python}{DidntBootInTimeException} v situaci, kdy vypršel časový limit dříve, než mohl systém naběhnout.
 
 \begin{figure}[h]               
 	\begin{minted}{Python}
@@ -623,7 +627,7 @@ gs.directory_copy_from_guest(
 	\caption{Spouštění příkazů ve virtuálním systému}
 	\label{snip:vboxcopy}
 \end{figure}
- která je implementována ve třídě pro uživatelský účet virtuálního stroje. Tato metoda kopíruje celou složku, která je předána v parametru \mintinline{Python}{dir_from_path} do cílové lokace specifikované paramterem \mintinline{Python}{dir_to_path}. Třetím parametrem metody je konfigurační hodnota (tzv. flag), která určuje typ přenosu.
+ která je implementována ve třídě pro uživatelský účet virtuálního stroje. Tato metoda kopíruje celou složku, která je předána v parametru \mintinline{Python}{dir_from_path}, do cílové lokace specifikované paramterem \mintinline{Python}{dir_to_path}. Třetím parametrem metody je konfigurační hodnota (tzv. flag), která určuje typ přenosu.
 
 
 
@@ -669,21 +673,25 @@ def send_message_to_kafka(self, message):
 \end{figure}
 Metoda přijímá v argumentu tělo zprávy \mintinline{Python}{message} a následně produkuje zprávu voláním metody \mintinline{Python}{produce()} zděděné z nadřazené třídy. Při produkování zprávy je v parametru předán název topicu, do kterého se má zpráva poslat. Zároveň je volána metoda \mintinline{Python}{flush()}, která zajistí vyprázdnění lokální fronty a přenesení všech zatím neodeslaných zpráv na server.
 
-Implementace hlavní smyčky posílání zpráv je k vidění na snippetu \ref{snip:kafkasendmain}. Pro každou url v listu načtených adres se nejdříve kontroluje, zda se jedná o url adresu. Toho je docíleno pomocí metody \mintinline{Python}{is_url()}, která využívá knihovnu \mintinline{Python}{URLParser} vyvíjenou pro interní účely firmy. Pokud je vyhodnoceno, že vstupní string \mintinline{Python}{url} není url adresa, je tento vstup přeskočen. Dále probíhá kontrola, zda adresa obsahuje informaci o protokolu. Tato kontrola probíhá s využitím nativní metody string objektu \mintinline{Python}{startswith()}. Pokud je zjištěno, že vstupní string protokol neobsahuje (nezačíná znaky \mintinline{Python}{http}), je k adrese přidán nezabezpečený protokol. Takto ošetřená adresa je následně předána metodě pro posílání zpráv \mintinline{Python}{send_mesasge_to_kafka()}.
+Implementace hlavní smyčky posílání zpráv je k vidění na snippetu \ref{snip:kafkasendmain}. 
 \begin{figure}[h]               
 	\begin{minted}{Python}
-for url_count, url in enumerate(urls):
-    if not tools.is_url(url):
-        continue
-
-    if not url.startswith("http"):
-        url = "http://" + url
-
-    kafka_producer.send_message_to_kafka(url)
+	for url in enumerate(urls):
+	if not tools.is_url(url):
+	continue
+	
+	if not url.startswith("http"):
+	url = "http://" + url
+	
+	kafka_producer.send_message_to_kafka(url)
 	\end{minted}      
 	\caption{Implementace hlavní smyčky posílání zpráv do Kafky}
 	\label{snip:kafkasendmain}
 \end{figure}
+Pro každou url v listu načtených adres se nejdříve kontroluje, zda se jedná o url adresu. Toho je docíleno pomocí metody \mintinline{Python}{is_url()}, která využívá knihovnu \mintinline{Python}{URLParser} vyvíjenou pro interní účely firmy. Pokud je vyhodnoceno, že vstupní string \mintinline{Python}{url} není url adresa, je tento vstup přeskočen. Dále probíhá kontrola, zda adresa obsahuje informaci o protokolu, poněvadž knihovna Selenium, která je využita pro stahování webového obsahu, zpracovává pouze adresy obsahující protokol. Pokud je zjištěno, že vstupní string protokol neobsahuje (nezačíná znaky \mintinline{Python}{http}), je k adrese přidán nezabezpečený protokol. Takto ošetřená adresa je následně předána metodě pro posílání zpráv \mintinline{Python}{send_mesasge_to_kafka()}.
+
+
+
 
 
 \subsection{Kafka consumer} \label{sec:kafkaconsumer}
@@ -700,7 +708,7 @@ class KafkaConsumer(Consumer):
 	\caption{Implementace třídy Kafka Consumer}
 	\label{snip:kafkaconsumer}
 \end{figure}
-I zde je konstruktor přetížen, a to z důvodu doplnění inicializace klientu o konfigurační data \mintinline{Python}{KAFKA_CONSUMER}. Jedná se o přihlašovačí jméno, heslo, SSL certifikát a oproti klientu producer navíc i parametr \mintinline{Python}{group id}. Tento parametr určuje, do jaké skupiny consumerů tento klient spadá. Každý topic totiž může mít přihlášeno vícero skupin consumerů. V takové situaci jsou zprávy odebírány vždy v rámci skupiny (přestože již skupina A odebrala z topicu zprávu, tato zpráva je stále viditělná pro skupinu B, dokud ji neodebere člen této skupiny). Dále při inicializaci probíhá přihlášení k odběru stejného topicu \mintinline{Python}{KAFKA_TOPIC}, který je využíván klientem pro posílání. Toho je docíleno metodou \mintinline{Python}{subscribe()}. Jeden consumer může být přihlášený k oběru více než jednoho topiců. Z tohoto důvodu je jejím vstupem pole, které může obsahovat více elementů. Pro účely této práce postačuje však pouze jeden topic.
+I zde je konstruktor přetížen, a to z důvodu doplnění inicializace klientu o konfigurační data \mintinline{Python}{KAFKA_CONSUMER}. Jedná se o přihlašovačí jméno, heslo, SSL certifikát a oproti klientu producer navíc i parametr \textit{group id}. Tento parametr určuje, do jaké skupiny consumerů tento klient spadá. Každý topic totiž může mít přihlášeno vícero skupin consumerů. V takové situaci jsou zprávy odebírány vždy v rámci skupiny (přestože již skupina A odebrala z topicu zprávu, tato zpráva je stále viditelná pro skupinu B, dokud ji neodebere člen této skupiny). Dále při inicializaci probíhá přihlášení k odběru stejného topicu \mintinline{Python}{KAFKA_TOPIC}, který je využíván klientem pro posílání. Toho je docíleno metodou \mintinline{Python}{subscribe()}. Jeden consumer může být přihlášený k oběru více než jednoho topiců. Z tohoto důvodu je jejím vstupem pole, které může obsahovat více elementů. Pro účely této práce postačuje však pouze jeden topic.
 
 Tato třída obsahuje metodu \mintinline{Python}{consume_url()}, která implementuje přijímání zpráv ze serveru (snippet \ref{snip:kafkapoll}).
 \begin{figure}[h]               
@@ -722,7 +730,7 @@ def consume_url(self):
 	\caption{Přijímání zpráv z frontového systému Kafka}
 	\label{snip:kafkapoll}
 \end{figure}
-Toho je docíleno převzatou metodou \mintinline{Python}{poll()}, která je volána s parametrem \mintinline{Python}{timeout}. Tato metoda se připojí k serverové části a po dobu zadaného limitu (tzv. timeout), je připravena přijímat zprávy. Další postup následuje podle typu zprávy, která byla přijata. V první podmínce probíhá kontrola, zda se vůbec k nějaké komunikaci došlo. Pokud byla fronta prázdná po celou dobu čekání, metoda \mintinline{Python}{poll()} nevrací žádnou hodnotu a \mintinline{Python}{msg} tak není deklarována. V tomto případě je z metody \mintinline{Python}{consume_url()} navrácen \mintinline{Python}{None} (prázdná hodnota). V případě, kdy ke komunikaci došlo, avšak v průběhu nastala chyba, je tato chyba zachycena v objektu příchozí zprávy \mintinline{Python}{msg.error()}. Druhá podmínka tedy kontroluje, zda byl průběh komunikace bezchybný. Pokud ne, je výstupem metody objekt s chybovou hláškou. Pokud nenastal žádný z předešlých dvou případů lze očekávat, že \mintinline{Python}{msg} obsahuje objekt přijaté zprávy. V tomto případě je tedy výstupem metody dekódovaná hodnota zprávy \mintinline{Python}{msg.value()}. 
+Toho je docíleno převzatou metodou \mintinline{Python}{poll()}, která je volána s parametrem \mintinline{Python}{timeout}. Tato metoda se připojí k serverové části a po dobu zadaného limitu (tzv. timeout) je připravena přijímat zprávy. Další postup následuje podle typu zprávy, která byla přijata. V první podmínce probíhá kontrola, zda se vůbec k nějaké komunikaci došlo. Pokud byla fronta prázdná po celou dobu čekání, metoda \mintinline{Python}{poll()} nevrací žádnou hodnotu a \mintinline{Python}{msg} tak není deklarována. V tomto případě je z metody \mintinline{Python}{consume_url()} navrácen \textit{None} (prázdná hodnota). V případě, kdy ke komunikaci došlo, avšak v průběhu nastala chyba, je tato chyba zachycena v objektu příchozí zprávy \mintinline{Python}{msg.error()}. Druhá podmínka tedy kontroluje, zda byl průběh komunikace bezchybný. Pokud ne, je výstupem metody objekt s chybovou hláškou. Pokud nenastal žádný z předešlých dvou případů, lze očekávat, že \mintinline{Python}{msg} obsahuje objekt přijaté zprávy. V tomto případě je tedy výstupem metody dekódovaná hodnota zprávy \mintinline{Python}{msg.value()}. 
 
 V hlavním programu pro příjem zpráv z Kafky dochází nejdříve k inicializaci Kafka klienta typu consumer (snippet \ref{snip:kafkamain consum}).
 \begin{figure}[h]               
@@ -743,26 +751,26 @@ if __name__ == "__main__":
 	\caption{Hlavní smyčka přijímání zpráv z Kafky}
 	\label{snip:kafkamain consum}
 \end{figure}
-Následuje nekonečná smyčka, v které se volá již popsaná metoda \mintinline{Python}{consume_url()}. Pokud tato metoda vrátí \mintinline{Python}{None}, tedy situace, kdy je fronta prázdná, pokračuje se v běhu cyklu. V opačné situaci je volána metoda \mintinline{Python}{process_url()}, které je zpráva předána. Tato metoda je provázána se spouštěním virtuálního prostředí a následném běhu klientu pro stahování webového obsahu (o propojení více v sekci \ref{sec:jenk}).  Skript pro hlavní smyčku příjmu zpráv z Kafky je zdockerizován a spuštěn v systému Kubernetes (více v sekci \ref{sec:luft}). 
+Následuje nekonečná smyčka, v které se volá již popsaná metoda \mintinline{Python}{consume_url()}. Pokud tato metoda vrátí \textit{None}, tedy situace, kdy je fronta prázdná, pokračuje se v běhu cyklu. V opačné situaci je volána metoda \mintinline{Python}{process_url()}, které je zpráva předána. Tato metoda je provázána se spouštěním virtuálního prostředí a následném běhu klientu pro stahování webového obsahu (o propojení více v sekci \ref{sec:jenk}).  Skript pro hlavní smyčku příjmu zpráv z Kafky je v podobě docker containeru spuštěn v systému Kubernetes (více v sekci \ref{sec:luft}). 
 
 
 
 
 
 \section{Integrace do stávající infrastruktury} \label{sec:integrace}
-Při vývoji bylo rozhodnuto využít oba v analýze rozebírané systémy pro interní správu skriptů. Projekt je tedy rozložen, část je spouštěna v Jenkinsu a část v Kubernetes. Dále bylo zapotřebí vytvořit a nastavit virtuální stroj, který se bude spouštět pro stahování souborů ze zadaných url.
+Při vývoji bylo rozhodnuto využít oba v analýze rozebírané systémy pro interní správu skriptů. Projekt je tedy rozložen, část je spouštěna v Jenkinsu a část v Kubernetes. V systému Jenkins jsou spouštěny skripty pro nahrávání url do Kafky, stahování a filtrace dat a skript pro komunikaci s HCP úložištěm. Systém Jenkins přináší pro tyto skripty výhodu jednoduché konfigurovatelnosti a možnost periodického spouštění. Oproti tomu systém Kubernetes byl využit pro skript přijímající zprávy z Kafky, jelikož je potřeba jeho neustálého běhu. Dále bylo zapotřebí vytvořit a nastavit virtuální stroj, který se bude spouštět pro stahování souborů ze zadaných url.
 
 
 
 
 \subsection{Vytvoření a nastavení virtuálního stroje} \label{sec:virtualka}
-K vytvoření virtuálního stroje byl použit grafický manažer Virtualboxu. Firemní infrastruktura obsahuje úložiště s již předvytvořené šablony operačních systémů ve formátu .ovf (open virtualization format), které se dají do Virtualboxu nahrát (tzv. import appliance). Pro potřeby projektu byla využita šablona s operačním systémem Windows 7 v 32 bitové verzi. Takto vytvořený virtuální systém je již zcela spustitělný, je potřeba jej však ještě nastavit pro potřeby běhu systému Magpie. Je potřeba nainstalovat program Fiddler, potřebné knihovny pro Python (základní verze Pythonu je již obsažena v použité šabloně operačního systému) a nástroj geckodriver, který slouží ke komunikaci python knihovny Selenium s webovým prohlížečem. Prerekvizity virtuálního prostředí jsou tedy následující:
+K vytvoření virtuálního stroje byl použit grafický manažer Virtualboxu. Firemní infrastruktura obsahuje úložiště s již předvytvořené šablony operačních systémů ve formátu .ovf (open virtualization format), které se dají do Virtualboxu nahrát (tzv. import appliance). Pro potřeby projektu byla využita šablona s operačním systémem Windows 7 v 32bitové verzi. Takto vytvořený virtuální systém je již zcela spustitelný, je potřeba jej však ještě nastavit pro potřeby běhu systému Magpie. Je potřeba nainstalovat program Fiddler, potřebné knihovny pro Python (základní verze Pythonu je již obsažena v použité šabloně operačního systému) a nástroj geckodriver, který slouží ke komunikaci python knihovny Selenium s webovým prohlížečem. Prerekvizity virtuálního prostředí jsou tedy následující:
 \begin{itemize}
 	\item Fiddler
 	\item Python knihovna selenium
 	\item Geckodriver
 \end{itemize}
-Takto nastavený virtuální stroj je již připravený k využití. Pro systém byl následně vytvořen tzv. snapshot (uložení stavu virtuálního stroje). Při provozu bude systém vždy spouštěn z daného snapshotu a po provedení akcí nad zadanou url do daného snapshotu opět uveden. Tím se vynuluje riziko spojené s nakažením systému škodlivým obsahem.
+Takto nastavený virtuální stroj je již připravený k využití. Pro systém byl následně vytvořen tzv. snapshot (uložení stavu virtuálního stroje). Při provozu bude systém vždy spouštěn z daného snapshotu a po provedení akcí nad zadanou url do daného snapshotu opět uveden. Tím se vynuluje riziko spojené s případným nakažením systému škodlivým obsahem.
 
 
 
@@ -792,7 +800,7 @@ Konfigurace dále obsahuje sekci Build, v které je potřeba nastavit příkaz (
 
 
 \subsubsection{Job pro stahování a filtraci dat} \label{sec:jenkinsvirt}
-Druhým vytvořeným projektem v systému Jenkins je job pro spouštění zabezpečeného stahování a následné filtrování dat \mintinline{Python}{url_processing}. K tomu je zapotřebí virtuální stroj, který byl vytvořen v sekci \ref{sec:virtualka}. Tento job je spouštěn samostatně pro každou url, kterou dostává parametrem při spuštění. Tento parametr je předáván ze skriptu, který dostává zprávy z frontového systému Kafka. Ten je však spuštěn v systému Kubernetes. Proto byl v konfigurační sekci jobu vytvořen tzv. trigger token, tedy autorizační řetězec znaků (tzv. string). Pomocí tohoto autorizačního stringu je možné tento job spouštět, a to pomocí dotazu na specifickou url adresu (viz \ref{trigger}).
+Druhým vytvořeným projektem v systému Jenkins je job pro spouštění zabezpečeného stahování a následné filtrování dat \mintinline{Python}{url_processing}. K tomu je zapotřebí virtuální stroj, který byl vytvořen v sekci \ref{sec:virtualka}. Tento job je spouštěn samostatně pro každou url, kterou dostává parametrem při spuštění. Tento parametr je předáván ze skriptu, který dostává zprávy z frontového systému Kafka. Ten je však spuštěn v systému Kubernetes. Proto byl v konfigurační sekci jobu vytvořen tzv. trigger token, tedy autorizační string. Pomocí tohoto stringu je možné tento job spouštět, a to pomocí dotazu na specifickou url adresu (viz \ref{trigger}).
 \begin{equation} \label{trigger}
 JENKINS\_URL/job/url\_processing/build?token=TOKEN
 \end{equation}
@@ -804,7 +812,7 @@ kde $URL$ značí předávaný parametr url.
 
 Je také nutné nastavit environmentální proměnné pro přihlašovací údaje do virtuálního systému. Toho je opět docíleno pomocí konfigurační sekce Bindings v nastavení jenkins projektu. 
 
-Při startu jobu se spustí skript, který ovládá virtuální stroj. Toto je nastaveno v konfigurační sekci Build. Po úspěšném startu virtuálního stroje je ve virtuálním prostředí spuštěn klient pro stahování webového obsahu a následně stažené soubory přeneseny zpět do prostředí jobu v Jenkinsu. Zde dochází k filtraci dat a soubory, které jsou vyhodnocené jako relevantní pro zadanou url adresu jsou po doběhnutí jobu exportovány v podobě tzv. job artifactů (soubory, které jsou i po ukončení jobu dostupné k manipulaci). Tento export je proveden v konfigurační sekci Post-build Actions. Zde je také nastaveno, aby se po doběhnutí jobu spustil proces pro upload dat do databáze cleansetu (tzv. job trigger). Poněvadž jsou oba procesy v prostředí Jenkinsu, není potřeba generovat trigger token.
+Při startu jobu se spustí skript, který ovládá virtuální stroj. Toto je nastaveno v konfigurační sekci Build. Po úspěšném startu virtuálního stroje je ve virtuálním prostředí spuštěn klient pro stahování webového obsahu a následně stažené soubory přeneseny zpět do prostředí jobu v Jenkinsu. Zde dochází k filtraci dat a soubory, které jsou vyhodnocené jako relevantní pro zadanou url adresu, jsou po doběhnutí jobu exportovány v podobě tzv. job artifactů (soubory, které jsou i po ukončení jobu dostupné). Tento export je proveden v konfigurační sekci Post-build Actions. Zde je také nastaveno, aby se po doběhnutí jobu spustil proces pro upload dat do databáze cleansetu (tzv. job trigger). Poněvadž jsou oba procesy v prostředí Jenkinsu, není potřeba generovat trigger token.
 
 
 
@@ -833,7 +841,7 @@ V Kubernetes je spuštěn skript odebírající zprávy z frontového systému K
 
 
 \subsubsection{Dockerizace skriptu Kafka consumer} 
-Pro vytvoření docker image je nutné nejprve vytvořit tzv. Dockerfile (obdoba Makefile pro kompilaci jakyka c). Jedná se o soubor, který obsahuje sekvenci příkazů, které se mají při kompilaci docker balíčku provést. Dockerfile pro balíček obsahující skript Kafka consumer je znázorněn na snippetu \ref{snip:docker}.
+Pro vytvoření docker image je nutné nejprve vytvořit tzv. Dockerfile (obdoba Makefile pro kompilaci jazyku c). Jedná se o soubor, který obsahuje sekvenci příkazů, které se mají při kompilaci docker balíčku provést. Dockerfile pro balíček obsahující skript Kafka consumer je znázorněn na snippetu \ref{snip:docker}.
 
 \begin{figure}[h]               
 	\begin{minted}{Docker}
@@ -843,8 +851,7 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir \
 -r requirements.txt \
---index-url \
-https://AVAST_ARTIFACTORY/pip/packages
+--index-url https://AVAST_ARTIFACTORY/pip/packages
 
 ADD kafka_consumer_runner.py /
 ADD lib/kafka_consumer.py /lib/
@@ -852,13 +859,13 @@ ADD config/config.py /config/
 
 CMD ["python", "./kafka_consumer_runner.py"]
 	\end{minted}      
-	\caption{Hlavní smyčka přijímání zpráv z Kafky}
+	\caption{Dockerfile}
 	\label{snip:docker}
 \end{figure}
 
 První řádek s příkazem \mintinline{Python}{FROM} určuje, odkud stáhnout tzv. image template (tj. docker balíček, který obsahuje prostředí, které se má při kompilaci docker kontejneru vytvořit). Protože je skript kafka consumer napsaný v Pythonu, je zapotřebí použít příslušný template. Kvůli bezpečnosti a pro zajištění integrity má firma vlastní úložiště s docker balíčky. Proto je balíček $python:3.7$ stažen z interního úložiště.
 
-Dalším příkazem je překopírován soubor \mintinline{Python}{requirements.txt} do prostředí nově vzniklého kontejneru. Tento soubor obsahuje seznam nestandardních python knihoven, tedy knihoven, které je potřeba ručně doinstalovat a nejsou obsaženy v instalaci pythonu.
+Dalším příkazem je překopírován soubor \mintinline{Python}{requirements.txt} do prostředí nově vzniklého kontejneru. Tento soubor obsahuje seznam nestandardních python knihoven, tedy knihoven, které je potřeba doinstalovat a nejsou obsaženy v instalaci pythonu.
 
 Dále je spuštěn příkaz \mintinline{Python}{pip install}, který tyto nestandardní knihovny nainstaluje. K tomu je z bezpečnostních důvodů opět využito interní úložiště obsahující předschválené python knihovny.
 
@@ -897,7 +904,7 @@ Skripty pro komunikaci se systémem Kafka byly testovány již v průběhu vývo
 
 
 \subsection{Zabezpečené stahování a filtrování dat}
-Testování této komponenty bylo nejobsáhlejší a probíhalo na vícero testovacích množinách. Prvotní testovací množina dat obsahovala 1000 vzorků a jednalo se o starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa}. Pro každou adresu byly staženy zdrojové soubory a následně byla provedena analýza výstupních dat. Při této analýze bylo zjištěno, že přes prvotní předpoklady není ošetření přesměrování se stavovými kódy 301 a 302 dostačující. Stavový kód 301 se používá pro trvalné přesměrování (tzv. Moved Permanently), kód 302 byl původně navržen pro dočasné přesměrování, nyní je nejčastěji používaným stavovým kódem pro obecná přesměrování. Z analýzy vyplynulo, že množství stránek používá i jiné stavové kódy pro přesměrování. Z ještě nezmíněných se nejčastěji objevoval kód 307, který od standardu HTTP/1.1 nahradil kód 302 pro dočasné redirecty (tzv. Temporary redirect). Proto bylo ošetření přesměrovávacích stavových kódů rozšířeno. Byl upraven inicializační skript(\ref{snip:fiddler}) pro program Fiddler, který obsahuje podmínku pro zachytávané stavové kódy(\ref{snip:fiddler_new}). 
+Testování této komponenty bylo nejobsáhlejší a probíhalo na vícero testovacích množinách. Prvotní testovací množina dat obsahovala 1000 vzorků a jednalo se o starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa}. Pro každou adresu byly staženy zdrojové soubory a následně byla provedena analýza výstupních dat. Při této analýze bylo zjištěno, že přes prvotní předpoklady není ošetření přesměrování se stavovými kódy 301 a 302 dostačující. Stavový kód 301 se používá pro trvalné přesměrování (tzv. Moved Permanently), kód 302 byl původně navržen pro dočasné přesměrování, nyní je nejčastěji používaným stavovým kódem pro obecná přesměrování. Z analýzy vyplynulo, že množství stránek používá i jiné stavové kódy pro přesměrování. Z ještě nezmíněných se nejčastěji objevoval kód 307, který od standardu HTTP/1.1 nahradil kód 302 pro dočasné redirecty (tzv. Temporary redirect). Proto bylo ošetření přesměrovávacích stavových kódů rozšířeno. Byl upraven inicializační skript(\ref{snip:fiddler}) pro program Fiddler, který obsahuje podmínku pro zachytávané stavové kódy (snippet \ref{snip:fiddler_new}). 
 
 \begin{figure}[h]               
 	\begin{minted}{Javascript}
@@ -975,13 +982,13 @@ Tento výpis byl následně použit k vytvoření podmínek kontrolujících, zd
 Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byl opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
 
 Při této analýze bylo avšak zjištěno, že přejmenovávání nahraných souborů podle klíče
-\begin{eqnarray}\label{prej}
+\begin{center}\label{prej}
 \{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}
-\end{eqnarray}
+\end{center}
  není optimální. V HCP úložišti mohou být pouze unikátní soubory (soubory s unikátním názvem). K přenosu souborů z HCP úložiště do systému Scavenger nedochází hned, avšak periodicky s časovým odstupem. V situaci, kdy by v tomto čase byla zpracována stejná url adresa vícekrát, došlo by k pokusu o nahrání souboru, který by měl stejné jméno jako soubor již přítomný v HCP úložišti a přenos by neproběhl. Bylo tedy nutné klíč přetvořit aby byla zachována unikátnost. K tomuto účelu je k názvu souboru přidáván i současný čas. Nový klíč pro přejmenovávání nahrávaných souborů tedy vypadá následovně: 
-\begin{eqnarray}\label{prejm}
+\begin{center}\label{prejm}
 \{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}\{aktuální\_čas\}
-\end{eqnarray}
+\end{center}
 
 Dále byla na začátek přenosu přidána kontrola, zda při filtraci dat byly vůbec některé soubory označeny jako validní. Pokud tomu tak není, proces se automaticky ukončí.
 
