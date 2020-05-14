@@ -125,14 +125,8 @@ Systém by měl reagovat na dva typy vstupů. Prvním vstupem budou adresy s vys
 
 Kromě automatického zpracovávání výše zmíněných seznamů může být vstupem i ručně zadaná adresa či seznam adres. Tato situace nastává v případě potřeby operátora systému dodat na cleanset soubory z webových stránek s menší prevalencí, či, ve více obecném řešení, potřeby stáhnout zdrojové soubory cílených webových stránek pro odlišné účely.
 
-V případě využití Kafky je možné adresy z odlišných seznamů nahrát do frontového systému, odkud se budou postupně odebírat (Obr.\ref{fig:kafka_schema}). Využití Kafky má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit Kafky, které lze využít, je potvrzování zpracované zprávy po přijetí. Tím dojde vždy ke zpracování všech zpráv ve frontě. 
+V případě využití Kafky je možné adresy z odlišných seznamů nahrát do frontového systému, odkud se budou postupně odebírat. Využití Kafky má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit Kafky, které lze využít, je potvrzování zpracované zprávy po přijetí. Tím dojde vždy ke zpracování všech zpráv ve frontě. 
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=9cm]{pictures/kafka.png}
-	\caption{Využití frontového systému Kafka}
-	\label{fig:kafka_schema}
-\end{figure}
 
 
 
@@ -175,7 +169,7 @@ Jiným postupem je použít nástroj Selenium(\ref{sec:selenium}) k ovládání 
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=7cm]{pictures/fiddler_diagram.png}
+	\includegraphics[width=8cm]{pictures/fiddler_diagram.png}
 	\caption{Diagram zachytávání komunikace Fiddlerem}
 	\label{fig:fiddler}
 \end{figure}
@@ -234,6 +228,19 @@ Při volbě stahování dat s využitím nástroje Fiddler bude dalším využit
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 \chapter{Použité technologie}
 V této kapitole jsou stručně popsány všechny technologie využité při zpracovávání této práce.
 
@@ -244,7 +251,7 @@ Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od
 Fiddler\cite{fiddler} je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se prostředník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe (Obr.\ref{fig:mitm}).
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=7cm]{pictures/mitm.png}
+	\includegraphics[width=9cm]{pictures/mitm.png}
 	\caption{MitM útok \cite{mitm}}
 	\label{fig:mitm}
 \end{figure}
@@ -261,7 +268,7 @@ Jenkins je opensource CI/CD systém (continuous integration/continuous delivery)
 Kafku lze řadit mezi frontové systémy. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na zpracování velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu u některých jiných frontových systémů, např. RabbitMQ, avšak do tzv. topiců. Jeden topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (Obr.\ref{fig:kafka}). 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=7cm]{pictures/kafka.png}
+	\includegraphics[width=9cm]{pictures/kafka.png}
 	\caption{Znázornění Kafka systému \cite{kafka}}
 	\label{fig:kafka}
 \end{figure}
@@ -275,7 +282,7 @@ Zprávy zůstávají v topicu po určitou dobu, což určuje hodnota retence. Po
 Virtualbox je opensource virtualizační nástroj vyvíjen firmou Oracle. Slouží k instalaci  a obsluze virtuálních operačních systémů na jednom fyzickém stroji. Jeho výhodou je multiplatformnost, což znamená, že je možné ho nainstalovat na MS Windows i operační systémy s unixovým jádrem (Linux, Mac OS). Tímto lze docílit například spuštění linuxového systému pod operačním systémem Windows.\cite{virutalbox}
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=4cm]{pictures/vbox.png}
+	\includegraphics[width=7cm]{pictures/vbox.png}
 	\caption{PC s virtuálními stroji \cite{vbox_pic}}
 	\label{fig:vbox}
 \end{figure}
@@ -286,14 +293,27 @@ Další důležitou funkcionalitou Virtualboxu jsou tzv. snapshoty. Snapshot zac
 \section{Docker}\label{sec:docker}
 Docker je souhrn produktů typu PaaS (platform as a service) vyvíjen firmou Docker, Inc. \cite{docker}. Služba využívá virtualizaci operačních systémů či jiných platforem k vytvoření tzv. kontejnerů. Tyto kontejnery obsahují vlastní knihovny a konfigurace, ke spuštění však potřebují centrální systém, nazývaní Docker Engine. V tomto je tato služba oproti virtuálním strojům (např. Virtualbox) více odlehčená, nevýhodou je však nutnost centrálního operačního systému. 
 
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=8cm]{pictures/docker.png}
+	\includegraphics[width=10cm]{pictures/docker.png}
 	\caption{Systém s dockerizovanými aplikacemi \cite{docker}}
 	\label{fig:docker}
 \end{figure}
 
+
+
 K dockerizaci aplikace je potřeba vytvořit tzv. Dockerfile, který obsahuje sekvenci příkazů k sestavení kontejneru. Ten je poté možné spustit ve službě Kubernetes dostupné firmou Docker, Inc. Tato služba je tzv. Task Manager, neboli systém, v kterém je možné spravovat jednotlivé procesy, zde spuštěné instance kontejnerů.
+
+
+
+
+
+
+
+
+
+
+
 
 
 \chapter{Implementace}
@@ -876,6 +896,16 @@ Takto vytvořený Dockerfile je potřeba sestavit (tzv. build) a následně nasa
 Při nasazení aplikace do Kubernetes bylo opět využito firemní šablony. Při nasazování je potřeba vytvořit .yaml soubor, obsahující veškerou konfiguraci vznikající aplikace. Tento soubor byl převzat, bylo zde zapotřebí pouze nastavit environmentální proměnné, které skript využívá. Jednalo se o přihlašovací údaje a SSL certifikát k frontovému serveru Kafka a token, pomocí kterého skript spouští jenkins job pro stahování souborů (viz sekce \ref{sec:jenkinsvirt}).
 
 
+\subsection{Schéma integrovaného systému}
+
+Schéma \ref{fig:schema} znázorňuje celkové propojení systému Magpie. Skript Kafka Producer získává URL adresy a posílá je do frontového systému Kafka. Zde jsou adresy postupně odebírány skriptem Kafka Consumer, který pro každou adresu spouští job pro stahování souborů. Doběhnutím tohoto jobu je inicializován job pro HCP upload, kterému jsou stažené soubory (na diagramu znázorněny silnější čarou) předány ve formě job artifactů. Soubory jsou nahrány do HCP úložiště a následně do Scavengeru.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=11cm]{pictures/project_diagram.png}
+	\caption{Diagram systému Magpie}
+	\label{fig:schema}
+\end{figure}
 
 
 
@@ -884,23 +914,21 @@ Při nasazení aplikace do Kubernetes bylo opět využito firemní šablony. Př
 
 
 
+\chapter{Ověření funkčnosti}
 
-\chapter{Otestování a zhodnocení přínosu}
-
-
-\section{Testovací proces}
-Před nasazením aplikace do provozu bylo nutné zajistit důkladné otestování. Tento proces byl převážně realizován formou end-to-end. Tato metoda kontroluje, zda je běh testované aplikace předpokládaný a zda aplikace vrací na zadaná vstupní data očekávané výstupy. Tento typ testování byl použit nejdříve pro jednotlivé komponenty, a následně pro celý běh aplikace. Komponenty, které byly při testování monitorovány jsou následující:
+\section{Testování}
+Před nasazením aplikace do provozu bylo nutné zajistit důkladné otestování. Tento proces byl realizován formou end-to-end. Tato metoda kontroluje, zda je běh testované aplikace předpokládaný a zda aplikace vrací na zadaná vstupní data očekávané výstupy. Tento typ testování byl použit nejdříve pro jednotlivé komponenty, a následně pro celý běh aplikace. Komponenty, které byly při testování monitorovány, jsou následující:
 \begin{itemize}
 	\item Nahrávání adres do frontového systému Kafka
 	\item Přijímání zpráv z Kafky a následná inicializace stahovacího procesu
-	\item Zabecnečené stahování a filtrování dat
+	\item Zabezpečené stahování a filtrování dat
 	\item Nahrávání validních dat do HCP úložistě 
 \end{itemize}
 
 
 
 \subsection{Komponenty využívající frontový systém Kafka}
-Skripty pro komunikaci se systémem Kafka byly testovány již v průběhu vývoje, neočekávaly se zde tedy rozsáhlé komplikace. Při formě end-to-end byl zlomek testovacích adres v procesu Kafka Producer nahrán do Kafky a následně byly v procesu Kafka Consumer všechny adresy úspěšně přečteny. Následně byl proveden tzv. zatěžkávací test, tedy test, jehož snahou je určit, jak náročný provoz je daný systém schopný unést bez poruchy. Předpokládaná zátěž systému Magpie je v řádu tisíců až desetitisíců zpráv týdně. V zatěžkávacím testu byl tedy proveden přenos milionu zpráv, což bylo vyhodnoceno jako dostačující množství. Všechny přijaté zprávy byly následně uloženy do souboru, jehož velikost byla porovnána se souborem obsahujícím vstupní data. Ze shody velikosti obou souborů bylo vyhodnoceno, že byl přenos úspěšný.
+Skripty pro komunikaci se systémem Kafka byly testovány již v průběhu vývoje, neočekávaly se zde tedy rozsáhlé komplikace. Při formě end-to-end byl zlomek testovacích adres v procesu Kafka Producer nahrán do Kafky a následně byly v procesu Kafka Consumer všechny adresy úspěšně přečteny. Následně byl proveden tzv. zatěžkávací test, tedy test, jehož snahou je určit, jak náročný provoz je daný systém schopný unést bez poruchy. Předpokládaná zátěž systému Magpie je v řádu tisíců až desetitisíců zpráv týdně. V zatěžkávacím testu byl tedy proveden přenos milionu zpráv. Tento přenos trval přibližně hodinu, což je v porovnání s předpokládanou zátěží více než dostačující propustnost. Následně byly všechny přijaté zprávy uloženy do souboru, jehož velikost byla porovnána se souborem obsahujícím vstupní data. Ze shody velikosti obou souborů bylo vyhodnoceno, že byl přenos úspěšný.
 
 
 \subsection{Zabezpečené stahování a filtrování dat}
@@ -914,11 +942,11 @@ if (code == 200 || code == 301 || code == 302)
 	\label{snip:fiddler_new}
 \end{figure}
 
-Zmiňovaná podmínka byla rozšířena na zachytávání všech stavových kódů z intervalu $(299,310)$ (znázorněno na snippetu \ref{snip:fiddler_new_new}).
+Zmiňovaná podmínka byla rozšířena na zachytávání všech stavových kódů z intervalu $(300,308)$ včetně (znázorněno na snippetu \ref{snip:fiddler_new_new}).
 \begin{figure}[h]               
 	\begin{minted}{Javascript}
 if (oSession.responseCode == 200 || 
-    (299 < oSession.responseCode < 310))
+    (300 <= oSession.responseCode <= 308))
 	\end{minted}      
 	\caption{Upravená podmínka selekce stavových kódů}
 	\label{snip:fiddler_new_new}
@@ -960,7 +988,7 @@ d['goog:loggingPrefs'] = {'browser': 'ALL'}
 	\label{snip:log_pref}
 \end{figure}
 Parametr \mintinline{Python}{'ALL'} určuje úroveň logování, tedy zda se mají ukládat všechny informační zprávy (ALL), nebo jen zprávy typu ERROR či WARNING.
-Tato instance je předána spolu s třídou pro nastavení prohlížeče jako parametry při inicializaci prohlížeče. Po načtění stránky lze přistoupit k logu pomocí metody \mintinline{Python}{get_log()}, která vrací strukturu obsahující informace v závislosti na nastavených logovacích preferencích. Při iteraci nad touto strukturou lze přistoupit k jednotlivým záznamům (snippet\ref{snip:selenium_logger}). 
+Tato instance je předána spolu s třídou pro nastavení prohlížeče jako parametry při inicializaci prohlížeče. Po načtění stránky lze přistoupit k logu pomocí metody \mintinline{Python}{get_log()}, která vrací strukturu obsahující informace v závislosti na nastavených logovacích preferencích. Při iteraci nad touto strukturou lze přistoupit k jednotlivým záznamům (snippet \ref{snip:selenium_logger}). 
 \begin{figure}[h]               
 	\begin{minted}{Python}
 for entry in log:
@@ -975,34 +1003,69 @@ for entry in log:
 	\caption{Iterace nad strukturou obsahující logování prohlížeče}
 	\label{snip:selenium_logger}
 \end{figure}
+
 Tento výpis byl následně použit k vytvoření podmínek kontrolujících, zda byla stránka skutečně načtena. Chybové hlášky prohlížeče nejsou nijak exaktní, bylo tedy nutné podmínky vytvořit na základě porovnávání stringů. Z analýzy vyplynulo, že se při neexistující stránce nebo při přerušeném připojení objevují tři rozdílné výpisy. Byly tedy vytvořeny podmínky, které tyto výpisy odchytávají a vytvářejí výjimky, které se na začátku procesu filtrování dat vyhodnocují.
 
 
 \subsection{Přenos souborů do HCP úložiště}
-Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byl opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
+Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byl opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní, byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
 
 Při této analýze bylo avšak zjištěno, že přejmenovávání nahraných souborů podle klíče
 \begin{center}\label{prej}
-\{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}
+\{původní\_adresa\}\{pořadí\_zpracovaného\_souboru\}
 \end{center}
- není optimální. V HCP úložišti mohou být pouze unikátní soubory (soubory s unikátním názvem). K přenosu souborů z HCP úložiště do systému Scavenger nedochází hned, avšak periodicky s časovým odstupem. V situaci, kdy by v tomto čase byla zpracována stejná url adresa vícekrát, došlo by k pokusu o nahrání souboru, který by měl stejné jméno jako soubor již přítomný v HCP úložišti a přenos by neproběhl. Bylo tedy nutné klíč přetvořit aby byla zachována unikátnost. K tomuto účelu je k názvu souboru přidáván i současný čas. Nový klíč pro přejmenovávání nahrávaných souborů tedy vypadá následovně: 
+ není optimální. V HCP úložišti mohou být pouze soubory s unikátním názvem. K přenosu souborů z HCP úložiště do systému Scavenger nedochází hned, avšak periodicky s časovým odstupem. V situaci, kdy by v tomto čase byla zpracována stejná url adresa vícekrát, došlo by k pokusu o nahrání souboru, který by měl stejné jméno jako soubor již přítomný v HCP úložišti, a přenos by neproběhl. Bylo tedy nutné klíč přetvořit, aby byla zachována unikátnost. K tomuto účelu je k názvu souboru přidáván i současný čas. Nový klíč pro přejmenovávání nahrávaných souborů tedy vypadá následovně: 
 \begin{center}\label{prejm}
-\{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}\{aktuální\_čas\}
+\{původní\_adresa\}\{pořadí\_zpracovaného\_souboru\}\{aktuální\_čas\}
 \end{center}
 
 Dále byla na začátek přenosu přidána kontrola, zda při filtraci dat byly vůbec některé soubory označeny jako validní. Pokud tomu tak není, proces se automaticky ukončí.
 
-\section{Zobecnění projektu a budoucí využití}
-V současné době je projekt Magpie využit k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Při analýze těchto stránek, tedy při rozhodování zda je stránka phishingového charakteru, je často potřeba podívat se do zdrojových souborů stránky. K zisku těchto dat by bylo možné využívat systém Magpie. 
 
-Jiným využitím Magpie při analýze malwaru může být zisk infikovaných souborů s následným nahráním do systému Scavenger. Systém Scavenger obsahuje kromě databáze cleansetu mimojiné i databázi škodlivých souborů. Rozhodovací logika vložení nahrávaného souboru do příslušné databáze je lehce implementovatelná v systému Scavenger pomocí filterů založených na metadatech nahrávaných souborů. Pokud by byla tedy metadata obohacena o tuto informaci, je Magpie schopný zpracovávat i infikovaná data.
+\section{Monitorování}\label{monitoring}
+K monitorování funkčnosti aplikace byl využit analytický nástroj Grafana\cite{grafana} v kombinaci s databázovým systémem Graphite\cite{graphite}, který uchovává data s časovou známkou. Tato data je následně možné znázorňovat ve formě grafů pomocí nástroje Grafana. K posílání dat do systému Graphite byla využita python knihovna \textit{Statsd}\cite{statistika}.
+
+Při chodu aplikace jsou monitorovány údaje o stažených souborech (počet souborů a jejich velikost) spolu s úspěšností zpracování zadaných adres. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=5cm]{pictures/URLgraph.png}
+	\caption{Zpracované adresy v rámci jednoho dne}
+	\label{fig:urls}
+\end{figure}
+
+Na grafu \ref{fig:urls} je zachycen podíl úspěšně zpracovaných adres v rámci jednoho dne. Z grafu je patrné, že systém Magpie je schopný za jeden den zpracovat přibližně 1500 zadaných adres, z čehož je přibližně 90\% úspěšně. Ve zbylých případech nebylo možné navázat spojení z požadovanou adresou. Tato  desetiprocentní neúspěšnost systému je dána vstupními daty. Jelikož se zpracovávají globálně nejnavštěvovanější adresy podle serveru Majestic Milion, je velice pravděpodobné, že se v těchto seznamech objeví adresy, které jsou již nefunkční, zablokované či jinak nedostupné. I přesto je systém Magpie schopný úspěšně zpracovávat až 1400 adres denně.
+
+Graf \ref{fig:files2} znázornuje počet stažených souborů za minutu v rámci jednoho dne. Interval minuty je daný nástrojem Graphite, který data takto automaticky agreguje. Z grafu je patrná funčnost systému s průměrem přibližně čtyřiceti stažených souborů za minutu. V rámci jednoho dne je tedy možné získat až 50 tisíc souborů, z čehož je přibližně 15 tisíc unikátních.
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=12cm]{pictures/files3.png}
+	\caption{Počet stažených souborů v rámci jednoho dne}
+	\label{fig:files2}
+\end{figure}
+
+
+\chapter{Přínos a budoucí využití}
+\section{Zobecnění projektu a budoucí využití}
+V současné době je projekt Magpie využíván k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Při analýze těchto stránek, tedy při rozhodování, zda je stránka phishingového charakteru, je často potřeba podívat se do zdrojových souborů stránky. K zisku těchto dat by bylo možné využívat systém Magpie. 
+
+Jiným využitím Magpie při analýze malwaru může být zisk infikovaných souborů s následným nahráním do systému Scavenger. Systém Scavenger obsahuje kromě databáze cleansetu mimojiné i databázi škodlivých souborů. Rozhodovací logika vložení nahrávaného souboru do příslušné databáze je lehce implementovatelná v systému Scavenger pomocí filterů založených na metadatech nahrávaných souborů. Pokud by byla tedy metadata obohacena o tuto informaci, je Magpie schopný zpracovávat i infikovaná data. Této funkcionalitě značně přispívá fakt, že je jádro projektu realizováno ve virtuálním prostředí, což umožňuje zabezpečené stahování nejen čistých souborů.
 
 
 
 \section{Zhodnocení přínosu}
-Hlavní přínos systému Magpie je v automatizaci doplňování cleansetu. Dříve bylo doplňování čistých či infikovaných html a js souborů do databáze Scavengeru prací analytiků, kteří museli pro každý nahraný soubor manuálně zvolit, zda se jedná o soubor infikovaný či nikoliv. Tímto způsobem není možné zpracovávat obsáhlý počet čistých souborů, které je třeba nahrávat na cleanset, aby byla zajištěna jeho funkčnost. Díky systému Magpie je možné cleanset obohacovat o 200 000 nových souborů týdně, čímž je mnohonásobně navýšena stávající kapacita přidávání dat. V důsledku toho je cleanset obsáhlejší, což přispívá k lépe fungující automatizaci při vydávání nových detekcí. Virové detekce vytvářejí analytici, kteří musejí kontrolovat, zda detekce neblokuje čisté soubory na cleansetu. Virové detekce zároveň vznikají i díky automatickým nástrojům, u kterých je silný cleanset neméně důležitý. Díky silnému cleansetu klesá množství špatných detekcí vytvořených automatickými nástroji a Magpie silný cleanset vytváří.
+Hlavní přínos systému Magpie je v automatizaci doplňování cleansetu. Dříve bylo doplňování čistých či infikovaných html a js souborů do databáze Scavengeru prací analytiků, kteří museli pro každý nahraný soubor manuálně zvolit, zda se jedná o soubor infikovaný či nikoliv. Tímto způsobem není možné zpracovávat obsáhlý počet čistých souborů, které je třeba nahrávat na cleanset, aby byla zajištěna jeho funkčnost. Díky systému Magpie je možné cleanset obohacovat o desetitisíce nových souborů týdně, čímž je mnohonásobně navýšena stávající frekvence přidávání dat. Toto je zobrazeno na grafu \ref{fig:scav}, který zachycuje frontu v systému Scavenger s nově přidanými soubory na cleanset v rámci jednoho dne. Zde je vidět, že systém Magpie obohacuje cleanset o řádově stovky unikátních souborů každou hodinu jeho provozu. 
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=12cm]{pictures/scav.png}
+	\caption{Unikátní soubory přidané do systému Scavenger}
+	\label{fig:scav}
+\end{figure}
 
+V důsledku toho je cleanset obsáhlejší, což přispívá k lépe fungující automatizaci při vydávání nových detekcí. Virové detekce vytvářejí analytici, kteří musejí kontrolovat, zda detekce neblokuje čisté soubory na cleansetu. Virové detekce zároveň vznikají i díky automatickým nástrojům, u kterých je silný cleanset neméně důležitý. Díky silnému cleansetu klesá množství špatných detekcí vytvořených automatickými nástroji a Magpie takovýto cleanset vytváří.
 
 
 
@@ -1126,6 +1189,19 @@ Díky systému Magpie je nyní možné rozšiřovat cleanset o desetitísice nov
 	\bibitem{majestic}
 	The Majestic Million. \textit{SEO Backlink Checker and Link Building Toolset | Majestic.com} [online]. [cit. 14.04.2020]. Dostupné z:  \\ 
 	\url{https://majestic.com/reports/majestic-million}
+	
+	\bibitem{grafana}
+	Grafana. \textit{Grafana Labs} [online]. Copyright 2020 © Grafana Labs [cit. 14.04.2020]. Dostupné z: \\
+	\url{https://grafana.com/}
+	
+	\bibitem{graphite}	
+	Graphite. Graphite [online]. [cit. 14.04.2020]. Dostupné z: \\
+	\url{https://graphiteapp.org/}
+	
+	
+	\bibitem{statistika}	
+	statsd · PyPI. \textit{PyPI · The Python Package Index} [online]. Copyright © 2020 [cit. 14.04.2020]. Dostupné z: \\
+	\url{https://pypi.org/project/statsd/}
 	
 	\bibitem{book1}
 	Eric Lawrence, CreateSpace Independent Publishing Platform (2015).\textit{ Debugging with
