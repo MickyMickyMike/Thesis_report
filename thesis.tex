@@ -19,9 +19,9 @@
 \usepackage{dirtree} %directory tree visualisation
 
 % % list of acronyms
-% \usepackage[acronym,nonumberlist,toc,numberedsection=autolabel]{glossaries}
-% \iflanguage{czech}{\renewcommand*{\acronymname}{Seznam pou{\v z}it{\' y}ch zkratek}}{}
-% \makeglossaries
+ \usepackage[acronym,nonumberlist,toc,numberedsection=autolabel]{glossaries}
+ \iflanguage{czech}{\renewcommand*{\acronymname}{Seznam pou{\v z}it{\' y}ch zkratek}}{}
+ \makeglossaries
 
 \newcommand{\tg}{\mathop{\mathrm{tg}}} %cesky tangens
 \newcommand{\cotg}{\mathop{\mathrm{cotg}}} %cesky cotangens
@@ -1252,12 +1252,30 @@ Díky systému Magpie je nyní možné rozšiřovat cleanset o desetitísice nov
 % 	\label{fig:cars}
 % \end{figure}
 
-%\chapter{Seznam použitých zkratek}
-% \printglossaries
-%\begin{description}
-%	\item[GUI] Graphical user interface
-%	\item[XML] Extensible markup language
-%\end{description}
+\chapter{Seznam použitých zkratek}
+ \printglossaries
+\begin{description}
+	\item[AJAX] Asynchronous JavaScript and XML
+	\item[API] Application programming interface
+	\item[CI/CD] Continuous integration/continuous delivery
+	\item[CSS] Cascading style sheet
+	\item[GUI] Graphical user interface
+	\item[HCP] Hitachi content platform
+	\item[HTML] Hypertext markup language
+	\item[HTTP] Hypertext transfer protocol
+	\item[JS] JavaScript
+	\item[MitM] Man in the middle
+	\item[OS] Operating system
+	\item[PaaS] Platform as a service
+	\item[SDK] Software development kit
+	\item[SHA] Secure hash algorithm
+	\item[SMB] Server message block
+	\item[SSL] Secure sockets layer
+	\item[URL] Uniform resource locator
+	\item[VBOX] VirtualBox
+	\item[VM] Virtual machine
+	\item[XML] Extensible markup language
+\end{description}
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
