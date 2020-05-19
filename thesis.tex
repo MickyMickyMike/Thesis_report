@@ -56,13 +56,13 @@
 \authorFN{Staněk} %příjmení autora
 \authorWithDegrees{Michal Staněk} %jméno autora včetně současných akademických titulů
 \supervisor{Ing. Jan Kubr, Ph.D.}
-\acknowledgements{Chtěl bych poděkovat panu Ing. Janu Kubrovi, Ph.D. za odborné vedení mé práce, za pomoc a věcné rady při zpracování této práce.}
-\abstractCS{Tato práce psaná v programovacím jazyku Python se zabývá zabezpečeným stahováním html a js souborů webových stránek k doplňování cleansetu antivirového programu. Stahování souborů probíhá na bázi zachytávání komunikace internetového prohlížeče ovládaného nástrojem Selenium. K zachytávání je využit MitM klient Fiddler. Zabezpečení je realizováno obalením stahovacího procesu do virtuálního prostředí s využitím nástroje VirtualBox. Díky navrženému systému je možné zachytávat statisíce souborů týdně. Práce dále zkoumá možnosti navrženého systému pro využití v oblasti malware analýzy.}
-\abstractEN{Purpose of this thesis written in Python language is secure downloading of html and js files from websites for antivirus cleanset updating. Files downloading is implemented by capturing web traffic of internet browser controlled by Selenium. Traffic capturing is provided by MitM client Fiddler. For security, the whole process is wrapped in virtual environment provided by VirtualBox. Designed system is capable of capturing hundreds of thousands files a week. Furthermore, the thesis questions r options of using the system for malware analysis.}
+\acknowledgements{Chtěl bych poděkovat panu Ing. Janu Kubrovi, Ph.D., za odborné vedení mé práce, za pomoc a věcné rady při zpracování této práce.}
+\abstractCS{Tato práce psaná v programovacím jazyku Python se zabývá zabezpečeným stahováním html a js souborů webových stránek k doplňování cleansetu antivirového programu. Stahování souborů probíhá na bázi zachytávání komunikace internetového prohlížeče ovládaného nástrojem Selenium. K zachytávání je využit MitM klient Fiddler. Zabezpečení je realizováno obalením stahovacího procesu do virtuálního prostředí s využitím nástroje VirtualBox. Část práce je ve formě Docker balíčku nasazena v systému Kubernetes, zbytek je spouštěn v systému Jenkins. Běh navrženého systému je monitorován s využitím nástroje Grafana. Díky navrženému systému je možné zachytávat statisíce souborů týdně. Práce dále zkoumá možnosti navrženého systému pro využití v oblasti malware analýzy.}
+\abstractEN{Purpose of this thesis written in Python language is secure downloading of html and js files from websites for antivirus cleanset updating. Files downloading is implemented by capturing web traffic of internet browser controlled by Selenium. Traffic capturing is provided by MitM client Fiddler. For security, the whole process is wrapped in virtual environment provided by VirtualBox. Part of the system is dockerized and deployed in Kubernetes, the rest is deployed in Jenkins. Whole system is continuously monitored with Grafana tool. Designed system is capable of capturing hundreds of thousands files a week. Furthermore, the thesis questions options of using the system for malware analysis.}
 \placeForDeclarationOfAuthenticity{V~Praze}
 \declarationOfAuthenticityOption{4} %volba Prohlášení (číslo 1-6)
-\keywordsCS{Python, VirtualBox, Fiddler, html, js}
-\keywordsEN{Python, VirtualBox, Fiddler, html, js}
+\keywordsCS{Python, VirtualBox, Fiddler, Docker, Kubernetes, Jenkins, webscrapper, html, js}
+\keywordsEN{Python, VirtualBox, Fiddler, Docker, Kubernetes, Jenkins, webscrapper, html, js}
 % \website{http://site.example/thesis} %volitelná URL práce, objeví se v tiráži - úplně odstraňte, nemáte-li URL práce
 
 \renewcommand{\baselinestretch}{1.15}
@@ -119,24 +119,24 @@ Jednotlivé body práce lze rozdělit na vícero dílčích podproblémů:
 
 
 \section{Předzpracování zadaných adres}
-K předzpracování zadaných adres lze využít frontový systém Kafka(\ref{sec:kafka}).
+K předzpracování zadaných adres lze využít frontový systém Kafka (více v kapitole \ref{sec:kafka}).
 
-Systém by měl reagovat na dva typy vstupů. Prvním vstupem budou adresy s vysokou prevalencí, tedy adresy, jež jsou velmi často navštěvované uživateli na internetu. Případem takové adresy může být třeba internetový obchod \url{www.amazon.com}. Tyto adresy budou systému periodicky dodávány z externích modulů. Jako vstupní data lze využít seznamy poskytované službou Alexa Top Sites \cite{alexa}, jež obsahují nejnavštěvovanější stránky kategorizované podle obsahu, či obdobný seznam jiné služby nazývané Majestic Milion \cite{majestic}.
+Systém by měl reagovat na dva typy vstupů. Prvním vstupem budou adresy s vysokou prevalencí, tedy adresy, jež jsou velmi často navštěvované uživateli na internetu. Případem takové adresy může být třeba internetový obchod \url{www.amazon.com}. Tyto adresy budou systému periodicky dodávány z externích modulů. Jako vstupní data lze využít seznamy poskytované službou Alexa Top Sites \cite{alexa}, jež obsahují nejnavštěvovanější stránky kategorizované podle obsahu, či obdobný seznam jiné služby nazývané Majestic Million \cite{majestic}.
 
 Kromě automatického zpracovávání výše zmíněných seznamů může být vstupem i ručně zadaná adresa či seznam adres. Tato situace nastává v případě potřeby operátora systému dodat na cleanset soubory z webových stránek s menší prevalencí, či, ve více obecném řešení, potřeby stáhnout zdrojové soubory cílových webových stránek pro odlišné účely.
 
-V případě využití Kafky je možné adresy z odlišných seznamů nahrát do frontového systému, odkud se budou postupně odebírat. Využití Kafky má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit Kafky, které lze využít, je potvrzení zpracované zprávy po přijetí. Tím dojde vždy ke zpracování všech zpráv ve frontě. 
+V případě využití Kafky je možné adresy z odlišných seznamů nahrát do frontového systému, odkud se budou postupně odebírat. Využití Kafky má výhodu v již naimplementovaném řešení fronty. Jednou z funkcionalit Kafky, které lze využít, je potvrzení zpracované zprávy po přijetí. Tím je zaručeno zpracování všech zpráv ve frontě. 
 
 
 
 
 
 \section{Získání čistých souborů z webových stránek}
-Problematiku při implementaci stahování dat činí přesměrovávání (tzv. redirecty), které se na mnoha webových stránkách používá. Redirecty je možné neřešit a zabývat se pouze obsahem dané url, což by proces získání zdrojových souborů usnadnilo. Stažená data by avšak byla nekompletní.
+Problematiku při implementaci stahování dat činí přesměrovávání (tzv. redirecty), které se na mnoha webových stránkách používá. Redirecty je možné neřešit a zabývat se pouze obsahem dané url, což by proces získání zdrojových souborů usnadnilo. Stažená data by však byla nekompletní.
 
 V průběhu stahování dat by také měla být implementována logika selekce vybraných typů souborů. Pro cleanset jsou validní pouze html a js soubory, ostatní soubory (css soubory, obrázky a jiné) lze tedy filtrovat. Tuto selekci je možné provádět přímo při stahování souborů, či následně po stáhnutí celého obsahu zadané adresy.
 
-Jednou z možností jak přistupovat k získání čistých souborů je otevírat stránky ve webovém prohlížeči a k získání souborů použít nástroj Fiddler(\ref{sec:fiddler}). Jiným způsobem je emulace webového prohlížeče v Pythonu s následným stahováním zdrojových kódů stránek bez využití programů třetích stran (webový prohlížeč, Fiddler).
+Jednou z možností jak přistupovat k získání čistých souborů je otevírat stránky ve webovém prohlížeči a k získání souborů použít nástroj Fiddler (více v kapitole \ref{sec:fiddler}). Jiným způsobem je emulace webového prohlížeče v Pythonu s následným stahováním zdrojových kódů stránek bez využití programů třetích stran (webový prohlížeč, Fiddler).
 
 Jednotlivé rozebírané metody získání čistých souborů z webových stránek jsou následující:
 \begin{itemize}
@@ -145,7 +145,7 @@ Jednotlivé rozebírané metody získání čistých souborů z webových strán
 \end{itemize}
 
 \subsection{Emulace webového prohlížeče} \label{sec:parsing}
-Výhodou emluace webového prohlížeče oproti druhé metodě s využitím nástroje Fiddler je rychlost a jednoduchost z hlediska využitých nástrojů (absence nutnosti využívat programy třetích stran). Pro práci s webovými stránkami v Pythonu existuje více knihoven, z nichž nejčastěji používaná je knihovna Requests. Její základ je postaven na knihovně Urllib, která je sice již obsažena v základní instalaci Pythonu a není nutno ji doinstalovávat, avšak z hlediska použití vyžaduje velké množství obalovacího kódu (kód, který zaručuje spravný běh programu v nestandardních situacích), jenž je už v knihovně  Requests implementován.
+Výhodou emluace webového prohlížeče je rychlost a jednoduchost z hlediska využitých nástrojů (absence nutnosti využívat programy třetích stran). Pro práci s webovými stránkami v Pythonu existuje více knihoven, z nichž nejčastěji používaná je knihovna Requests. Její základ je postaven na knihovně Urllib, která je sice již obsažena v základní instalaci Pythonu a není nutno ji doinstalovávat, avšak z hlediska použití vyžaduje velké množství obalovacího kódu (kód, který zaručuje spravný běh programu v nestandardních situacích), jenž je už v knihovně  Requests implementován.
 
 \begin{figure}[h]
 	\centering
@@ -154,18 +154,18 @@ Výhodou emluace webového prohlížeče oproti druhé metodě s využitím nás
 	\label{fig:web_scrapper}
 \end{figure}
 
-Obrázek \ref{fig:web_scrapper} znázorňuje cyklus získávání dat pomocí emulovaného prohlížeče. Knihovně Requests je zadána požadovaná url adresa. Knihovna získá ze serveru zdrojový kód této stránky, který uloží a zároveň jej předá html parseru. Následným výstupem je seznam url adres, které jsou ve zdrojovém kódu původní stránky obsaženy. Seznam získaných adres je nyní novým vstupem knihovny Requests. Tento cyklus se opakuje, dokud není list s url adresami prázdný. Pro cyklus je možné implementovat i hloubku procházení, aby se zabránilo nekonečné iteraci. Tento parametr určuje, do jaké úrovně se mají získávat adresy při parsování. Zde se předpokládá, že první úroveň obsahuje původní adresu, a dále každá adresa n-té úrovně je získána při parsování (n-1)-té adresy.
+Obrázek \ref{fig:web_scrapper} znázorňuje cyklus získávání dat pomocí emulovaného prohlížeče. Knihovně Requests je zadána požadovaná url adresa. Knihovna získá ze serveru zdrojový kód této stránky, který uloží a zároveň jej předá html parseru. Následným výstupem je seznam url adres, které jsou ve zdrojovém kódu původní stránky obsaženy. Seznam získaných adres je nyní novým vstupem knihovny Requests. Tento cyklus se opakuje, dokud není list s url adresami prázdný. Pro cyklus je možné implementovat i hloubku procházení, aby se zabránilo nekonečné iteraci. Tento parametr určuje, do jaké úrovně se mají získávat adresy při parsování. Zde se předpokládá, že první úroveň obsahuje původní adresu a dále každá adresa n-té úrovně je získána při parsování (n-1)-té adresy.
 
 Nevýhodou emulace webového prohlížeče pomocí knihovny Requests je obtížná interakce se stránkami využívajícími javascript k postupnému načítání obsahu či k přesměrování na jinou adresu. Vytvořit komplexní web scrapper (tj. nástroj, který prochází obsah webových stránek), který by dokázal reagovat i na javascriptem řízený obsah, není triviální úkol.  Knihovna Requests je v tomto ohledu nedostačující a toto řešení indikuje neošetřit javascriptové přesměrování a postupné načítání obsahu.
 
-K samotnému parsování již stažené webové stránky je možné využít knihovnu BeautifulSoup\cite{beautifulsoup}, která implementuje html a xml parsery v jazyku Python. Pomocí ní je snadné procházet html kód a iterovat přes tagy komponentů stránky. Lze tak vyhledat všechny části, které obsahují přesměrování na jiné url adresy, či spouštění javascriptového souboru. 
+K samotnému parsování již stažené webové stránky je možné využít knihovnu BeautifulSoup \cite{beautifulsoup}, která implementuje html a xml parsery v jazyku Python. Pomocí ní je snadné procházet html kód a iterovat přes tagy komponentů stránky. Lze tak vyhledat všechny části, které obsahují přesměrování na jiné url adresy, či spouštění javascriptového souboru. 
 
 Přesměrování lze ošetřit pomocí hlídání response kódů (kód, který vrací server při komunikaci s webovým prohlížečem). Při přesměrování jsou běžné kódy 301, respektive 302. Pokud tedy vrátí server kód pro přesměrování, je nutné v hlavičce odpovědi najít adresu pro přesměrování a přidat ji do fronty ke zpracování.
 
-Velkou výhodou tohoto řešení je bezpečnost, protože samotné stahování zdrojového kódu stránek probíhá bez nutnosti stažené soubory spouštět. Tímto řešením nehrozí nebezpečí infikace pracovního počítače škodlivým obsahem (o této problematice více v sekci \ref{sec:zabezpeceni}). Výraznou nevýhodou je ovšem neschopnost získání obsahu webových stránek, který se načítá asynchronně za pomoci javascriptu (využití technologie ajax).
+Velkou výhodou tohoto řešení je bezpečnost, protože samotné stahování zdrojového kódu stránek probíhá bez nutnosti stažené soubory spouštět. Tímto řešením nehrozí nebezpečí infikace pracovního počítače škodlivým obsahem (o této problematice více v sekci \ref{sec:zabezpeceni}). Výraznou nevýhodou je ovšem neschopnost získání obsahu webových stránek, který se načítá asynchronně za pomoci javascriptu (využití technologie Ajax).
 
 \subsection{Zachytávání komunikace Fiddlerem}
-Jiným postupem je použít nástroj Selenium(\ref{sec:selenium}) k ovládání webového prohlížeče s využitím Fiddleru(\ref{sec:fiddler}) pro zachytávání komunikace. Nevýhodou této metody je zpomalení vzniklé spouštěním internetového prohlížeče a nástroje Fiddler. Naopak výhodou je již implementované řešení webového prohlížeče umožňujícího interagovat se stránkami využívajícími javascript. Nastroj Fiddler umožňuje zachytávat i šifrovanou komunikaci pomocí protokolu https. K tomu je potřeba vygenerovat bezpečnostní certifikát a přidat jej mezi důveryhodné certifikáty v internetovém prohlížeči.
+Jiným postupem je použít nástroj Selenium (více v kapitole \ref{sec:selenium}) k ovládání webového prohlížeče s využitím Fiddleru (kapitola \ref{sec:fiddler}) pro zachytávání komunikace. Nevýhodou této metody je zpomalení vzniklé spouštěním internetového prohlížeče a nástroje Fiddler. Naopak výhodou je již implementované řešení webového prohlížeče umožňujícího interagovat se stránkami využívajícími javascript. Nastroj Fiddler umožňuje zachytávat i šifrovanou komunikaci pomocí protokolu https. K tomu je potřeba vygenerovat bezpečnostní certifikát a přidat jej mezi důveryhodné certifikáty v internetovém prohlížeči.
 
 \begin{figure}[h]
 	\centering
@@ -186,7 +186,7 @@ Dále je potřeba filtrovat režijní komunikaci mezi prohlížečem a servery, 
 
 
 \section{Zabezpečení stahovacího procesu}\label{sec:zabezpeceni}
-Z bezpečnostních důvodů je kladen důraz na zabezpečení veškerého procesu stahování webového obsahu. Při doplňování cleansetu se předpokládá neinfikovanost stažených souborů, avšak při obecnějším využití navrhovaného systému již tento předpoklad neplatí. Jedním z možných způsobů docílení bezpečnosti je vytvoření a obsluha virtuálního stroje. Tento virtuální stroj lze využít jako karanténní prostředek, který zaručí stahování souborů bez potenciální infikace fyzického systému (Obr.\ref{fig:virtualbox}).
+Z bezpečnostních důvodů je kladen důraz na zabezpečení veškerého procesu stahování webového obsahu. Při doplňování cleansetu se předpokládá neinfikovanost stažených souborů, avšak při obecnějším využití navrhovaného systému již tento předpoklad neplatí. Jedním z možných způsobů docílení bezpečnosti je vytvoření a obsluha virtuálního stroje. Tento virtuální stroj lze využít jako karanténní prostředek, který zaručí stahování souborů bez potenciální infikace fyzického systému (obr. \ref{fig:virtualbox}).
 
 \begin{figure}[h]
 	\centering
@@ -197,7 +197,7 @@ Z bezpečnostních důvodů je kladen důraz na zabezpečení veškerého proces
 
 Otevíráním webových stránek v prohlížeči dochází ke spouštění javascriptových souborů, což je potenciálně nebezpečné. Proto je zabezpečovací proces nutné řešit pouze u metody využívající nástroj Fiddler. Při emulaci prohlížeče v Pythonu dochází rovnou ke stahování zdrojových kódů webových stránek bez nutnosti jejich spouštění.
 
-Pro virtualizaci systému lze použít nástroj VMware workstation od firmy VMware nebo VirtualBox vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývanou vSphere. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka Python\cite{vmware}, avšak celé toto řešení není nabízeno s freeware licencí. Naopak virtualizační nástroj Virtualbox(\ref{sec:virtualbox}) je zdarma, nabízí však méně propracované nástroje pro programovací jazyk Python. Pro práci s VirtualBox SDK lze využít knihovnu pyvbox\cite{pyvbox}. Tato knihova obaluje většinu metod, které SDK VirtualBoxu obsahuje. 
+Pro virtualizaci systému lze použít nástroj VMware workstation od firmy VMware nebo VirtualBox vyvíjený firmou Oracle. Firma VMware nabízí pro práci se svými virtuálními stroji infrastrukturu nazývanou vSphere. Tato infrastruktura obsahuje vlastní SDK nástroje pro implementaci do programovacího jazyka Python \cite{vmware}, avšak celé toto řešení není nabízeno s freeware licencí. Naopak virtualizační nástroj Virtualbox je zdarma, nabízí však méně propracované nástroje pro programovací jazyk Python. Pro práci s VirtualBox SDK lze využít knihovnu pyvbox \cite{pyvbox}. Tato knihova obaluje většinu metod, které SDK VirtualBoxu obsahuje. 
 
 Virtuální stroj (neboli VM z anglického Virtual Machine) lze spouštět pro každou webovou stránku zvlášť, čímž je docíleno maximálního zabezpečení, avšak zvyšuje se tím čas potřebný ke zpracování jedné adresy. Startování VM je předpokládáno jako časově velmi náročné.  Virtuální stroj lze také restartovat vždy po určitém čase nebo po daném množství zpracovaných url adres. Tím lze docílit výrazného zrychlení běhu systému.
 
@@ -208,21 +208,21 @@ Virtuální stroj (neboli VM z anglického Virtual Machine) lze spouštět pro k
 \section{Nahrání získaného obsahu do databáze cleansetu}
 Dalším krokem je přesun získaného obsahu do samotné databáze cleansetu. Ta je součástí většího systému aplikací, který nese interní označení Scavenger. Zjednodušeně lze říci, že tento systém obsahuje záznamy o všech antiviru známých souborech a url adresách (nakažených i čistých). Soubory se v systému Scavenger indexují pomocí hashe vzniklé hashovacím algoritem sha-256. Tímto lze docílit jednoduché kontroly duplicity (stejné soubory mohou mít rozdílné názvy, ale hash souboru je pro identické soubory stejná). K hashi souboru se přikládají metadata s informací o původu souboru a času výskytu. 
 
-K nahrání souborů do Scavengeru lze využít síťový souborový systém Samba, který implementuje přenos souborů po síti pomocí síťového protokolu SMB a to převážně v systémech Windows. Tato metoda je však z hlediska firemní infrastruktury zastaralá. Novější způsob představuje využití datové platformy HCP (Hitachi content platform) \cite{hcp}. Tato platforma se specializuje na přesun a zpracování velkého množství dat z různých zdrojů. Ke komunikaci se zmíněným systémem HCP lze využít interně vyvinutý python klient, který přesun souborů usnadní.
+K nahrání souborů do Scavengeru lze využít síťový souborový systém Samba, který implementuje přenos souborů po síti pomocí síťového protokolu SMB, a to převážně v systémech Windows. Tato metoda je však z hlediska firemní infrastruktury zastaralá. Novější způsob představuje využití datové platformy HCP (Hitachi content platform) \cite{hcp}. Tato platforma se specializuje na přesun a zpracování velkého množství dat z různých zdrojů. Ke komunikaci se zmíněným systémem HCP lze využít interně vyvinutý python klient, který přesun souborů usnadní.
 
 
 
 
 
 \section{Začlenění do stávající infrastruktury}
-Předpokládá se, že systém bude spouštěn periodicky, ale měl by být také spustitelný na vyžádání uživatelem. Pro takové požadavky lze použít systém Jenkins(\ref{sec:jenkins}), který je firmou Avast používaný ke správě obdobných aplikací. Jednotlivé části aplikace Magpie je možné rozdělit do samostatných procesů (v terminologii systému Jenkins tzv. jobů), které se dají sekvenčně pouštět v závislosti na úspěšném ukončení předcházejícího jobu. Tento přístup přináší přehledné rozhraní, které umožňuje jednotlivé části samostatně monitorovat, spolu s jednoduchým přístupem k výstupům jobů. Tímto způsobem by bylo možné přistoupit k získaným datům přímo, bez nutnosti data nahrávat do databáze v systému Scavenger, v případě, kdy by byl systém spuštěný manuálně.
+Předpokládá se, že systém bude spouštěn periodicky, ale měl by být také spustitelný na vyžádání uživatelem. Pro takové požadavky lze použít systém Jenkins (více v kapitole \ref{sec:jenkins}), který je firmou Avast používaný ke správě obdobných aplikací. Jednotlivé části aplikace Magpie je možné rozdělit do samostatných procesů (v terminologii systému Jenkins tzv. jobů), které se dají sekvenčně pouštět v závislosti na úspěšném ukončení předcházejícího jobu. Tento přístup přináší přehledné rozhraní, které umožňuje jednotlivé části samostatně monitorovat, spolu s jednoduchým přístupem k výstupům jobů. Tímto způsobem by bylo možné přistoupit k získaným datům přímo, bez nutnosti data nahrávat do databáze v systému Scavenger, v případě, kdy by byl systém spuštěný manuálně.
 
 Jiným přístupem je využít firemní mutaci nástroje Kubernetes, která by umožňovala mít systém spuštěný bez přestávky. Krom neustálého spuštění skriptu je velkou výhodou Kubernetes tzv. škálování, kdy lze při velkém vytížení jednoduše navýšit výpočetní prostředky danému procesu a tím urychlit jeho běh. Pro spuštění skriptu v Kubernetes je nejprve potřeba tento skript dockerizovat. Dockerizace je proces, při kterém je vytvořen tzv. docker image, neboli balíček, který je plně spustitelný ve virtualizovaném prostředí, například v Kubernetes. Při dockerizaci je nutné vytvořit \mintinline{Python}{Makefile}, který obsahuje informace o vzniku balíčku. 
 
 Je také možné pro jednotlivé části systému Magpie využít rozdílné technologie, například kombinaci obou výše zmíněných.
 
 \section{Programovací jazyk}
-Převážná část práce bude psána v programovacím jazyku Python\cite{python}. Python obsahuje velké množství dostupných knihoven, čímž lze docílit snadné integrity mezi jednotlivými komponentami aplikace Magpie. Tato volba je i v souladu s firemní politikou. 
+Převážná část práce bude psána v programovacím jazyku Python \cite{python}. Python obsahuje velké množství dostupných knihoven, čímž lze docílit snadné integrity mezi jednotlivými komponentami aplikace Magpie. Tato volba je i v souladu s firemní politikou. 
 
 Při volbě stahování dat s využitím nástroje Fiddler bude dalším využitým programovacím jazykem JavaScript, neboť v tomto jazyku je psán inicializační soubor zmíněného nástroje.
 
@@ -244,31 +244,28 @@ Při volbě stahování dat s využitím nástroje Fiddler bude dalším využit
 \chapter{Použité technologie}
 V této kapitole jsou stručně popsány všechny technologie využité při zpracovávání této práce.
 
-\section{Python}\label{sec:python}
-Python je skriptovací programovací jazyk, jehož syntaxe je lehce odlišná od konvenčních programovacích jazyků (Java, C). Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Zároveň je tento programovací jazyk velmi rozšířený ve firmě Avast. Kvůli těmto okolnostem byl vybrán Python 3.7 jako hlavní programovací jazyk pro tuto diplomovou práci.
-
 \section{Fiddler}\label{sec:fiddler}
-Fiddler\cite{fiddler} je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu MitM (Man-in-the-middle) útoku, kdy se prostředník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe (Obr.\ref{fig:mitm}).
+Fiddler \cite{fiddler} je nástroj vyvíjen firmou Telerik, sloužící k zachytávání internetové komunikace. Funguje na principu techniky MitM (Man-in-the-middle), kdy se prostředník vtěsná mezi dva účastníky internetového provozu a nechá je komunikovat skrz sebe (obr. \ref{fig:mitm}).
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=9cm]{pictures/mitm.png}
-	\caption{MitM útok \cite{mitm}}
+	\caption{MitM technika \cite{mitm}}
 	\label{fig:mitm}
 \end{figure}
 Fiddler může být automatizován pomocí inicializačního souboru, který obsahuje různá pravidla a je psaný v javascriptu. Při správném nastavení je Fiddler schopný zachytávat i šifrovanou komunikaci.
 
 \section{Selenium} \label{sec:selenium}
-Selenium je opensource nástroj používaný k automatizovanému přístupu k webovým aplikacím. Těchto vlastností se často využívá při testování, avšak v této práci je použit pouze k obsluze webového prohlížeče. Selenium obsahuje vlastní vývojové prostředí, které lze využít bez velké znalosti programování, existují však i jeho implementace do většiny populárních programovacích jazyků. V této práci je využita knihovna Selenium pro programovací jazyk Python.
+Selenium \cite{selenium} je opensource nástroj používaný k automatizovanému přístupu k webovým aplikacím. Těchto vlastností se často využívá při testování, avšak v této práci je použit pouze k obsluze webového prohlížeče. Selenium obsahuje vlastní vývojové prostředí, které lze využít bez velké znalosti programování, existují však i jeho implementace do většiny populárních programovacích jazyků. V této práci je využita knihovna Selenium pro programovací jazyk Python.
 
 
 \section{Jenkins} \label{sec:jenkins}
-Jenkins je opensource CI/CD systém (continuous integration/continuous delivery) umožňující vykonávání automatických či periodických operací (tzv. jobů) a používá se převážně ke spouštění skriptů. Joby lze spoustět různými způsoby. Pravidelně v předem určený čas, na vyžádání přes webové rozhraní, pomocí api, či automaticky po doběhnutí jiného jobu.
+Jenkins \cite{jenkins} je opensource CI/CD systém (continuous integration/continuous delivery) umožňující vykonávání automatických či periodických operací (tzv. jobů) a používá se převážně ke spouštění skriptů. Joby lze spoustět různými způsoby. Pravidelně v předem určený čas, na vyžádání přes webové rozhraní, pomocí api, či automaticky po doběhnutí jiného jobu.
 
 \section{Kafka}\label{sec:kafka}
-Kafku lze řadit mezi frontové systémy. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na zpracování velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu u některých jiných frontových systémů, např. RabbitMQ, avšak do tzv. topiců. Jeden topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (Obr.\ref{fig:kafka}). 
+Kafku lze řadit mezi frontové systémy \cite{kafka...}. Jedná se o opensource platformu sloužící ke streamování dat v reálném čase. Její zaměření je převážně na zpracování velkého množství zpráv bez narůstající latence. Zprávy se však neukládají do fronty, jako je tomu u některých jiných frontových systémů, např. RabbitMQ, avšak do tzv. topiců. Jeden topic může obsahovat více částí (tzv. partition), do kterých se zprávy distribuují (obr. \ref{fig:kafka}). 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=9cm]{pictures/kafka.png}
+	\includegraphics[width=7cm]{pictures/kafka.png}
 	\caption{Znázornění Kafka systému \cite{kafka}}
 	\label{fig:kafka}
 \end{figure}
@@ -279,10 +276,10 @@ Tato politika čtení zpráv je velkou výhodou oproti zmiňovanému systému Ra
 Zprávy zůstávají v topicu po určitou dobu, kterou určuje hodnota retence. Po tuto dobu jsou zprávy přístupny pro každou skupinu consumerů. V Kafce funguje tzv. potvrzovací systém. Consumer dostane zprávu, a po jejím zpracování vyšle tzv. commit, kterým oznámí úspěšné zpracování. Pokud by v průběhu nastala chyba, tento commit se nepošle a zpráva se vrátí zpátky, kde může být přečtena jiným consumerem ve skupině.
 
 \section{VirtualBox}\label{sec:virtualbox}
-VirtualBox je opensource virtualizační nástroj vyvíjený firmou Oracle. Slouží k instalaci  a obsluze virtuálních operačních systémů na jednom fyzickém stroji. Jeho výhodou je multiplatformnost, což znamená, že je možné ho nainstalovat na MS Windows i operační systémy s unixovým jádrem (Linux, Mac OS). Tímto lze docílit například spuštění linuxového systému pod operačním systémem Windows.\cite{virutalbox}
+VirtualBox \cite{virutalbox} je opensource virtualizační nástroj vyvíjený firmou Oracle. Slouží k instalaci  a obsluze virtuálních operačních systémů na jednom fyzickém stroji. Jeho výhodou je multiplatformnost, což znamená, že je možné ho nainstalovat na MS Windows i operační systémy s unixovým jádrem (Linux, Mac OS). Tímto lze docílit například spuštění linuxového systému pod operačním systémem Windows.
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=7cm]{pictures/vbox.png}
+	\includegraphics[width=5cm]{pictures/vbox.png}
 	\caption{PC s virtuálními stroji \cite{vbox_pic}}
 	\label{fig:vbox}
 \end{figure}
@@ -305,7 +302,8 @@ Docker je souhrn produktů typu PaaS (platform as a service) vyvíjený firmou D
 K dockerizaci aplikace je potřeba vytvořit tzv. Dockerfile, který obsahuje sekvenci příkazů k sestavení kontejneru. Ten je poté možné spustit ve službě Kubernetes dostupné firmou Docker, Inc. Tato služba je tzv. Task Manager, neboli systém, v kterém je možné spravovat jednotlivé procesy, zde spuštěné instance kontejnerů.
 
 
-
+\section{Python}\label{sec:python}
+Python je skriptovací programovací jazyk. Jedná se o hybridní programovací jazyk, což znamená, že program nemusí být nutně objektově orientovaný, ale části mohou mít více procedurální charakter. Tím dochází k lepší čitelnosti kódu a celkovému zjednodušení. Síla Pythonu je i ve velkém množství balíků s knihovnami, které podporují jeho všestrannost. Zároveň je tento programovací jazyk velmi rozšířený ve firmě Avast. Kvůli těmto okolnostem byl vybrán Python 3.7 jako hlavní programovací jazyk pro tuto diplomovou práci.
 
 
 
@@ -337,7 +335,7 @@ Při implementaci klientu pro stahování webového obsahu byla zvolena metoda s
 \end{itemize}
 
 \subsection{Skript pro ovládání pomocných programů}
-Tento skript je psaný v programovacím jazyku Python, stejně jako většina práce. Jeho hlavní činností je spuštění programu Fiddler a správa internetového prohlížeče. K ovládání webového prohlížeče byl použit nástroj Selenium(\ref{sec:selenium}) v podobě knihovny importované do jazyka Python. Pro komunikaci s webovým prohlížečem je nutné nainstalovat takzvaný webdriver, který zajistí správnou konfiguraci Selenia pro daný prohlížeč. Webdriver Geckodriver\cite{gecko} je určený pro komunikaci s internetovým prohlížečem Mozilla Firefox\cite{firefox}, naproti tomu webdriver ChromeDriver\cite{chromedriver}  je vyvinut  pro komunikaci s internetovým prohlížečem Google Chrome\cite{chrome}. V práci byl využit internetový prohlížeč Mozilla Firefox, tudíž i nástroj Geckodriver.
+Tento skript je psaný v programovacím jazyku Python, stejně jako většina práce. Jeho hlavní činností je spuštění programu Fiddler a správa internetového prohlížeče. K ovládání webového prohlížeče byl použit nástroj Selenium (kapitola \ref{sec:selenium}) v podobě knihovny importované do jazyka Python. Pro komunikaci s webovým prohlížečem je nutné nainstalovat takzvaný webdriver, který zajistí správnou konfiguraci Selenia pro daný prohlížeč. Webdriver Geckodriver \cite{gecko} je určený pro komunikaci s internetovým prohlížečem Mozilla Firefox \cite{firefox}, naproti tomu webdriver ChromeDriver \cite{chromedriver}  je vyvinut  pro komunikaci s internetovým prohlížečem Google Chrome \cite{chrome}. V práci byl využit internetový prohlížeč Mozilla Firefox, tudíž i nástroj Geckodriver.
 
 Základní implementace Selenia s ovládáním webového prohlížeče v jazyku Python může vypadat jako ve výřezu kódu (tzv. snippetu) \ref{snip:selenium}.
 
@@ -366,7 +364,7 @@ Selenium nabízí možnost konfigurace webdriveru, což umožnuje nastavovat rů
 
 
 \subsection{Skript pro nastavení Fiddleru}\label{sec:fiddler_setup}
-Program Fiddler se primárně ovládá přes grafické rozhranní, je však možné změnit jeho výchozí konfiguraci. K tomuto účelu slouží inicializační skript, který nese označení \mintinline{Python}{CustomRules.js}, jedná se tedy o skript psaný v javaScriptu. Fiddler při spuštění vždy načítá set pravidel, podle kterých se nastaví. Defaultně jsou tato pravidla brána ze skriptu, který se nachází v instalačním adresáři programu. Skriptem \mintinline{Python}{CustomRules.js} lze tyto pravidla nahradit.
+Program Fiddler se primárně ovládá přes grafické rozhranní, je však možné změnit jeho výchozí konfiguraci. K tomuto účelu slouží inicializační skript, který nese označení \mintinline{Python}{CustomRules.js}, jedná se tedy o skript psaný v javaScriptu. Fiddler při spuštění vždy načítá set pravidel, podle kterých se nastaví. Defaultně jsou tato pravidla brána ze skriptu, který se nachází v instalačním adresáři programu. Skriptem \mintinline{Python}{CustomRules.js} lze tato pravidla nahradit.
 
 \begin{figure}[h]               
 	\begin{minted}{Javascript}
@@ -399,9 +397,9 @@ static function OnBeforeResponse(oSession: Session) {
 
 Skript obsahuje mnoho funkcí pro různé sekce programu, z hlediska této práce je však důležitá pouze funkce \mintinline{Python}{OnBeforeResponse()}, která je zavolána vždy, když přijde ze serverové části nějaká odpověď (tzv. response). Implementace této metody je znázorněna v snippetu \ref{snip:fiddler}.
 
-Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování zpravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ dříve sloužil pro přesměrování dočasná (tzv. moved temporarily), od standardu HTTP/1.1 je však více využíván pro všeobecná přesměrování\cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů, podmínka je splněna.
+Tělo funkce \mintinline{Python}{OnBeforeRequest()} obsahuje jedinou podmínku založenou na kódu odpovědi (tzv. response kód) serverové části. Tento kód se nejdříve získá z relace oSession (relace, která obsahuje veškeré informace o komunikaci s danou url). Pokud je response kód $200$, jedná se o tzv. \mintinline{Python}{success} (úspěch), což znamená, že server na daný dotaz prohlížeče vrací odpověď. Tento typ odpovědí je snaha zachytávat, neboť obsahují zdrojové soubory webových stránek. Pokud se však stránka na serveru nachází jinde než na prohlížečem dotazované url, může dojít k přesměrování. Response kódy pro přesměrování zpravidla spadají do intervalu $300-399$, avšak nejčastější případy přesměrování mají kódy $301$, respektive $302$. Kód $301$ je rezervován pro trvalá přesměrování (tzv. moved permanently), kód $302$ dříve sloužil pro přesměrování dočasná (tzv. moved temporarily), od standardu HTTP/1.1 je však více využíván pro všeobecná přesměrování \cite{response_codes}. Pokud tedy dojde k zachycení odpovědi, která obsahuje jeden z těchto tří kódů (200, 301, 302), podmínka je splněna.
 
-Při nastání této situace jsou vytvořeny dva soubory, které jsou pojmenovány podle id relace. Soubor s koncovkou \mintinline{Python}{.dat} je určený pro záznam zachycených dat, soubor \mintinline{Python}{.meta} slouží k uchování metadat o zachycené komunikaci. Následně se volá funkce \mintinline{Python}{WriteAllBytes()}, která z relace oSession přijme parametr \mintinline{Python}{responseBodyBytes}, který obsahuje tělo odpovědi ze serveru, tedy zachycená data, a zapíše je do datového souboru. Dále se shromáždí metadata potřebná pro filtraci souborů (Tabulka \ref{fig:meta}), která se zapíší do souboru \mintinline{Python}{.meta}. 
+Při nastání této situace jsou vytvořeny dva soubory, které jsou pojmenovány podle id relace. Soubor s koncovkou \mintinline{Python}{.dat} je určený pro záznam zachycených dat, soubor \mintinline{Python}{.meta} slouží k uchování metadat o zachycené komunikaci. Následně se volá funkce \mintinline{Python}{WriteAllBytes()}, která z relace oSession přijme parametr \mintinline{Python}{responseBodyBytes}, který obsahuje tělo odpovědi ze serveru, tedy zachycená data, a zapíše je do datového souboru. Dále se shromáždí metadata potřebná pro filtraci souborů (tabulka \ref{fig:meta}), která se zapíší do souboru \mintinline{Python}{.meta}. 
 
 
 \begin{table}[h]
@@ -432,7 +430,7 @@ Protože byl ke stahování dat použit program Fiddler, který zaznamenává ko
 
 
 \subsection{Třídění dat}\label{sec:trideni}
-Pro potřeby třídení dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data, spolu s jejich metadaty. Tyto soubory jsou inkrementálně očíslovány podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}).
+Pro potřeby třídění dat byl program Fiddler konfigurován, aby spolu se zdrojovým kódem webových stránek zaznamenával i pomocná metadata. Tato metadata jsou využívána v Python skriptu, který třídění dat implementuje. Vstupem skriptu je setříděný list, který obsahuje stažená data spolu s jejich metadaty. Tyto soubory jsou inkrementálně očíslovány podle toho, v jakém pořadí byly Fiddlerem zaznamenány (implementováno v inicializačním skriptu Fiddleru \ref{sec:fiddler_setup}).
 
 Protože Fiddler zaznamenává veškerou komunikaci, je zapotřebí odlišit komunikaci vyvolanou přístupem na požadovanou webovou stránku od zbylé (např. režijní komunikace mezi prohlížečem a serverem). První soubor, který je v sekvenčním průchodu důležitý, bude v metadatech obsahovat požadovanou webovou stránku v hodnotě pole \textit{url} (viz tabulka s metadaty \ref{fig:meta}). Hlavní smyčka třídícího skriptu je znázorněna na snippetu \ref{snip:filter}. 
 
@@ -477,7 +475,7 @@ Metoda \mintinline{Python}{get_file_ids()} načítá id stažených souborů (o�
 \end{eqnarray}
 Pro příklad \url{http://www.example.com/index} je tedy \mintinline{Python}{http} schéma, \mintinline{Python}{index} cesta a \mintinline{Python}{www.example.com} hledaný netloc. Toho bylo použito při procházení setříděného listu očíslovaných souborů. Před iterací je ještě zapotřebí inicializovat dvě datové struktury. Set \mintinline{Python}{referers} bude obsahovat všechny již známé a chtěné referery (tj. netloc adresy, které si vyžádaly načtení zdrojových souborů současné url \ref{fig:meta}). Jak již bylo dříve zmíněno, prvním takovým refererem je původní zadaná adresa. Druhá struktura, list \mintinline{Python}{valid_ids}, bude uchovávat názvy souborů, které byly vyhodnoceny jako validní (tj. soubory zachycené při komunikaci s původní zadanou adresou).
 
-V hlavní smyčce se nejprve načtou metadata k souboru pomocí metody \mintinline{Python}{get_meta_from_file()} a uloží se do slovníku \mintinline{Python}{meta}. Poté se tyto data oříznou pomocí metody \mintinline{Python}{netloc_from_url()} a dále se pracuje jen s jejich netloc částí. První podmínka vyhodnocuje přesměrování. Pokud je \mintinline{Python}{response_code} v metadatech souboru roven $301$ nebo $302$, což značí přesměrování, a pokud je zároveň \mintinline{Python}{host} této adresy již v setu \mintinline{Python}{referers}, nejedná se o validní soubor, jde však o soubor, který nese informace o přesměrování. Je tedy potřeba přidat netloc adresy, na kterou dojde k přesměrování (v metadatech klíčové slovo \mintinline{Python}{redirect}). 
+V hlavní smyčce se nejprve načtou metadata k souboru pomocí metody \mintinline{Python}{get_meta_from_file()} a uloží se do slovníku \mintinline{Python}{meta}. Poté se tato data oříznou pomocí metody \mintinline{Python}{netloc_from_url()} a dále se pracuje jen s jejich netloc částí. První podmínka vyhodnocuje přesměrování. Pokud je \mintinline{Python}{response_code} v metadatech souboru roven $301$ nebo $302$, což značí přesměrování, a pokud je zároveň \mintinline{Python}{host} této adresy již v setu \mintinline{Python}{referers}, nejedná se o validní soubor, jde však o soubor, který nese informace o přesměrování. Je tedy potřeba přidat netloc adresy, na kterou dojde k přesměrování (v metadatech klíčové slovo \mintinline{Python}{redirect}). 
 
 Druhá podmínka je přidána pro optimalizaci. Fiddler zaznamenává velké množství souborů, které mají režijní charakter. Tyto soubory se vyznačují malou velikostí a jsou z hlediska filtrace nedůležité. Z toho důvodu se dál zpracovávají pouze soubory, které mají více než 8 bytů.
 
@@ -488,7 +486,7 @@ Poslední podmínka již kontroluje samotné validní soubory. Pokud je netloc a
 
 
 \subsection{Upload do databáze} \label{sec:upload}
-Pro nahrávání dat do databáze byl již dříve týmem, který spravuje systém Scavenger, vytvořen klient v podobě python knihovny. Tento klient používá HCP (Hitachi content platform) pro přesun dat mezi klientem a servery Scavengeru a představuje novější řešení oproti dříve používanému klientu Samba. Při uploadu dat do databáze lze tedy vycházet z tohoto kódu. V prvním kroku procesu uploadu do Scavengeru klient přesune požadovaný soubor do tzv. namespace (vyhrazený prostor na serverové části unikátní pro daného klienta) v HCP úložišti a připojí k němu požadovaná metadata. K tomuto namespace je připojen proces (tzv. feeder), který periodicky odebírá přítomné soubory i s jejich metadaty a přesouvá je do systému Scavenger, kde jsou soubory indexovány pomocí hashovací funkce sha256.
+Pro nahrávání dat do databáze byl již dříve týmem, který spravuje systém Scavenger, vytvořen klient v podobě python knihovny. Tento klient používá HCP (Hitachi content platform) pro přesun dat mezi klientem a servery Scavengeru a představuje novější řešení oproti dříve používanému klientu Samba. Při uploadu dat do databáze lze tedy vycházet z tohoto kódu. V prvním kroku procesu uploadu do Scavengeru klient přesune požadovaný soubor do tzv. namespace (vyhrazený prostor na serverové části unikátní pro daného klienta) v HCP úložišti a připojí k němu požadovaná metadata. K tomuto namespace je připojen proces (tzv. feeder), který periodicky odebírá přítomné soubory i s jejich metadaty a přesouvá je do systému Scavenger, kde jsou soubory indexovány pomocí hashovací funkce sha-256.
 
 Implementace klientu je velmi jednoduchá (snippet \ref{snip:hcpupload}).
 \begin{figure}[h]               
@@ -544,10 +542,10 @@ Snippet \ref{snip:mainupload} znázorňuje hlavní smyčku skriptu pro upload so
 \{původní\_ adresa\}\{pořadí\_ zpracovaného\_ souboru\}
 \end{center}
 
- Toto je možné z důvodu, že se následně soubory automaticky přejmenovávají při přenosu z HCP úložiště do Scavengeru pomocí hashovací funkce sha256. Posledním parametrem pro upload jsou metadata souboru.
+ Toto je možné z důvodu, že se následně soubory automaticky přejmenovávají při přenosu z HCP úložiště do Scavengeru pomocí hashovací funkce sha-256. Posledním parametrem pro upload jsou metadata souboru.
 
 \section{Virtualizace}
-Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox. K tomu byla využita knihovna \mintinline{Python}{pyvbox}\cite{pyvbox}, která implementuje Virtualbox API v prostředí Pythonu. Není potřeba virtualizovat celý proces, ale jen část, která se zabývá stahováním dat. Bylo tedy zapotřebí vytvořit skript, který dokáže nastartovat virtuální stroj, v něm spustit aplikaci pro stahování souborů a tyto soubory přenést z virtuálního prostředí zpět do fyzického systému.
+Z důvodu použití programu Fiddler pro stahování dat namísto emulace webového prohlížeče v Pythonu je nutné tento proces zabezpečit (výsledek analýzy v sekci \ref{sec:zabezpeceni}). Toho bylo docíleno obalením stahovacího procesu do virtuálního prostředí díky využití programu Virtualbox. K tomu byla využita knihovna \mintinline{Python}{pyvbox} \cite{pyvbox}, která implementuje Virtualbox API v prostředí Pythonu. Není potřeba virtualizovat celý proces, ale jen část, která se zabývá stahováním dat. Bylo tedy zapotřebí vytvořit skript, který dokáže nastartovat virtuální stroj, v něm spustit aplikaci pro stahování souborů a tyto soubory přenést z virtuálního prostředí zpět do fyzického systému.
 
 K tomuto účelu byla vytvořena třída  \mintinline{Python}{Vbox}, jejíž inicializace (tzv. konstruktor) je zobrazena ve snippetu \ref{snip:vboxmain}. Instanci této třídy lze použít k ovládání virtuálního stroje. K tomu je nutné inicializovat tři objekty – \mintinline{Python}{VirtualBox()}, \mintinline{Python}{Session()} a \mintinline{Python}{Machine()}. Instance třídy \mintinline{Python}{VirtualBox()} slouží k ovládání Virtualbox manažeru (program, který řídí jednotlivé zaregistrované virtuální stroje). Obecné nastavování se tedy provádí přes tento objekt. Třída \mintinline{Python}{Session()} je navázána na relaci konkrétního virtuálního stroje. Ovládání běhu stroje probíhá tedy s využitím tohoto objektu. Třída \mintinline{Python}{Machine()} reprezentuje konkrétní stroj tak, jak je zobrazen v manažeru Virtualboxu. Při inicializaci této třídy je zapotřebí předat název stroje, což je zde řešeno pomocí převzaté metody \mintinline{Python}{find_machine()}. Název stroje je možné předat konstruktoru pomocí parametru \mintinline{Python}{machine}. Pokud není žádný konkrétní stroj vybrán, je proveden výčet všech dostupných strojů přihlášených pod Virtualbox manažerem (metoda \mintinline{Python}{list_all_machines}) a načten první dostupný stroj.
 \begin{figure}[h]               
@@ -617,7 +615,7 @@ def boot_with_timeout(self, timeout, login, password):
 \end{figure}
 
 
-Poněvadž VirtualBox API nemá implementovanou kontrolu průběhu bootování, nelze nijak zkontrolovat, zda je už virtuální stroj načtený a připravený k použití. Z tohoto důvodu je vytvořen \textit{while} cyklus, kde k této kontrole periodicky dochází. V každém průběhu cyklu dochází k inicializaci uživatelského účtu a následnému testu existence kořenové složky c:/ metodou \mintinline{Python}{directory_exists()}. Předpokládá se zde, že dojde k chybě, protože systém ještě není připravený takovéto příkazy zpracovávat. V takové situaci je výjimka odchycena a přechází se na další průběh cyklu. Pokud by již metoda \mintinline{Python}{directory_exists()} proběhla bez chybové hlášky, dá se očekávat, že je systém již připravený k používání. V tomto případě dojde k ukončení metody. Výstupem je objekt s inicializovaným uživatelským účtem v případě, že bootování proběhlo bez problémů, či chybová hláška \mintinline{Python}{DidntBootInTimeException} v situaci, kdy vypršel časový limit dříve, než mohl systém naběhnout.
+Poněvadž VirtualBox API nemá implementovanou kontrolu průběhu bootování, nelze nijak zkontrolovat, zda je už virtuální stroj načtený a připravený k použití. Z tohoto důvodu je vytvořen while cyklus, kde k této kontrole periodicky dochází. V každém průběhu cyklu dochází k inicializaci uživatelského účtu a následnému testu existence kořenové složky c:/ metodou \mintinline{Python}{directory_exists()}. Předpokládá se zde, že dojde k chybě, protože systém ještě není připravený takovéto příkazy zpracovávat. V takové situaci je výjimka odchycena a přechází se na další průběh cyklu. Pokud by již metoda \mintinline{Python}{directory_exists()} proběhla bez chybové hlášky, dá se očekávat, že je systém již připravený k používání. V tomto případě dojde k ukončení metody. Výstupem je objekt s inicializovaným uživatelským účtem v případě, že bootování proběhlo bez problémů, či chybová hláška \mintinline{Python}{DidntBootInTimeException} v situaci, kdy vypršel časový limit dříve, než mohl systém naběhnout.
 
 \begin{figure}[h]               
 	\begin{minted}{Python}
@@ -658,7 +656,7 @@ gs.directory_copy_from_guest(
 
 \section{Implementace frontového systému Kafka}
 
-Dalším krokem je implementace frontového systému Kafka, jehož serverová část je součástí firemní infrastruktury. K těmto účelům byly vygenerovány týmem spravujícím interní mutaci Kafky přihlašovací údaje pro systém Magpie (přihlašovací jméno, heslo a SSL certifikát). Pro implementaci samotného klientu byla použita Python knihovna \mintinline{Python}{confluent-kafka}\cite{confluent-kafka}, jejíž výhodou je možnost zabezpečené komunikace klientu se serverem. Byly vytvořeny dva skripty obsahující rozdílné klienty:
+Dalším krokem je implementace frontového systému Kafka, jehož serverová část je součástí firemní infrastruktury. K těmto účelům byly vygenerovány týmem spravujícím interní mutaci Kafky přihlašovací údaje pro systém Magpie (přihlašovací jméno, heslo a SSL certifikát). Pro implementaci samotného klientu byla použita Python knihovna \mintinline{Python}{confluent-kafka} \cite{confluent-kafka}, jejíž výhodou je možnost zabezpečené komunikace klientu se serverem. Byly vytvořeny dva skripty obsahující rozdílné klienty:
 \begin{itemize}
 	\item Kafka producer
 	\item Kafka consumer
@@ -666,7 +664,7 @@ Dalším krokem je implementace frontového systému Kafka, jehož serverová č
 
 
 \subsection{Kafka producer} \label{sec:kafkaproducer}
-Úkolem skriptu implementujícího klienta Kafka producer je posílání předzpracovaných url do frontového systému. Za tímto účelem byla vytvořena třída (tzv. class) \mintinline{Python}{KafkaProducer} využívající import třídy \mintinline{Python}{Producer} z knihovny \mintinline{Python}{confluent-kafka} (snippet \ref{snip:kafkaproducer}).
+Úkolem skriptu implementujícího klienta Kafka producer je posílání předzpracovaných url do frontového systému. Za tímto účelem byla vytvořena třída \mintinline{Python}{KafkaProducer} využívající import třídy \mintinline{Python}{Producer} z knihovny \mintinline{Python}{confluent-kafka} (snippet \ref{snip:kafkaproducer}).
 \begin{figure}[h]               
 	\begin{minted}{Python}
 from confluent_kafka import Producer
@@ -728,7 +726,7 @@ class KafkaConsumer(Consumer):
 	\caption{Implementace třídy Kafka Consumer}
 	\label{snip:kafkaconsumer}
 \end{figure}
-I zde je konstruktor přetížen, a to z důvodu doplnění inicializace klientu o konfigurační data \mintinline{Python}{KAFKA_CONSUMER}. Jedná se o přihlašovačí jméno, heslo, SSL certifikát a oproti klientu producer navíc i parametr \textit{group id}. Tento parametr určuje, do jaké skupiny consumerů tento klient spadá. Každý topic totiž může mít přihlášeno vícero skupin consumerů. V takové situaci jsou zprávy odebírány vždy v rámci skupiny (přestože již skupina A odebrala z topicu zprávu, tato zpráva je stále viditelná pro skupinu B, dokud ji neodebere člen této skupiny). Dále při inicializaci probíhá přihlášení k odběru stejného topicu \mintinline{Python}{KAFKA_TOPIC}, který je využíván klientem pro posílání. Toho je docíleno metodou \mintinline{Python}{subscribe()}. Jeden consumer může být přihlášený k oběru více než jednoho topicu. Z tohoto důvodu je jejím vstupem pole, které může obsahovat více elementů. Pro účely této práce postačuje však pouze jeden topic.
+I zde je konstruktor přetížen, a to z důvodu doplnění inicializace klientu o konfigurační data \mintinline{Python}{KAFKA_CONSUMER}. Jedná se o přihlašovačí jméno, heslo, SSL certifikát a oproti klientu producer navíc i parametr group id. Tento parametr určuje, do jaké skupiny consumerů tento klient spadá. Každý topic totiž může mít přihlášeno vícero skupin consumerů. V takové situaci jsou zprávy odebírány vždy v rámci skupiny (přestože již skupina A odebrala z topicu zprávu, tato zpráva je stále viditelná pro skupinu B, dokud ji neodebere člen této skupiny). Dále při inicializaci probíhá přihlášení k odběru stejného topicu \mintinline{Python}{KAFKA_TOPIC}, který je využíván klientem pro posílání. Toho je docíleno metodou \mintinline{Python}{subscribe()}. Jeden consumer může být přihlášený k oběru více než jednoho topicu. Z tohoto důvodu je jejím vstupem pole, které může obsahovat více elementů. Pro účely této práce postačuje však pouze jeden topic.
 
 Tato třída obsahuje metodu \mintinline{Python}{consume_url()}, která implementuje přijímání zpráv ze serveru (snippet \ref{snip:kafkapoll}).
 \begin{figure}[h]               
@@ -750,7 +748,7 @@ def consume_url(self):
 	\caption{Přijímání zpráv z frontového systému Kafka}
 	\label{snip:kafkapoll}
 \end{figure}
-Toho je docíleno převzatou metodou \mintinline{Python}{poll()}, která je volána s parametrem \mintinline{Python}{timeout}. Tato metoda se připojí k serverové části a po dobu zadaného limitu (tzv. timeout) je připravena přijímat zprávy. Další postup následuje podle typu zprávy, která byla přijata. V první podmínce probíhá kontrola, zda vůbec k nějaké komunikaci došlo. Pokud byla fronta prázdná po celou dobu čekání, metoda \mintinline{Python}{poll()} nevrací žádnou hodnotu a \mintinline{Python}{msg} tak není deklarována. V tomto případě je z metody \mintinline{Python}{consume_url()} navrácen \textit{None} (prázdná hodnota). V případě, kdy ke komunikaci došlo, avšak v průběhu nastala chyba, je tato chyba zachycena v objektu příchozí zprávy \mintinline{Python}{msg.error()}. Druhá podmínka tedy kontroluje, zda byl průběh komunikace bezchybný. Pokud ne, je výstupem metody objekt s chybovou hláškou. Pokud nenastal žádný z předešlých dvou případů, lze očekávat, že \mintinline{Python}{msg} obsahuje objekt přijaté zprávy. V tomto případě je tedy výstupem metody dekódovaná hodnota zprávy \mintinline{Python}{msg.value()}. 
+Toho je docíleno převzatou metodou \mintinline{Python}{poll()}, která je volána s parametrem \mintinline{Python}{timeout}. Tato metoda se připojí k serverové části a po dobu zadaného limitu (tzv. timeout) je připravena přijímat zprávy. Další postup následuje podle typu zprávy, která byla přijata. V první podmínce probíhá kontrola, zda vůbec k nějaké komunikaci došlo. Pokud byla fronta prázdná po celou dobu čekání, metoda \mintinline{Python}{poll()} nevrací žádnou hodnotu a \mintinline{Python}{msg} tak není deklarována. V tomto případě je z metody \mintinline{Python}{consume_url()} navrácen None (prázdná hodnota). V případě, kdy ke komunikaci došlo, avšak v průběhu nastala chyba, je tato chyba zachycena v objektu příchozí zprávy \mintinline{Python}{msg.error()}. Druhá podmínka tedy kontroluje, zda byl průběh komunikace bezchybný. Pokud ne, je výstupem metody objekt s chybovou hláškou. Pokud nenastal žádný z předešlých dvou případů, lze očekávat, že \mintinline{Python}{msg} obsahuje objekt přijaté zprávy. V tomto případě je tedy výstupem metody dekódovaná hodnota zprávy \mintinline{Python}{msg.value()}. 
 
 V hlavním programu pro příjem zpráv z Kafky dochází nejdříve k inicializaci Kafka klienta typu consumer (snippet \ref{snip:kafkamain consum}).
 \begin{figure}[h]               
@@ -802,7 +800,7 @@ Dále bylo potřeba v prostředí každého jobu nastavit údaje, které se podl
 
 
 \subsubsection{Job pro nahrávání url do Kafky}
-Pro skript, který zajišťuje předzpracovávání zadaných adres a následný upload do Kafky, byl vytvořen job \mintinline{Python}{feeder_kafka_urls}. Tento job obsahuje proces rozebíraný v sekci \ref{sec:kafkaproducer}. Job je nastaven tak, aby přijímal tři typy argumentů (tzv. parametrizace jobu, neboli spouštění s parametry) (viz Obr.\ref{fig:kafka_feed}). 
+Pro skript, který zajišťuje předzpracovávání zadaných adres a následný upload do Kafky, byl vytvořen job \mintinline{Python}{feeder_kafka_urls}. Tento job obsahuje proces rozebíraný v sekci \ref{sec:kafkaproducer}. Job je nastaven tak, aby přijímal tři typy argumentů (tzv. parametrizace jobu, neboli spouštění s parametry) (viz obr. \ref{fig:kafka_feed}). 
 
 \begin{figure}[h]
 	\centering
@@ -811,7 +809,7 @@ Pro skript, který zajišťuje předzpracovávání zadaných adres a následný
 	\label{fig:kafka_feed}
 \end{figure}
 
-Prvním argumentem je parametr s názvem \mintinline{Python}{download_alexa}, který zajišťuje, že se před nahráním url do Kafky spustí kód pro stáhnutí top url stránek z listu na adrese \url{https://www.alexa.com/topsites}. Tato možnost je zaškrtnuta v základním nastavení (tzv. defaultně) a to z důvodu periodického spouštění tohoto jobu. Zbylé dva parametry jsou zde pro manuální spouštění. Prvním je možnost textového souboru \mintinline{Python}{urls_file.txt}, kdy uživatel může nahrát soubor s požadovaným listem webových adres, které chce stáhnout. Zbývá textový parametr \mintinline{Python}{urls}, kde se mohou adresy zadávat přímo do textového pole. Toho lze využít při potřebě stáhnout jen jednu požadovanou adresu. 
+Prvním argumentem je parametr s názvem \mintinline{Python}{download_alexa}, který zajišťuje, že se před nahráním url do Kafky spustí kód pro stáhnutí top url stránek z listu na adrese \url{https://www.alexa.com/topsites}. Tato možnost je zaškrtnuta v základním nastavení (tzv. defaultně), a to z důvodu periodického spouštění tohoto jobu. Zbylé dva parametry jsou zde pro manuální spouštění. Prvním je možnost textového souboru \mintinline{Python}{urls_file.txt}, kdy uživatel může nahrát soubor s požadovaným listem webových adres, které chce stáhnout. Zbývá textový parametr \mintinline{Python}{urls}, kde se mohou adresy zadávat přímo do textového pole. Toho lze využít při potřebě stáhnout jen jednu požadovanou adresu. 
 
 Skript využívá přístup do frontového systému Kafka. Bylo tedy zapotřebí v konfiguraci jobu nastavit požadované přístupové údaje. To je možné v konfigurační sekci Bindings, kde lze vytvořit tzv. environmentální proměnné (proměnná, která je přístupná odkudkoliv v celém prostředí) pro daný job. Takto byl nastavený SSL certifikát pro klienty Kafky a přístupové heslo pro autorizaci posílaných zpráv.
 
@@ -830,9 +828,9 @@ $JENKINS\_URL$ značí webovou adresu serveru, na kterém běží firemní verze
 \end{equation}
 kde $URL$ značí předávaný parametr url.
 
-Je také nutné nastavit environmentální proměnné pro přihlašovací údaje do virtuálního systému. Toho je opět docíleno pomocí konfigurační sekce Bindings v nastavení jenkins projektu. 
+Je také nutné nastavit environmentální proměnné pro přihlašovací údaje do virtuálního systému. Toho je opět docíleno pomocí konfigurační sekce Bindings v nastavení Jenkins projektu. 
 
-Při startu jobu se spustí skript, který ovládá virtuální stroj. Toto je nastaveno v konfigurační sekci Build. Po úspěšném startu virtuálního stroje je ve virtuálním prostředí spuštěn klient pro stahování webového obsahu a následně jsou stažené soubory přeneseny zpět do prostředí jobu v Jenkinsu. Zde dochází k filtraci dat a soubory, které jsou vyhodnocené jako relevantní pro zadanou url adresu, jsou po doběhnutí jobu exportovány v podobě tzv. job artifactů (soubory, které jsou i po ukončení jobu dostupné). Tento export je proveden v konfigurační sekci Post-build Actions. Zde je také nastaveno, aby se po doběhnutí jobu spustil proces pro upload dat do databáze cleansetu (tzv. job trigger). Poněvadž jsou oba procesy v prostředí Jenkinsu, není potřeba generovat trigger token.
+Při startu jobu se spustí skript, který ovládá virtuální stroj. Toto je nastaveno v konfigurační sekci Build. Po úspěšném startu virtuálního stroje je ve virtuálním prostředí spuštěn klient pro stahování webového obsahu a následně jsou stažené soubory přeneseny zpět do prostředí jobu v Jenkinsu. Zde dochází k filtraci dat a soubory, které jsou vyhodnocené jako relevantní pro zadanou url adresu, jsou po doběhnutí jobu exportovány v podobě tzv. job artefaktů (soubory, které jsou i po ukončení jobu dostupné). Tento export je proveden v konfigurační sekci Post-build Actions. Zde je také nastaveno, aby se po doběhnutí jobu spustil proces pro upload dat do databáze cleansetu (tzv. job trigger). Poněvadž jsou oba procesy v prostředí Jenkinsu, není potřeba generovat trigger token.
 
 
 
@@ -840,7 +838,7 @@ Při startu jobu se spustí skript, který ovládá virtuální stroj. Toto je n
 
 
 \subsubsection{Job pro upload dat do databáze cleansetu}
-Třetím projektem vytvořeným v systému Jenkins je job pro upload do databáze cleansetu nazvaný \mintinline{Python}{scav_hcp_feeder}. Tento job nemá žádné vstupní parametry, využívá však exportované artifacty z jobu pro stahování a filtraci dat. Toto je nastaveno v konfigurační sekci Build (viz Obr.\ref{fig:jenkins_artifacts}). 
+Třetím projektem vytvořeným v systému Jenkins je job pro upload do databáze cleansetu nazvaný \mintinline{Python}{scav_hcp_feeder}. Tento job nemá žádné vstupní parametry, využívá však exportované artefakty z jobu pro stahování a filtraci dat. Toto je nastaveno v konfigurační sekci Build (viz obr. \ref{fig:jenkins_artifacts}). 
 
 \begin{figure}[h]
 	\centering
@@ -849,7 +847,7 @@ Třetím projektem vytvořeným v systému Jenkins je job pro upload do databáz
 	\label{fig:jenkins_artifacts}
 \end{figure}
 
-Parametr Project name určuje, z jakého projektu se mají exportované artifacty kopírovat, zde projekt \mintinline{Python}{url_processing}. Parametrem Which build lze přímo určit specifické číslo buildu projektu, z kterého se mají exportované artifacty získat. Lze také nastavit, aby se vždy braly z posledního úspěšného buildu, což je znázorněno na obrázku (viz Obr.\ref{fig:jenkins_artifacts}). Konfigurační sekce Build dále obsahuje příkaz pro spuštění samotného skriptu pro přenos těchto exportovaných souborů. 
+Parametr Project name určuje, z jakého projektu se mají exportované artifacty kopírovat, zde projekt \mintinline{Python}{url_processing}. Parametrem Which build lze přímo určit specifické číslo buildu projektu, z kterého se mají exportované artifacty získat. Lze také nastavit, aby se vždy braly z posledního úspěšného buildu, což je znázorněno na obrázku (viz obr. \ref{fig:jenkins_artifacts}). Konfigurační sekce Build dále obsahuje příkaz pro spuštění samotného skriptu pro přenos těchto exportovaných souborů. 
 
 Poněvadž se v jobu přistupuje do HCP úložiště, je potřeba v sekci Bindings nastavit environmentální proměnné obsahující přihlašovací údaje.
 
@@ -883,7 +881,7 @@ CMD ["python", "./kafka_consumer_runner.py"]
 	\label{snip:docker}
 \end{figure}
 
-První řádek s příkazem \mintinline{Python}{FROM} určuje, odkud stáhnout tzv. image template (tj. docker balíček, který obsahuje prostředí, které se má při kompilaci docker kontejneru vytvořit). Protože je skript kafka consumer napsaný v Pythonu, je zapotřebí použít příslušný template. Kvůli bezpečnosti a pro zajištění integrity má firma vlastní úložiště s docker balíčky. Proto je balíček $python:3.7$ stažen z interního úložiště.
+První řádek s příkazem \mintinline{Python}{FROM} určuje, odkud stáhnout tzv. image template (tj. docker balíček, který obsahuje prostředí, které se má při kompilaci docker kontejneru vytvořit). Protože je skript kafka consumer napsaný v Pythonu, je zapotřebí použít příslušný template. Kvůli bezpečnosti a pro zajištění integrity má firma vlastní úložiště s docker balíčky. Proto je balíček python:3.7 stažen z interního úložiště.
 
 Dalším příkazem je překopírován soubor \mintinline{Python}{requirements.txt} do prostředí nově vzniklého kontejneru. Tento soubor obsahuje seznam nestandardních python knihoven, tedy knihoven, které je potřeba doinstalovat a nejsou obsaženy v instalaci pythonu.
 
@@ -898,7 +896,7 @@ Při nasazení aplikace do Kubernetes bylo opět využito firemní šablony. Př
 
 \subsection{Schéma integrovaného systému}
 
-Schéma \ref{fig:schema} znázorňuje celkové propojení systému Magpie. Skript Kafka Producer získává URL adresy a posílá je do frontového systému Kafka. Zde jsou adresy postupně odebírány skriptem Kafka Consumer, který pro každou adresu spouští job pro stahování souborů. Doběhnutím tohoto jobu je inicializován job pro HCP upload, kterému jsou stažené soubory (na diagramu znázorněny silnější šipkou) předány ve formě job artifactů. Soubory jsou nahrány do HCP úložiště a následně do Scavengeru.
+Schéma \ref{fig:schema} znázorňuje celkové propojení systému Magpie. Skript Kafka Producer získává URL adresy a posílá je do frontového systému Kafka. Zde jsou adresy postupně odebírány skriptem Kafka Consumer, který pro každou adresu spouští job pro stahování souborů. Doběhnutím tohoto jobu je inicializován job pro HCP upload, kterému jsou stažené soubory (na diagramu znázorněny silnější šipkou) předány ve formě job artefaktů. Soubory jsou nahrány do HCP úložiště a následně do Scavengeru.
 
 \begin{figure}[h]
 	\centering
@@ -932,7 +930,7 @@ Skripty pro komunikaci se systémem Kafka byly testovány již v průběhu vývo
 
 
 \subsection{Zabezpečené stahování a filtrování dat}
-Testování této komponenty bylo nejobsáhlejší a probíhalo na vícero testovacích množinách. Prvotní testovací množina dat obsahovala 1000 vzorků a jednalo se o starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa}. Pro každou adresu byly staženy zdrojové soubory a následně byla provedena analýza výstupních dat. Při této analýze bylo zjištěno, že přes prvotní předpoklady není ošetření přesměrování se stavovými kódy 301 a 302 dostačující. Stavový kód 301 se používá pro trvalné přesměrování (tzv. Moved Permanently), kód 302 byl původně navržen pro dočasné přesměrování, nyní je nejčastěji používaným stavovým kódem pro obecná přesměrování. Z analýzy vyplynulo, že množství stránek používá i jiné stavové kódy pro přesměrování. Z ještě nezmíněných se nejčastěji objevoval kód 307, který od standardu HTTP/1.1 nahradil kód 302 pro dočasné redirecty (tzv. Temporary redirect). Proto bylo ošetření přesměrovávacích stavových kódů rozšířeno. Byl upraven inicializační skript(\ref{snip:fiddler}) pro program Fiddler, který obsahuje podmínku pro zachytávané stavové kódy (snippet \ref{snip:fiddler_new}). 
+Testování této komponenty bylo nejobsáhlejší a probíhalo na vícero testovacích množinách. Prvotní testovací množina dat obsahovala 1000 vzorků a jednalo se o starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites \cite{alexa}. Pro každou adresu byly staženy zdrojové soubory a následně byla provedena analýza výstupních dat. Při této analýze bylo zjištěno, že přes prvotní předpoklady není ošetření přesměrování se stavovými kódy 301 a 302 dostačující. Stavový kód 301 se používá pro trvalé přesměrování (tzv. Moved Permanently), kód 302 byl původně navržen pro dočasné přesměrování, nyní je nejčastěji používaným stavovým kódem pro obecná přesměrování. Z analýzy vyplynulo, že množství stránek používá i jiné stavové kódy pro přesměrování. Z ještě nezmíněných se nejčastěji objevoval kód 307, který od standardu HTTP/1.1 nahradil kód 302 pro dočasné redirecty (tzv. Temporary redirect). Proto bylo ošetření přesměrovávacích stavových kódů rozšířeno. Byl upraven inicializační skript (snippet \ref{snip:fiddler}) pro program Fiddler, který obsahuje podmínku pro zachytávané stavové kódy (snippet \ref{snip:fiddler_new}). 
 
 \begin{figure}[h]               
 	\begin{minted}{Javascript}
@@ -952,12 +950,10 @@ if (oSession.responseCode == 200 ||
 	\label{snip:fiddler_new_new}
 \end{figure}
 
-Z analýzy následně vyplynula důležitost uchovávání logu (výpis informačních zpráv) prohlížeče. Tento výpis je důležitý v situacích, kdy zadaná stránka již neexistuje, nebo se v průběhu připojení naskytly jiné komplikace a obsah stránky není dostupný. V takovém případě není nutné pokračovat třídícím algoritmem, poněvadž všechny zachycené soubory obsahují pouze režijní komunikaci prohlížeče a Fiddleru. Geckodriver (webdriver používaný nástrojem Selenium k ovládání internetového prohlížeče Mozilla Firefox) ovšem tuto funkcionalitu nepodporuje. Z toho důvodu bylo od těchto nástrojů odstoupeno a byl použit Chromedriver v souvislosti s internetovým prohlížečem Google Chrome. K tomu bylo zapotřebí na virtuální stroj nainstalovat zmíněný webdriver ve verzi shodné s nainstalovaným prohlížečem Google Chrome (pro oba programy byla nainstalována nejnovější verze 80). Základní ovládání prohlížeče se liší pouze v importování a následné inicializaci rozdílné třídy reprezentující prohlížeč z knihovny nástroje Selenium. Kód pro ovládání prohlížeče nástrojem Selenium \ref{snip:selenium} byl tedy přepsán. Základní ovládání prohlížeče Google Chrome s využitím logování je znázorněno na snippetu \ref{snip:selenium_new}.
+Z analýzy následně vyplynula důležitost uchovávání logu (výpis informačních zpráv) prohlížeče. Tento výpis je důležitý v situacích, kdy zadaná stránka již neexistuje, nebo se v průběhu připojení naskytly jiné komplikace a obsah stránky není dostupný. V takovém případě není nutné pokračovat třídícím algoritmem, poněvadž všechny zachycené soubory obsahují pouze režijní komunikaci prohlížeče a Fiddleru. Geckodriver (webdriver používaný nástrojem Selenium k ovládání internetového prohlížeče Mozilla Firefox) ovšem tuto funkcionalitu nepodporuje. Z toho důvodu bylo od těchto nástrojů odstoupeno a byl použit Chromedriver ve spojení s internetovým prohlížečem Google Chrome. K tomu bylo zapotřebí na virtuální stroj nainstalovat zmíněný webdriver ve verzi shodné s nainstalovaným prohlížečem Google Chrome (pro oba programy byla nainstalována nejnovější verze 80). Základní ovládání prohlížeče se liší pouze v importování a následné inicializaci rozdílné třídy reprezentující prohlížeč z knihovny nástroje Selenium. Kód pro ovládání prohlížeče nástrojem Selenium \ref{snip:selenium} byl tedy přepsán. Základní ovládání prohlížeče Google Chrome s využitím logování je znázorněno na snippetu \ref{snip:selenium_new}.
 
 \begin{figure}[h]               
 	\begin{minted}{Python}
-import time 
-
 from selenium.webdriver import Chrome
 import selenium.webdriver.common.desired_capabilities
 import selenium.webdriver
@@ -979,7 +975,7 @@ log = browser.get_log('browser')
 	\label{snip:selenium_new}
 \end{figure}
 
-Obdobně jako u prohlížeče Firefox lze měnit nastavení prohlížeče skrze instanci dedikované třídy, zde \mintinline{Python}{ChromeOptions}. Dále je potřeba vytvořit instanci třídy \mintinline{Python}{DesiredCapabilities}, v které je možné nastavit logovací preference(\ref{snip:log_pref}).
+Obdobně jako u prohlížeče Firefox lze měnit nastavení prohlížeče skrze instanci dedikované třídy, zde \mintinline{Python}{ChromeOptions}. Dále je potřeba vytvořit instanci třídy \mintinline{Python}{DesiredCapabilities}, v které je možné nastavit logovací preference (\ref{snip:log_pref}).
 \begin{figure}[h]               
 	\begin{minted}{Python}
 d['goog:loggingPrefs'] = {'browser': 'ALL'}
@@ -992,7 +988,6 @@ Tato instance je předána spolu s třídou pro nastavení prohlížeče jako pa
 \begin{figure}[h]               
 	\begin{minted}{Python}
 for entry in log:
-    print(f"{entry['message']}")
     if 'Fiddler - DNS Lookup Failed' in entry['message']:
         raise DNSLookUpFailException(entry['message'])
     if 'Fiddler - Connection Failed' in entry['message']:
@@ -1008,7 +1003,7 @@ Tento výpis byl následně použit k vytvoření podmínek kontrolujících, zd
 
 
 \subsection{Přenos souborů do HCP úložiště}
-Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byl opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites\cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní, byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
+Posledním krokem testování byl klient pro HCP úložiště. Samotná komunikace s úložištěm je zajištěna pomocí knihovny vytvořené týmem spravujícím systém Scavenger, tuto funkcionalitu tedy testovat nutné nebylo. V testovacím procesu bylo převážně kontrolováno správné přikládání metadat k nahrávaným souborům. K testování byl opět využit starší seznam nejnavštěvovaných url adres shromážděný službou Alexa top sites \cite{alexa} o velikosti 1000 vzorků. Jelikož je přenos závislý na stažených datech, byly tyto vzorky nejdříve zpracovány komponentou pro stahování a filtraci dat. Soubory, které byly v tomto kroku vyhodnocené jako validní, byly spolu s jejich metadaty nahrány do HCP úložiště a následně byla provedena kontrola nahraných dat. Metadata nahraných souborů byla porovnána se staženými metadaty a ve všech případech byla shledána shoda. Z toho bylo vyvozeno, že přikládání metadat k nahrávaným souborům funguje v pořádku. 
 
 Při této analýze bylo avšak zjištěno, že přejmenovávání nahraných souborů podle klíče
 \begin{center}\label{prej}
@@ -1023,25 +1018,25 @@ Dále byla na začátek přenosu přidána kontrola, zda při filtraci dat byly 
 
 
 \section{Monitorování}\label{monitoring}
-K monitorování funkčnosti aplikace byl využit analytický nástroj Grafana\cite{grafana} v kombinaci s databázovým systémem Graphite\cite{graphite}, který uchovává data s časovou známkou. Tato data je následně možné znázorňovat ve formě grafů pomocí nástroje Grafana. K posílání dat do systému Graphite byla využita python knihovna \textit{Statsd}\cite{statistika}.
+K monitorování funkčnosti aplikace byl využit analytický nástroj Grafana \cite{grafana} v kombinaci s databázovým systémem Graphite \cite{graphite}, který uchovává data s časovou známkou. Tato data je následně možné znázorňovat ve formě grafů pomocí nástroje Grafana. K posílání dat do systému Graphite byla využita python knihovna \textit{Statsd} \cite{statistika}.
 
 Při chodu aplikace jsou monitorovány údaje o stažených souborech (počet souborů a jejich velikost) spolu s úspěšností zpracování zadaných adres. 
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=5cm]{pictures/URLgraph.png}
+	\includegraphics[width=6cm]{pictures/URLgraph.png}
 	\caption{Zpracované adresy v rámci jednoho dne}
 	\label{fig:urls}
 \end{figure}
 
-Na grafu \ref{fig:urls} je zachycen podíl úspěšně zpracovaných adres v rámci jednoho dne. Z grafu je patrné, že systém Magpie je schopný za jeden den zpracovat přibližně 1500 zadaných adres, z čehož je přibližně 90\% úspěšně. Ve zbylých případech nebylo možné navázat spojení z požadovanou adresou. Tato  desetiprocentní neúspěšnost systému je dána vstupními daty. Jelikož se zpracovávají globálně nejnavštěvovanější adresy podle serveru Majestic Milion, je velice pravděpodobné, že se v těchto seznamech objeví adresy, které jsou již nefunkční, zablokované či jinak nedostupné. I přesto je systém Magpie schopný úspěšně zpracovávat až 1400 adres denně.
+Na grafu \ref{fig:urls} je zachycen podíl úspěšně zpracovaných adres v rámci jednoho dne. Z grafu je patrné, že systém Magpie je schopný za jeden den zpracovat přibližně 1500 zadaných adres, z čehož je přibližně 90 \% úspěšně. Ve zbylých případech nebylo možné navázat spojení z požadovanou adresou. Tato  desetiprocentní neúspěšnost systému je dána vstupními daty. Jelikož se zpracovávají globálně nejnavštěvovanější adresy podle serveru Majestic Milion, je velice pravděpodobné, že se v těchto seznamech objeví adresy, které jsou již nefunkční, zablokované či jinak nedostupné. I přesto je systém Magpie schopný úspěšně zpracovávat až 1400 adres denně.
 
 Graf \ref{fig:files2} znázornuje počet stažených souborů za minutu v rámci jednoho dne. Interval minuty je daný nástrojem Graphite, který data takto automaticky agreguje. Z grafu je patrná funčnost systému s průměrem přibližně čtyřiceti stažených souborů za minutu. V rámci jednoho dne je tedy možné získat až 50 tisíc souborů, z čehož je přibližně 15 tisíc unikátních.
 
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=12cm]{pictures/files3.png}
+	\includegraphics[width=13cm]{pictures/files3.png}
 	\caption{Počet stažených souborů v rámci jednoho dne}
 	\label{fig:files2}
 \end{figure}
@@ -1051,7 +1046,7 @@ Graf \ref{fig:files2} znázornuje počet stažených souborů za minutu v rámci
 \section{Zobecnění projektu a budoucí využití}
 V současné době je projekt Magpie využíván k doplňování cleansetu stahováním zdrojových souborů webových stránek s vysokou prevalencí. Při vývoji se ale již počítalo s jeho širším využitím v jiných aplikacích potřebujících zabezpečený zisk zdrojových souborů. Jedním z takových případů může být analýza phishingových stránek. Jedná se o stránky, které využívají nepozornosti uživatele k zisku citlivých informací. Při analýze těchto stránek, tedy při rozhodování, zda je stránka phishingového charakteru, je často potřeba podívat se do zdrojových souborů stránky. K zisku těchto dat by bylo možné využívat systém Magpie. 
 
-Jiným využitím Magpie při analýze malwaru může být zisk infikovaných souborů s následným nahráním do systému Scavenger. Systém Scavenger obsahuje kromě databáze cleansetu mimojiné i databázi škodlivých souborů. Rozhodovací logika vložení nahrávaného souboru do příslušné databáze je lehce implementovatelná v systému Scavenger pomocí filterů založených na metadatech nahrávaných souborů. Pokud by byla tedy metadata obohacena o tuto informaci, je Magpie schopný zpracovávat i infikovaná data. Této funkcionalitě značně přispívá fakt, že je jádro projektu realizováno ve virtuálním prostředí, což umožňuje zabezpečené stahování nejen čistých souborů.
+Jiným využitím Magpie při analýze malwaru může být zisk infikovaných souborů s následným nahráním do systému Scavenger. Systém Scavenger obsahuje kromě databáze cleansetu mimojiné i databázi škodlivých souborů. Rozhodovací logika vložení nahrávaného souboru do příslušné databáze je lehce implementovatelná v systému Scavenger pomocí filtrů založených na metadatech nahrávaných souborů. Pokud by byla tedy metadata obohacena o tuto informaci, je Magpie schopný zpracovávat i infikovaná data. Této funkcionalitě značně přispívá fakt, že je jádro projektu realizováno ve virtuálním prostředí, což umožňuje zabezpečené stahování nejen čistých souborů.
 
 
 
@@ -1115,8 +1110,24 @@ Díky systému Magpie je nyní možné rozšiřovat cleanset o desetitísice nov
     
     \bibitem{fiddler}   
     
-    Fiddler - Free Web Debugging Proxy - Telerik. \textit{Telerik UI for ASP.NET AJAX, MVC, Core, Xamarin, Angular, HTML5 and jQuery} [online]. Copyright © 2020, Progress Software Corporation and [cit. 14.04.2020]. Dostupné z:  \\ 
+    Fiddler - Free Web Debugging Proxy - Telerik. \textit{Telerik UI for ASP.NET AJAX, MVC, Core, Xamarin, Angular, HTML5 and jQuery} [online]. Copyright © 2020, Progress Software Corporation [cit. 14.04.2020]. Dostupné z:  \\ 
     \url{https://www.telerik.com/fiddler}
+    
+    \bibitem{selenium}
+    
+    
+    SeleniumHQ Browser Automation. \textit{SeleniumHQ Browser Automation} [online]. [cit. 14.04.2020]. Dostupné z: \\
+    \url{https://www.selenium.dev/}
+    
+    \bibitem{kafka...}
+    
+    
+    Apache Kafka. \textit{Apache Kafka} [online]. Copyright © 2017 [cit. 14.045.2020]. Dostupné z: \\ \url{https://kafka.apache.org/}
+    
+    
+    \bibitem{jenkins}
+    Jenkins, Build great things at any scale. [online]. [cit. 14.045.2020]. Dostupné z: \\
+    \url{https://www.jenkins.io/}
     
     \bibitem{beautifulsoup}
     Beautiful Soup: We called him Tortoise because he taught us.. \textit{Swear not by the wiki, the fickle wiki, the inconstant wiki} [online]. Copyright © 1996 [cit. 14.04.2020]. Dostupné z:     \\  \url{https://www.crummy.com/software/BeautifulSoup/} 	

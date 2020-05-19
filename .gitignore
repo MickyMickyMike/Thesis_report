@@ -1,4 +1,7 @@
 _minted-thesis
+*.acn
+*.glo
+*.ist
 *.log
 *.bst
 *.sty
